@@ -49,11 +49,20 @@
 		cards,
 		legal,
 		fourColor = false,
-		cardHeight = 0.115,
+		cardHeight = 0.135,
 		overlap = 0.55,
 		maxTiltDeg = 10,
 		archLift = 0.04,
-		reclineDeg = 42,
+		/**
+		 * Recline the fan toward the viewer.
+		 *
+		 * Flat on the felt (0) the cards are edge-on from the camera's ~39 deg
+		 * pitch and unreadable — you cannot play a hand you cannot see. The
+		 * hand-to-camera vector is (0, 0.79, 0.61), so ~38 deg points the cards
+		 * exactly at the lens; 34 keeps them legible while still reading as cards
+		 * resting on a table rather than billboards floating above it.
+		 */
+		reclineDeg = 34,
 		disabled = false,
 		onplay,
 		onillegal,

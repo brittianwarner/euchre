@@ -62,12 +62,12 @@
 	let {
 		near = 0.05,
 		far = 6,
-		fovPortrait = 44,
-		fovNarrow = 38,
-		fovWide = 34,
-		distPortrait = 1.05,
-		distNarrow = 0.85,
-		distWide = 0.72
+		fovPortrait = 50,
+		fovNarrow = 46,
+		fovWide = 42,
+		distPortrait = 1.25,
+		distNarrow = 1.1,
+		distWide = 1.0
 	}: Props = $props();
 
 	const { size, renderer } = useThrelte();
@@ -79,13 +79,21 @@
 	const fov = $derived(portrait ? fovPortrait : narrow ? fovNarrow : fovWide);
 	const dist = $derived(portrait ? distPortrait : narrow ? distNarrow : distWide);
 
-	const posY = $derived(dist * 0.78);
-	const posZ = $derived(dist * 0.82);
+	// Framing is arithmetic, not taste. The seat-0 hand sits at z = +SEAT_RADIUS
+	// (0.3 m). With the previous rig — posY 0.78d, posZ 0.82d, fov 34, target
+	// z -0.06 — the hand fell 21.9 deg off the camera axis against a 17 deg
+	// half-FOV, i.e. just below the bottom edge: the player could not see their
+	// own cards at all. These ratios put the hand ~13 deg off axis and North's
+	// fan ~9 deg, so both near and far edges sit comfortably inside frame.
+	const posY = $derived(dist * 0.62);
+	const posZ = $derived(dist * 0.78);
 
 	// Pulled back and wide in portrait, so tilt a little further down to keep
 	// the trick zone in frame alongside the hand.
-	const targetY = $derived(portrait ? -0.03 : 0);
-	const targetZ = $derived(portrait ? -0.09 : -0.06);
+	const targetY = $derived(portrait ? -0.02 : 0);
+	// Aim at (or just past) the table centre rather than beyond it: pushing the
+	// target away from the player is what tipped the near edge out of frame.
+	const targetZ = $derived(portrait ? 0 : 0.02);
 
 	// Closed-form pitch: three.js's default camera forward is local -Z; after
 	// rotating `θ` about X, that forward direction becomes (0, sinθ, -cosθ).
