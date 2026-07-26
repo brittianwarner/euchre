@@ -1,5 +1,10 @@
 <!--
   BidPanel — cut, order-up, pass, and round-2 suit calls from view.legal.
+
+  Rendered as a self-contained panel (own background/border) rather than
+  bare text-on-felt: the composing page docks this bottom-centre
+  (`+page.svelte`'s `.corner-bc`), which over the table's wood rim needs its
+  own legible backing rather than assuming a dark page background behind it.
 -->
 <script lang="ts">
 	import type { LegalMoveId, PublicGameView } from '$lib/protocol';
@@ -58,21 +63,29 @@
 
 <style>
 	.bids {
-		padding: 0 1.25rem 0.75rem;
+		margin: 0;
+		padding: 0.75rem 0.85rem;
+		border: 1px solid rgba(232, 194, 122, 0.25);
+		border-radius: 0.65rem;
+		background: rgba(15, 20, 14, 0.85);
+		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
 	}
 	.hint {
 		margin: 0 0 0.5rem;
 		color: #c9b89a;
+		text-align: center;
 	}
 	.row {
 		display: flex;
 		flex-wrap: wrap;
+		justify-content: center;
 		gap: 0.5rem;
 	}
 	.alone {
 		margin-top: 0.45rem;
 	}
 	button {
+		min-height: 44px;
 		padding: 0.65rem 0.95rem;
 		border: 1px solid #6a5638;
 		border-radius: 0.4rem;

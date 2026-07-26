@@ -150,16 +150,58 @@
 			onillegal={handleCardIllegal}
 		/>
 
-		<TableStatusBar view={displayView} {illegalMessage} />
+		<!--
+			All chrome lives at the screen edges, so nothing ever sits over a
+			seat's cards or nameplate (the felt itself is the only thing allowed
+			in the middle of the screen):
 
+			  top-left      score, hand number, trump, whose turn (ScoreBoard +
+			                TableStatusBar's turn chip/illegal toast)
+			  top-right     the current trick + tricks won, kept small (TrickView)
+			  bottom-centre the bid/discard action panel — the one place action
+			                ever happens. Centred, not a corner: both seat 0's own
+			                "You" nameplate (an HTML overlay from
+			                `TableScene.svelte`) and North's sit dead-centre, but
+			                well *above* this panel's vertical band (verified
+			                against a screenshot at 390×844, the tightest
+			                breakpoint) — a corner placement narrow enough to
+			                dodge that nameplate sideways left too little width
+			                for its three buttons to avoid wrapping tall enough
+			                to reach the human's own hand instead.
+
+			The low-priority "deal a new game" link lives at the bottom of the
+			top-left column rather than its own bottom-left spot: the
+			bottom-centre action panel above is wide enough at every breakpoint
+			(up to 92vw) that a separate bottom-left corner would sit right
+			under its edge — top-left is the one corner nothing else ever grows
+			tall enough to reach.
+
+			`.hud` itself is one full-bleed, non-interactive layer (per the
+			project's existing pattern); each corner opts back into
+			`pointer-events` only where it actually has controls.
+		-->
 		<div class="hud">
-			<ScoreBoard view={displayView} />
-			<TrickView view={displayView} />
-			{#if store.error}
-				<p class="err" role="alert">{store.error}</p>
-			{/if}
-			<BidPanel view={displayView} disabled={store.submitting} onPlay={submitMove} />
-			<DiscardPanel view={displayView} disabled={store.submitting} onPlay={submitMove} />
+			<div class="corner corner-tl">
+				<ScoreBoard view={displayView} />
+				<TableStatusBar view={displayView} {illegalMessage} />
+				<p class="footer">
+					<a href="/play">Deal a new game</a>
+					· game {data.gameId.slice(0, 8)}
+				</p>
+			</div>
+
+			<div class="corner corner-tr">
+				<TrickView view={displayView} />
+			</div>
+
+			<div class="corner corner-bc">
+				{#if store.error}
+					<p class="err" role="alert">{store.error}</p>
+				{/if}
+				<BidPanel view={displayView} disabled={store.submitting} onPlay={submitMove} />
+				<DiscardPanel view={displayView} disabled={store.submitting} onPlay={submitMove} />
+			</div>
+
 			<!--
 				Visually hidden but focusable: the 3D table is the visual layer,
 				this is the permanent keyboard/screen-reader path
@@ -169,10 +211,6 @@
 			<div class="a11y-hand">
 				<HandA11y view={displayView} disabled={store.submitting} onPlay={submitMove} />
 			</div>
-			<p class="footer">
-				<a href="/play">Deal a new game</a>
-				· game {data.gameId.slice(0, 8)}
-			</p>
 		</div>
 	{/if}
 </main>
@@ -185,34 +223,85 @@
 		font-family: 'Source Serif 4', 'Iowan Old Style', Georgia, serif;
 		background: #0b0906;
 	}
-	.loading,
-	.err,
-	.footer {
+	.loading {
 		padding: 1.25rem;
 		margin: 0;
 	}
 	.err {
+		margin: 0;
 		color: #e8a090;
 	}
 	.footer {
+		margin: 0.4rem 0 0;
 		color: #8a7a62;
-		font-size: 0.85rem;
+		font-size: 0.8rem;
 	}
 	.footer a {
 		color: #d4b57a;
 	}
 
 	.hud {
-		position: relative;
+		position: absolute;
+		inset: 0;
 		z-index: 1;
-		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-		min-height: 100dvh;
 		pointer-events: none;
 	}
 	.hud > :global(*) {
 		pointer-events: auto;
+	}
+
+	.corner {
+		position: absolute;
+	}
+	.corner-tl {
+		top: max(0.25rem, env(safe-area-inset-top));
+		left: max(0.25rem, env(safe-area-inset-left));
+		max-width: min(62vw, 24rem);
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+	}
+	.corner-tr {
+		top: max(0.75rem, env(safe-area-inset-top));
+		right: max(0.75rem, env(safe-area-inset-right));
+		max-width: min(46vw, 15rem);
+	}
+	/*
+	 * The action panel lives bottom-RIGHT, not bottom-centre.
+	 *
+	 * Centred, it sat directly on top of the player's fan — you could not read the
+	 * cards you were being asked to bid on. The hand occupies the centre column,
+	 * so the chrome gets the corner.
+	 */
+	.corner-bc {
+		bottom: max(0.75rem, env(safe-area-inset-bottom));
+		right: max(0.75rem, env(safe-area-inset-right));
+		/*
+		 * Wide enough that "Pass" / "Order it up" / "Order it up, alone" wrap to
+		 * two rows, not three — three rows in a narrower column pushed this
+		 * panel's top edge up into the human's own hand at 390×844 (verified
+		 * against a screenshot, not guessed). Centred keeps it clear of the
+		 * felt's only other bottom-band occupant, seat 0's own nameplate, which
+		 * sits well above this panel's band at every breakpoint.
+		 */
+		max-width: min(92vw, 26rem);
+		width: min(92vw, 26rem);
+		display: flex;
+		flex-direction: column;
+		/*
+		 * `stretch`, not `center`: a shrink-to-fit flex item containing its own
+		 * wrapping row (the bid buttons) sizes to that row's *min-content* —
+		 * one button wide — which then wraps every button onto its own line
+		 * and (again) pushes this panel's top edge up into the seat 0 nameplate
+		 * band above it. Stretching the panel to the container's actual width
+		 * lets "Pass"/"Order it up" share a row as intended.
+		 */
+		align-items: stretch;
+		gap: 0.5rem;
+	}
+	.corner-bc .err {
+		margin: 0;
+		text-align: center;
 	}
 
 	.a11y-hand {

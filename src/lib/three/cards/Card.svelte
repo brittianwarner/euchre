@@ -63,20 +63,12 @@
 	const face = $derived(faceUp && id !== null ? faceTexture(id, fourColor) : null);
 	const back = $derived(backTexture());
 
-	$effect(() => {
-		if (faceUp) {
-			console.log(
-				'[CARD DEBUG] id=',
-				JSON.stringify(id),
-				'faceUp=',
-				faceUp,
-				'face=',
-				face ? 'CanvasTexture(' + face.uuid.slice(0, 8) + ')' : null,
-				'face.image=',
-				face?.image ? `${face.image.width}x${face.image.height}` : null
-			);
-		}
-	});
+	/**
+	 * What the front mesh's material shows: the face when face-up and known,
+	 * the back otherwise (face-down, or face-up but the id/texture isn't
+	 * available yet — matching the pre-existing fallback semantics).
+	 */
+	const frontMap = $derived(faceUp && face !== null ? face : back);
 
 	// Highlight lifts the card toward the viewer rather than scaling it, so a
 	// fanned hand keeps its spacing and nothing jumps under the pointer.
@@ -107,68 +99,71 @@
 	>
 		<T.PlaneGeometry args={[width, height]} />
 		<!--
-			`{#key}` rebuilds the material whenever the texture identity changes.
+			One persistent `MeshStandardMaterial`, never destroyed and recreated.
 
-			This is load-bearing, not defensive. A card's face texture is only known
-			after the first server `sync`, so on the first paint `face` is null and the
-			material is created with `map: null`. three.js compiles the shader for the
-			material it was given; assigning `.map` afterwards does NOT recompile it
-			unless `needsUpdate` is set, so the card renders as a blank white quad
-			forever. Card BACKS never showed this because `backTexture()` resolves
-			synchronously on first render, which is exactly why the bug looked like
-			"faces are broken" rather than "late-arriving textures are broken".
+			This used to be a `{#key}` block that rebuilt the material whenever the
+			texture identity changed, on the theory that three.js compiles the
+			shader for the material it is given and won't notice a later `.map`
+			assignment. That is not what actually caused the blank card: three.js's
+			own program-cache key already accounts for whether `map` is set, so it
+			recompiles on the next render regardless. What the rebuild *did* cause is
+			worse — a genuine race. Destroying the old `<T.MeshStandardMaterial>`
+			and mounting a new one means Threlte has to run a fresh
+			attach-to-parent-mesh effect before three.js has anything to render for
+			that mesh; on-demand rendering (`renderMode="on-demand"`) can and does
+			paint a real frame in the gap where the mesh's `.material` is stale or
+			absent, and if that happens to be the last frame rendered before the
+			frame loop goes idle again, the card is stuck showing whatever
+			three.js's default (a plain white `MeshBasicMaterial`) looks like —
+			forever, since nothing re-invalidates on its own afterward. This was
+			verified directly: instrumented logging showed the bound mesh's
+			`material.map` still `undefined` several real rendered frames after the
+			id resolved to its final value, on the up-card specifically (id arrives
+			late, after the initial `null` paint — hand cards are dealt with their
+			ids already known, which is why they never showed it).
+
+			The fix is to never destroy the material at all. `map` (and every other
+			prop below) is simply reactive: `frontMap`/`back` change, Threlte's
+			ordinary prop-diffing (`useProps`) sets `.map` on the *same* material
+			instance and calls `invalidate()`, and there is no attach step left to
+			race because the material was attached once, at mount, and never torn
+			down. `alphaTest` drops to `0` when there is no map at all (the
+			both-unavailable edge case, effectively SSR/first-paint-before-any-canvas
+			-only) so the plain fallback `color` shows solid instead of being
+			discarded — the same "never invisible" guarantee the old `{:else}`
+			branch gave, without needing a third material variant to do it.
 		-->
-		{#key faceUp && face !== null ? face : back}
-			{#if faceUp && face !== null}
-				<T.MeshStandardMaterial
-					map={face}
-					transparent
-					alphaTest={0.5}
-					side={DoubleSide}
-					color={tint}
-					roughness={0.62}
-					metalness={0}
-				/>
-			{:else if back !== null}
-				<T.MeshStandardMaterial
-					map={back}
-					transparent
-					alphaTest={0.5}
-					side={DoubleSide}
-					color={tint}
-					roughness={0.62}
-					metalness={0}
-				/>
-			{:else}
-				<!--
-					Both textures unavailable. A mesh with NO material is not invisible —
-					three.js substitutes a default white MeshBasicMaterial, which is
-					exactly the blank white card this used to show. Rendering felt-green
-					here means a texture failure degrades to something that disappears
-					into the table instead of shouting at the player.
-				-->
-				<T.MeshStandardMaterial color="#1d5b3a" side={DoubleSide} roughness={0.9} />
-			{/if}
-		{/key}
+		<T.MeshStandardMaterial
+			map={frontMap}
+			transparent
+			alphaTest={frontMap !== null ? 0.5 : 0}
+			side={DoubleSide}
+			color={frontMap !== null ? tint : '#1d5b3a'}
+			roughness={0.62}
+			metalness={0}
+		/>
 	</T.Mesh>
 
 	<!--
 		The reverse. Offset by a hair so the two quads never z-fight, and rotated a
-		half turn so the art is the right way up when the card is flipped.
+		half turn so the art is the right way up when the card is flipped. Only
+		meaningful once the card is genuinely showing its face (not the
+		face-down-fallback case, where the front mesh is already displaying the
+		back and a second back-only mesh behind it would be redundant) — but it
+		mounts once and stays mounted for as long as that stays true, same
+		persistent-material reasoning as the front mesh above.
 	-->
-	{#if faceUp && face !== null && back !== null}
+	{#if faceUp && face !== null}
 		<T.Mesh position={[0, 0, -0.002]} rotation={[0, Math.PI, 0]} castShadow>
 			<T.PlaneGeometry args={[width, height]} />
-			{#key back}
-				<T.MeshStandardMaterial
-					map={back}
-					transparent
-					alphaTest={0.5}
-					color={tint}
-					roughness={0.62}
-					metalness={0}
-				/>
-			{/key}
+			<T.MeshStandardMaterial
+				map={back}
+				transparent
+				alphaTest={back !== null ? 0.5 : 0}
+				color={back !== null ? tint : '#1d5b3a'}
+				roughness={0.62}
+				metalness={0}
+			/>
 		</T.Mesh>
 	{/if}
 </T.Group>

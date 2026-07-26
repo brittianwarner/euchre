@@ -86,7 +86,6 @@
 	{/each}
 
 	{#if stage === 'upcard'}
-		{@const _dbg = console.log('[KITTY DEBUG] stage=upcard upCard=', JSON.stringify(upCard), 'typeof', typeof upCard)}
 		<Card
 			id={upCard}
 			faceUp

@@ -6,6 +6,11 @@
   Both signals are DOM, on top of the canvas, so they read at any zoom level
   and are never the only channel (color is never load-bearing here — the
   turn chip carries a dot *and* the word "turn"; the illegal notice is text).
+
+  Positioning is the caller's job: this renders as a plain flow block (no
+  self-positioning) so the composing page can stack it with the bid/discard
+  panels in one screen-edge corner without the two ever fighting over the
+  same bottom-centre spot — see `+page.svelte`'s `.hud-br` column.
 -->
 <script lang="ts">
 	import type { PublicGameView } from '$lib/protocol';
@@ -35,16 +40,11 @@
 
 <style>
 	.status-rail {
-		position: absolute;
-		bottom: calc(1rem + env(safe-area-inset-bottom));
-		left: 50%;
-		transform: translateX(-50%);
 		display: flex;
 		flex-direction: column;
-		align-items: center;
+		align-items: flex-start;
 		gap: 0.5rem;
 		pointer-events: none;
-		z-index: 2;
 	}
 	.turn-chip {
 		margin: 0;
@@ -84,7 +84,7 @@
 	}
 	.illegal-toast {
 		margin: 0;
-		max-width: min(90vw, 26rem);
+		max-width: 100%;
 		padding: 0.55rem 0.9rem;
 		border-radius: 0.5rem;
 		background: rgba(74, 32, 24, 0.92);

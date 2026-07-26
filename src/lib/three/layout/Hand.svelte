@@ -7,7 +7,27 @@
 
   LEGIBILITY IS THE POINT: this is the one fan on the table someone is actually
   reading, so it reclines toward the camera (`reclineDeg`) instead of lying
-  flat, and its cards render noticeably larger than `OpponentHand.svelte`'s.
+  flat, and its cards render noticeably larger than `OpponentHand.svelte`'s —
+  large enough that a player reads their own five cards at a glance, without
+  leaning toward the screen.
+
+  `cardHeight`/`overlap` default to a size read from the live canvas aspect
+  (via `useThrelte()`, the same signal `CameraRig` frames from), not one fixed
+  constant, because "big" and "stays inside the frame" pull against each other
+  differently per breakpoint:
+
+    - Wide landscape (a laptop — the primary target) has a wide horizontal FOV
+      at the hand's depth relative to its ~13 deg vertical offset from the
+      camera axis, so cards can render large with lots of margin to spare.
+    - A portrait phone gets its horizontal FOV *from* a fixed vertical FOV
+      through a narrow aspect ratio, so the same generous size runs the fan
+      past the left/right frame edges — verified by rendering it and looking,
+      not by guessing. Portrait's size is the largest that still clears the
+      dealer's 6-card discard fan with margin at that breakpoint's actual
+      camera geometry (see `CameraRig.svelte`).
+
+  An explicit `cardHeight`/`overlap` prop still wins over the responsive
+  default — this is a caller override, not a replacement for one.
 
   This component decides nothing about legality. `legal` (straight from
   `PublicGameView.legal`) is read only to compute which `CardId`s are currently
@@ -15,9 +35,10 @@
   renders `dimmed` and, if tapped, fires `onillegal` instead of `onplay`.
 -->
 <script lang="ts">
-	import { T } from '@threlte/core';
+	import { T, useThrelte } from '@threlte/core';
 	import Card from '$lib/three/cards/Card.svelte';
 	import { CARD_ASPECT, fanPositions } from './layout';
+	import { isNarrowLandscape, isPortrait } from '$lib/three/scene/breakpoints';
 	import type { CardId, LegalMove } from '$lib/euchre';
 
 	interface Props {
@@ -26,9 +47,9 @@
 		/** `view.legal` — used only to derive which of `cards` are currently playable/discardable. */
 		legal: readonly LegalMove[];
 		fourColor?: boolean;
-		/** World-unit card height; width follows the poker aspect ratio. */
+		/** World-unit card height; width follows the poker aspect ratio. Defaults to a breakpoint-responsive size — see module doc. */
 		cardHeight?: number;
-		/** `0..1`, the fraction of a card's width its neighbour covers. */
+		/** `0..1`, the fraction of a card's width its neighbour covers. Defaults to a breakpoint-responsive size — see module doc. */
 		overlap?: number;
 		/** Degrees each end card tilts from the fan's centre. */
 		maxTiltDeg?: number;
@@ -49,8 +70,8 @@
 		cards,
 		legal,
 		fourColor = false,
-		cardHeight = 0.135,
-		overlap = 0.55,
+		cardHeight: cardHeightProp,
+		overlap: overlapProp,
 		maxTiltDeg = 10,
 		archLift = 0.04,
 		/**
@@ -68,6 +89,28 @@
 		onillegal,
 		onhover
 	}: Props = $props();
+
+	// Same live-aspect signal `CameraRig` frames from — see that file for the
+	// breakpoint thresholds these two share.
+	const { size } = useThrelte();
+	const aspect = $derived($size.width / Math.max(1, $size.height));
+	const portrait = $derived(isPortrait(aspect));
+	const narrow = $derived(isNarrowLandscape(aspect));
+
+	/**
+	 * Sized (and margin-checked against the camera's actual FOV/distance at
+	 * each breakpoint, worst case the dealer's 6-card discard fan) so the fan
+	 * never touches the frustum's edges — see module doc.
+	 */
+	// Sized against SEAT_RADIUS (0.3 m). At 0.25 the cards were taller than the
+	// distance from table centre to the seat and spilled past the bottom of the
+	// frame. These read large and clear while staying fully inside the camera's
+	// 21 deg half-FOV, including the lower edge once the fan is reclined.
+	const baseCardHeight = $derived(portrait ? 0.15 : narrow ? 0.165 : 0.185);
+	const baseOverlap = $derived(portrait ? 0.62 : 0.6);
+
+	const cardHeight = $derived(cardHeightProp ?? baseCardHeight);
+	const overlap = $derived(overlapProp ?? baseOverlap);
 
 	/** `LegalMove.move` carries a `card` only for `play` and `discard` — the two shapes this hand ever offers. */
 	const legalIds = $derived(
@@ -101,7 +144,21 @@
 	}
 </script>
 
-<T.Group>
+<!--
+	Pulled well in from the seat anchor toward the table centre.
+
+	Note the sign: each seat group is rotated so its local +Z faces the middle of
+	the table, so moving "in" is POSITIVE z. Negative pushes the fan out over the
+	rail and off the bottom of the screen.
+
+	The anchor marks where a player SITS; their cards rest on the felt in front of
+	them, not on the rail. Two things follow. The fan stops hugging the bottom of
+	the frame, where it was being clipped, and it moves into the large empty region
+	of felt the camera was otherwise wasting. It also vacates the bottom strip of
+	the screen entirely, so the action panel has somewhere to live that is not on
+	top of the cards the player is trying to read.
+-->
+<T.Group position={[0, 0, 0.13]}>
 	{#each cards as cardId, i (cardId)}
 		{@const pose = poses[i]}
 		<Card
