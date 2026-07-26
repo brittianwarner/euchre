@@ -115,7 +115,7 @@ export type ProviderOptionsShape = {
 		readonly effort?: 'low' | 'medium' | 'high';
 	};
 	readonly openrouter?: {
-		readonly reasoning?: { readonly enabled: boolean; readonly effort?: 'low' | 'medium' | 'high' };
+		readonly reasoning?: { readonly enabled?: boolean; readonly effort?: 'low' | 'medium' | 'high' };
 	};
 };
 

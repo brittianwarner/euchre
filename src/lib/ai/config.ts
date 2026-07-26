@@ -18,14 +18,14 @@ import type { DecisionBudget } from './types';
  * `docs/03-AI-AGENTS.md` §4 (per-decision budgets) and §7 (the ladder).
  */
 export const DEFAULT_DECISION_BUDGET: DecisionBudget = {
-	// Measured against gemini-3.6-flash on OpenRouter: 2.9-3.2 s per decision,
+	// Measured against gemini-3.6-flash on OpenRouter: 2.9-3.2 s per decision at default reasoning, ~1.6 s at effort 'low',
 	// because mandatory reasoning runs before the object is emitted. The previous
 	// 2200 ms cap aborted every real call, so the ladder fell through to the
 	// heuristic 100% of the time while looking healthy. Headroom over the measured
 	// p50 is deliberate: an abort costs the whole LLM turn, whereas waiting costs
 	// tempo the think-floor is already absorbing.
-	firstAttemptMs: 7000,
-	escalationMs: 5000,
+	firstAttemptMs: 4500,
+	escalationMs: 3000,
 	reserveMs: 400,
 	minAttemptMs: 600,
 	banterMs: 4000,
