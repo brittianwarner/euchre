@@ -20,6 +20,9 @@
 	import ScoreBoard from '$lib/ui/ScoreBoard.svelte';
 	import TrickView from '$lib/ui/TrickView.svelte';
 	import TableStatusBar from '$lib/ui/TableStatusBar.svelte';
+
+	/** Compass names for the spoken log. Seat 0 is the player. */
+	const SEAT_NAME = ['You', 'West', 'North', 'East'] as const;
 	import type { CardId, LegalMoveId, PublicGameView, SyncEvent } from '$lib/protocol';
 
 	let { data } = $props();
@@ -38,6 +41,12 @@
 	);
 
 	// onEvent must be registered during component init — not inside $effect.
+	// The table speaks: engine-authored calls plus screened banter. Registered
+	// here beside `sync` because onEvent must run during component init.
+	table.onEvent('chat', (payload: { msgId: string; seat: number; kind: string; text: string }) => {
+		store.applyChat(payload);
+	});
+
 	table.onEvent('sync', (payload: SyncEvent) => {
 		store.applySync(payload);
 	});
@@ -194,6 +203,21 @@
 				<TrickView view={displayView} />
 			</div>
 
+			<!--
+				What the table says out loud. Bottom-LEFT, opposite the action panel,
+				so the two never collide and neither sits over the fan.
+			-->
+			{#if store.chat.length > 0}
+				<div class="corner corner-bl" aria-live="polite" aria-label="Table talk">
+					{#each store.chat as line (line.msgId)}
+						<p class="said" class:banter={line.kind === 'banter'}>
+							<span class="who">{SEAT_NAME[line.seat] ?? 'Table'}</span>
+							{line.text}
+						</p>
+					{/each}
+				</div>
+			{/if}
+
 			<div class="corner corner-bc">
 				{#if store.error}
 					<p class="err" role="alert">{store.error}</p>
@@ -273,6 +297,36 @@
 	 * cards you were being asked to bid on. The hand occupies the centre column,
 	 * so the chrome gets the corner.
 	 */
+	.corner-bl {
+		bottom: max(0.75rem, env(safe-area-inset-bottom));
+		left: max(0.75rem, env(safe-area-inset-left));
+		max-width: min(22rem, 32vw);
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+	}
+
+	.said {
+		margin: 0;
+		font-size: 0.95rem;
+		line-height: 1.35;
+		color: #e8e2d2;
+		text-shadow: 0 1px 3px rgb(0 0 0 / 0.8);
+	}
+
+	/* Persona chatter reads quieter than a real call, so a trump call never gets
+	   lost in banter. */
+	.said.banter {
+		opacity: 0.72;
+		font-style: italic;
+	}
+
+	.said .who {
+		font-weight: 700;
+		color: #d8b464;
+		margin-right: 0.3rem;
+	}
+
 	.corner-bc {
 		bottom: max(0.75rem, env(safe-area-inset-bottom));
 		right: max(0.75rem, env(safe-area-inset-right));

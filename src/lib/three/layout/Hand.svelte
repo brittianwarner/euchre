@@ -77,13 +77,23 @@
 		/**
 		 * Recline the fan toward the viewer.
 		 *
-		 * Flat on the felt (0) the cards are edge-on from the camera's ~39 deg
-		 * pitch and unreadable — you cannot play a hand you cannot see. The
-		 * hand-to-camera vector is (0, 0.79, 0.61), so ~38 deg points the cards
-		 * exactly at the lens; 34 keeps them legible while still reading as cards
-		 * resting on a table rather than billboards floating above it.
+		 * Flat on the felt (0) the cards are edge-on and unreadable — you cannot
+		 * play a hand you cannot see.
+		 *
+		 * NOTE THE SIGN. Seat 0's group is rotated 180 deg about Y (which is why
+		 * moving the fan "toward the table centre" is +Z in seat-local space), so a
+		 * POSITIVE recline tips the cards AWAY from the viewer. At +45 they went
+		 * exactly edge-on and vanished to a hairline.
+		 *
+		 * Geometry: a plane's normal is +Z; rotating theta about X sends it to
+		 * (0, -sin theta, cos theta), and rotX = -90 + recline. The fan sits at
+		 * z = 0.17 (seat radius 0.3 pulled in 0.13) with the camera at
+		 * (0, 0.62, 0.78), so the hand-to-camera direction is (0, 0.712, 0.700).
+		 * recline = -45 gives a seat-local normal of (0, 0.707, -0.707), which the
+		 * 180 deg seat rotation maps to (0, 0.707, 0.707) in world space — square
+		 * to the camera. If you move the camera, recompute; do not eyeball it.
 		 */
-		reclineDeg = 34,
+		reclineDeg = -45,
 		disabled = false,
 		onplay,
 		onillegal,
@@ -106,7 +116,7 @@
 	// distance from table centre to the seat and spilled past the bottom of the
 	// frame. These read large and clear while staying fully inside the camera's
 	// 21 deg half-FOV, including the lower edge once the fan is reclined.
-	const baseCardHeight = $derived(portrait ? 0.15 : narrow ? 0.165 : 0.185);
+	const baseCardHeight = $derived(portrait ? 0.165 : narrow ? 0.185 : 0.205);
 	const baseOverlap = $derived(portrait ? 0.62 : 0.6);
 
 	const cardHeight = $derived(cardHeightProp ?? baseCardHeight);

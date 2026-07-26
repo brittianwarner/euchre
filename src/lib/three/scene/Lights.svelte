@@ -55,11 +55,15 @@
 	}
 
 	let {
-		fillIntensity = 0.55,
+		// Raised from 0.55, and the key pulled toward the player side, because the
+		// player's fan is reclined toward the camera and therefore turned away from
+		// a purely overhead key — at the old values the cards read grey instead of
+		// cream while the flat cards on the felt looked fine.
+		fillIntensity = 0.95,
 		fillColor = '#e8dcc8',
 		keyIntensity = 2.1,
 		keyColor = '#fff2df',
-		keyPosition = [1.2, 2.4, 1.0],
+		keyPosition = [1.0, 2.0, 2.2],
 		rimIntensity = 0.32,
 		rimColor = '#8fb0d8',
 		rimPosition = [-1.4, 1.6, -1.2],

@@ -37,6 +37,27 @@ export class TableStore {
 		this.status = handle.isConnected ? 'ready' : 'connecting';
 	}
 
+	/**
+	 * The table's spoken log — what a real table would say out loud.
+	 *
+	 * These are engine-authored lines ("Order it up.", "I assist.", "March!",
+	 * "Euchre!") plus screened persona banter. Bounded, because a long match
+	 * would otherwise grow this without limit.
+	 *
+	 * Deliberately NOT the AI's decision rationale. A rationale is generated from
+	 * that seat's full view including its own cards — one real example was
+	 * "calling next from first seat with two high trump, a side ace" — so
+	 * broadcasting it would hand every player the caller's holdings. Table talk is
+	 * public by construction; reasoning is not.
+	 */
+	chat = $state<{ msgId: string; seat: number; kind: string; text: string }[]>([]);
+
+	/** Append one spoken line, keeping only the most recent few. */
+	applyChat(payload: { msgId: string; seat: number; kind: string; text: string }): void {
+		if (this.chat.some((m) => m.msgId === payload.msgId)) return; // redelivery
+		this.chat = [...this.chat, payload].slice(-6);
+	}
+
 	/** Apply a `sync` event from the actor (called from page-level onEvent). */
 	applySync(payload: SyncEvent): void {
 		this.view = payload.view;
