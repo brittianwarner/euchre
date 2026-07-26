@@ -1,0 +1,105 @@
+/**
+ * Client-side table view model.
+ *
+ * Owns the public `PublicGameView` the UI renders, applies `sync` events, and
+ * submits moves through the Rivet actor handle.
+ */
+
+import type { LegalMoveId, PublicGameView, SyncEvent } from '$lib/protocol';
+
+/** Minimal actor surface the play page injects (proxied Rivet methods). */
+export interface TableActorHandle {
+	readonly isConnected: boolean;
+	readonly lastActionError?: unknown;
+	snapshot(): Promise<PublicGameView | undefined>;
+	submitMove(request: {
+		moveId: LegalMoveId;
+		turnId: string;
+		clientMoveId: string;
+	}): Promise<{ ok: true; v: number } | { ok: false; code?: string } | undefined>;
+}
+
+/**
+ * Reactive store for one connected table.
+ * Sync is applied from the page via {@link applySync} (onEvent at component init).
+ */
+export class TableStore {
+	view = $state.raw<PublicGameView | null>(null);
+	status = $state<'idle' | 'connecting' | 'ready' | 'error'>('idle');
+	error = $state<string | null>(null);
+	submitting = $state(false);
+
+	#handle: TableActorHandle | null = null;
+
+	/** Remember the actor handle for snapshot / submit. */
+	bind(handle: TableActorHandle): void {
+		this.#handle = handle;
+		this.status = handle.isConnected ? 'ready' : 'connecting';
+	}
+
+	/** Apply a `sync` event from the actor (called from page-level onEvent). */
+	applySync(payload: SyncEvent): void {
+		this.view = payload.view;
+		this.status = 'ready';
+		this.error = null;
+	}
+
+	/** Hard resync after connect — snap, do not animate. */
+	async resync(): Promise<void> {
+		const handle = this.#handle;
+		if (!handle?.isConnected) return;
+		try {
+			const snap = await Promise.race([
+				handle.snapshot(),
+				new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), 4000))
+			]);
+			if (snap) {
+				this.view = snap;
+				this.status = 'ready';
+			}
+		} catch (err) {
+			this.error = `Resync failed: ${String(err)}`;
+		}
+	}
+
+	/** Submit a legal move id from the current view. */
+	async play(moveId: LegalMoveId): Promise<boolean> {
+		const handle = this.#handle;
+		const view = this.view;
+		if (!handle || !view || this.submitting) return false;
+		if (!view.legal.some((m) => m.id === moveId)) {
+			this.error = 'That move is not legal right now.';
+			return false;
+		}
+
+		this.submitting = true;
+		this.error = null;
+		const clientMoveId = crypto.randomUUID();
+		try {
+			const ack = await handle.submitMove({
+				moveId,
+				turnId: view.turnId,
+				clientMoveId
+			});
+			if (!ack || ack.ok === false) {
+				const detail =
+					handle.lastActionError != null
+						? String(handle.lastActionError)
+						: ack && 'code' in ack
+							? String(ack.code)
+							: 'no ack';
+				this.error = `Move rejected (${detail})`;
+				this.submitting = false;
+				await this.resync();
+				return false;
+			}
+			return true;
+		} catch (err) {
+			console.error('[table-store] play error', err);
+			this.error = `Move failed: ${String(err)}`;
+			return false;
+		} finally {
+			this.submitting = false;
+		}
+	}
+}

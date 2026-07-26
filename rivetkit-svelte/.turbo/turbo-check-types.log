@@ -1,0 +1,12 @@
+$ svelte-check --tsconfig ./tsconfig.json
+Loading svelte-check in workspace: /Users/brittianwarner/goods/layerr/packages/rivetkit-svelte
+Getting Svelte diagnostics...
+
+/Users/brittianwarner/goods/layerr/packages/rivetkit-svelte/tsconfig.json:1:1
+Warn: File '/Users/brittianwarner/goods/layerr/packages/rivetkit-svelte/src/check-types/noop.svelte' is not under 'rootDir' '/Users/brittianwarner/goods/layerr/packages/rivetkit-svelte/src/lib'. 'rootDir' is expected to contain all source files.
+  The file is in the program because:
+    Matched by include pattern 'src/**/*.svelte' in '/Users/brittianwarner/goods/layerr/packages/rivetkit-svelte/tsconfig.json' 
+
+
+====================================
+svelte-check found 0 errors and 1 warning in 1 file
