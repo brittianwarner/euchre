@@ -40,7 +40,11 @@
 		onillegal?: (cardId: CardId) => void;
 	}
 
-	let { view, fourColor = true, disabled = false, onplay, onillegal }: Props = $props();
+	// Classic two-colour is the default deck. The four-colour deck is an
+	// accessibility option a player opts into, not something to impose on
+	// everyone — a lifelong euchre player opening this should see the deck they
+	// have played with their whole life.
+	let { view, fourColor = false, disabled = false, onplay, onillegal }: Props = $props();
 
 	// Clamped device pixel ratio: sharp on retina without paying for a 3x
 	// buffer on a phone that reports one. `window` is safe unconditionally —

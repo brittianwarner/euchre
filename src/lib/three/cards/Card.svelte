@@ -124,6 +124,15 @@
 					roughness={0.62}
 					metalness={0}
 				/>
+			{:else}
+				<!--
+					Both textures unavailable. A mesh with NO material is not invisible —
+					three.js substitutes a default white MeshBasicMaterial, which is
+					exactly the blank white card this used to show. Rendering felt-green
+					here means a texture failure degrades to something that disappears
+					into the table instead of shouting at the player.
+				-->
+				<T.MeshStandardMaterial color="#1d5b3a" side={DoubleSide} roughness={0.9} />
 			{/if}
 		{/key}
 	</T.Mesh>

@@ -79,6 +79,30 @@ export function backTexture(hue?: string): CanvasTexture | null {
 }
 
 /**
+ * Build every texture the game can ask for, once.
+ *
+ * Lazy creation during render is what produced the intermittent blank card: a
+ * texture is only cached on success, so any frame where `getContext('2d')`
+ * returned null left `faceTexture()` returning null again next frame. Warming
+ * the whole 24-card set plus the back at scene mount makes every later call a
+ * pure cache hit, so a card's appearance no longer depends on when it happens to
+ * be rendered.
+ *
+ * Cheap enough to be unconditional: 25 canvases at 500x700, drawn once.
+ */
+export function warmCardTextures(fourColor = false): number {
+	if (typeof document === 'undefined') return 0;
+	let n = 0;
+	for (const suit of ['S', 'H', 'D', 'C'] as const) {
+		for (const rank of ['9', 'T', 'J', 'Q', 'K', 'A'] as const) {
+			if (faceTexture(`${rank}${suit}` as CardFaceId, fourColor) !== null) n++;
+		}
+	}
+	if (backTexture() !== null) n++;
+	return n;
+}
+
+/**
  * Release every cached texture.
  *
  * Only needed when tearing down the whole 3D layer; individual cards must never

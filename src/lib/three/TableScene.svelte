@@ -23,6 +23,7 @@
 	import { HTML, interactivity } from '@threlte/extras';
 	import { Table, Lights, CameraRig, SeatAnchors } from '$lib/three/scene';
 	import { Hand, OpponentHand, TrickPile, Kitty, type KittyStage } from '$lib/three/layout';
+	import { warmCardTextures } from '$lib/three/cards/cardTexture';
 	import type { CardId, PublicGameView, Seat, Suit } from '$lib/euchre';
 
 	interface Props {
@@ -56,6 +57,13 @@
 	// toward North so the two zones never overlap (trick radius defaults to
 	// 0.055 m; 0.15 m of clearance is generous).
 	const KITTY_POSITION: readonly [number, number, number] = [0, 0, -0.15];
+
+	// Build all 25 card textures up front so no card's appearance depends on the
+	// frame it first renders in. See `warmCardTextures` for why this is not
+	// premature optimisation but a correctness fix.
+	$effect(() => {
+		warmCardTextures(fourColor);
+	});
 </script>
 
 <CameraRig />
