@@ -24,7 +24,7 @@ export const DEFAULT_DECISION_BUDGET: DecisionBudget = {
 	// heuristic 100% of the time while looking healthy. Headroom over the measured
 	// p50 is deliberate: an abort costs the whole LLM turn, whereas waiting costs
 	// tempo the think-floor is already absorbing.
-	firstAttemptMs: 4500,
+	firstAttemptMs: 6500,
 	escalationMs: 3000,
 	reserveMs: 400,
 	minAttemptMs: 600,
