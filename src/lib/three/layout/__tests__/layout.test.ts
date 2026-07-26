@@ -250,7 +250,9 @@ describe('trickCardPose — four seat orientations', () => {
 			expect(Math.hypot(x, z)).toBeCloseTo(radius, 9);
 		}
 		// all four x/z pairs are distinct
-		const seen = new Set(poses.map((p) => `${p.position[0].toFixed(6)},${p.position[2].toFixed(6)}`));
+		const seen = new Set(
+			poses.map((p) => `${p.position[0].toFixed(6)},${p.position[2].toFixed(6)}`)
+		);
 		expect(seen.size).toBe(4);
 	});
 

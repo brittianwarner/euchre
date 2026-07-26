@@ -59,10 +59,16 @@ import type { Seat } from '$lib/euchre';
 
 export { CARD_ASPECT };
 
-/** A pose in whichever local space its producing function documents. Matches `Card.svelte`'s own prop shapes 1:1. */
+/**
+ * A pose in whichever local space its producing function documents. Matches
+ * `Card.svelte`'s own `position`/`rotation` prop types exactly — including
+ * mutability: `Card.svelte` declares them as plain (non-`readonly`) tuples, so
+ * this does too, letting every pose below pass straight through as a prop
+ * with no cast or copy at the call site.
+ */
 export interface CardPose {
-	readonly position: readonly [number, number, number];
-	readonly rotation: readonly [number, number, number];
+	readonly position: [number, number, number];
+	readonly rotation: [number, number, number];
 }
 
 const DEG = Math.PI / 180;
@@ -282,7 +288,11 @@ export const DEFAULT_TRICK_OPTIONS: TrickOptions = { radius: 0.055, stackStep: 0
  * direction the card faces, so a card's pose depends on nothing but *who*
  * played it.
  */
-export function trickCardPose(seat: Seat, order: number, options: Partial<TrickOptions> = {}): CardPose {
+export function trickCardPose(
+	seat: Seat,
+	order: number,
+	options: Partial<TrickOptions> = {}
+): CardPose {
 	const opts: TrickOptions = { ...DEFAULT_TRICK_OPTIONS, ...options };
 	const [dx, dz] = SEAT_DIRECTION[seat];
 	return {
@@ -290,3 +300,16 @@ export function trickCardPose(seat: Seat, order: number, options: Partial<TrickO
 		rotation: [-Math.PI / 2, 0, SEAT_FACING_RAD[seat]]
 	};
 }
+
+/* ========================================================================== */
+/* 5. Kitty stage — plain type, kept out of Kitty.svelte                      */
+/* ========================================================================== */
+
+/**
+ * Where bidding stands, as it affects the kitty's rendering. See
+ * `Kitty.svelte`'s doc comment for what each value draws and why this is a
+ * caller-computed summary rather than something inferred from raw view
+ * fields. Declared here (a plain module) rather than inside the component so
+ * that plain `tsc` — not just `svelte-check` — can see it as a named export.
+ */
+export type KittyStage = 'upcard' | 'turnedDown' | 'buried';

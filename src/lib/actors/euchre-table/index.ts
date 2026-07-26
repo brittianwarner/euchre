@@ -112,6 +112,9 @@ import { topMove } from '$lib/ai/heuristic';
 // `aiSeat` owns the LLM call now (`$lib/ai` is its dependency, not this table's);
 // only the create-input shape crosses the boundary, and only as a type.
 import type { AiSeatCreateInput } from '$lib/actors/ai-seat/types';
+// `playerProfile` owns its own SQL and validation; only the envelope shapes for
+// the two queues this table calls cross the boundary, and only as types.
+import type { RecordGameMessage, RecordHandsMessage } from '$lib/actors/player-profile/types';
 import {
 	tableEvents,
 	tableQueues,
@@ -153,6 +156,24 @@ function isLocalDev(): boolean {
 /** Issuer/audience base for JWT verification. */
 function appUrl(): string {
 	return process.env.APP_URL ?? process.env.PUBLIC_APP_URL ?? 'http://localhost:5173';
+}
+
+/**
+ * The deployment-wide secret on actor-to-actor calls into `playerProfile`.
+ *
+ * Distinct from `GameState.internalToken`, which is the *per-match* secret this
+ * table mints in `createState` and hands to its three `aiSeat`s. A profile
+ * outlives every match and cannot know a per-match value, so the token compared
+ * here is the server secret every process reads from the environment. Mirrors
+ * `aiSeat/index.ts`'s `profileInternalToken()` and `player-profile/auth.ts`'s
+ * `internalSecret()` exactly, dev fallback included, because all three sides
+ * must agree on the same value without importing from one another.
+ */
+function profileInternalToken(): string | null {
+	const secret = process.env.EUCHRE_INTERNAL_TOKEN;
+	if (typeof secret === 'string' && secret.length >= 16) return secret;
+	if (isLocalDev()) return 'euchre-dev-insecure-secret';
+	return null;
 }
 
 /* ========================================================================== */
@@ -900,6 +921,16 @@ async function handBoundary(
 }
 
 /**
+ * A handle on this match owner's `playerProfile`, or `null` when there is no
+ * owner (a bare table, or a fixture) — the caller's cue to skip the write
+ * entirely rather than cold-create a profile for nobody.
+ */
+function profileHandle(c: TableCtx): ActorSendHandle | null {
+	if (c.state.ownerUserId === '') return null;
+	return tableClient(c).playerProfile.getOrCreate(['user', c.state.ownerUserId]);
+}
+
+/**
  * Write one hand to `playerProfile`.
  *
  * **Server-only data crosses here and stops there.** `seed` plus `deckOrder` plus
@@ -907,16 +938,49 @@ async function handBoundary(
  * makes a replay possible and exactly why neither may reach a browser. The
  * client-facing row is `MatchSummary`, which structurally has no seed and no deck
  * order.
+ *
+ * Best-effort and non-blocking on failure: a dropped hand journal is a gap in
+ * replay, not a correctness problem for the live match, so it is logged and
+ * skipped rather than retried inline (the run loop must not block on another
+ * actor). `recordMatchIfNeeded`'s own retry schedule is what makes the *match*
+ * row durable; per-hand journalling has no equivalent retry because the match
+ * write at game end still succeeds without it.
  */
 async function recordHand(c: TableCtx, hand: HandState): Promise<void> {
-	// M2: playerProfile is not registered — skip durable journal flush.
-	void c;
-	void hand;
-}
+	const profile = profileHandle(c);
+	const token = profileInternalToken();
+	if (profile === null || token === null) return;
 
-/** M2 stub: never wake an unregistered playerProfile actor. */
-function profileHandle(_c: TableCtx): ActorSendHandle | null {
-	return null;
+	const entry: HandJournalEntry = {
+		matchId: c.state.matchId,
+		handNo: hand.handNo,
+		seed: c.state.game.seed,
+		dealerSeat: hand.dealerSeat,
+		deckOrder: hand.deckOrder,
+		moves: c.state.journal,
+		trump: hand.trump,
+		makerSeat: hand.makerSeat,
+		aloneSeat: hand.aloneSeat,
+		tricksWon: hand.tricksWon,
+		result: hand.result,
+		delta: hand.delta,
+		endedAt: Date.now()
+	};
+
+	const body: RecordHandsMessage = {
+		internalToken: token,
+		matchId: c.state.matchId,
+		hands: [entry]
+	};
+
+	try {
+		await profile.send('recordHands', body);
+	} catch (err) {
+		c.log.warn('recordHand failed; hand journal entry dropped', {
+			handNo: hand.handNo,
+			err: String(err).slice(0, 200)
+		});
+	}
 }
 
 /** Which way the match went, from the human's point of view. */
@@ -962,20 +1026,25 @@ async function recordMatchIfNeeded(c: TableCtx): Promise<void> {
 	};
 
 	const profile = profileHandle(c);
-	if (profile === null) {
-		// M2: mark recorded locally so self-reap / retries do not spin.
+	const token = profileInternalToken();
+	if (profile === null || token === null) {
+		// No owner to record against, or no deployment secret configured: mark
+		// recorded locally so self-reap / retries do not spin forever on a write
+		// that can never succeed.
 		c.state.recordedAt = Date.now();
 		await notifyAiSeats(c, 'gameEnd');
 		await c.saveState({ immediate: true });
 		return;
 	}
 
+	const body: RecordGameMessage = { internalToken: token, record };
+
 	try {
-		await profile.send('recordMatch', record);
+		await profile.send('recordGame', body);
 		c.state.recordedAt = Date.now();
 		await notifyAiSeats(c, 'gameEnd');
 	} catch (err) {
-		c.log.warn('recordMatch failed; will retry', { err: String(err) });
+		c.log.warn('recordGame failed; will retry', { err: String(err) });
 		if (c.state.profileRetryId === null) {
 			c.state.profileRetryId = await c.schedule.after(TEMPO.profileRetryMs, 'flushProfile');
 		}

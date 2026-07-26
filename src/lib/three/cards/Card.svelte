@@ -91,27 +91,41 @@
 		onpointerleave={() => interactive && onhover?.(null)}
 	>
 		<T.PlaneGeometry args={[width, height]} />
-		{#if faceUp && face !== null}
-			<T.MeshStandardMaterial
-				map={face}
-				transparent
-				alphaTest={0.5}
-				side={DoubleSide}
-				color={tint}
-				roughness={0.62}
-				metalness={0}
-			/>
-		{:else if back !== null}
-			<T.MeshStandardMaterial
-				map={back}
-				transparent
-				alphaTest={0.5}
-				side={DoubleSide}
-				color={tint}
-				roughness={0.62}
-				metalness={0}
-			/>
-		{/if}
+		<!--
+			`{#key}` rebuilds the material whenever the texture identity changes.
+
+			This is load-bearing, not defensive. A card's face texture is only known
+			after the first server `sync`, so on the first paint `face` is null and the
+			material is created with `map: null`. three.js compiles the shader for the
+			material it was given; assigning `.map` afterwards does NOT recompile it
+			unless `needsUpdate` is set, so the card renders as a blank white quad
+			forever. Card BACKS never showed this because `backTexture()` resolves
+			synchronously on first render, which is exactly why the bug looked like
+			"faces are broken" rather than "late-arriving textures are broken".
+		-->
+		{#key faceUp && face !== null ? face : back}
+			{#if faceUp && face !== null}
+				<T.MeshStandardMaterial
+					map={face}
+					transparent
+					alphaTest={0.5}
+					side={DoubleSide}
+					color={tint}
+					roughness={0.62}
+					metalness={0}
+				/>
+			{:else if back !== null}
+				<T.MeshStandardMaterial
+					map={back}
+					transparent
+					alphaTest={0.5}
+					side={DoubleSide}
+					color={tint}
+					roughness={0.62}
+					metalness={0}
+				/>
+			{/if}
+		{/key}
 	</T.Mesh>
 
 	<!--
@@ -121,14 +135,16 @@
 	{#if faceUp && face !== null && back !== null}
 		<T.Mesh position={[0, 0, -0.002]} rotation={[0, Math.PI, 0]} castShadow>
 			<T.PlaneGeometry args={[width, height]} />
-			<T.MeshStandardMaterial
-				map={back}
-				transparent
-				alphaTest={0.5}
-				color={tint}
-				roughness={0.62}
-				metalness={0}
-			/>
+			{#key back}
+				<T.MeshStandardMaterial
+					map={back}
+					transparent
+					alphaTest={0.5}
+					color={tint}
+					roughness={0.62}
+					metalness={0}
+				/>
+			{/key}
 		</T.Mesh>
 	{/if}
 </T.Group>
