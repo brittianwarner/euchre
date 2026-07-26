@@ -106,6 +106,8 @@ import {
 // its documented name so this file compiles the moment that module lands.
 import { makeJwks, verifyPlayer, type Jwks } from '$lib/actors/auth/verify';
 import { topMove } from '$lib/ai/heuristic';
+import { decide, modelFactoryFromEnv } from '$lib/ai';
+import type { ModelFactory } from '$lib/ai';
 import {
 	tableEvents,
 	tableQueues,
@@ -599,11 +601,48 @@ async function armHumanLadder(c: TableCtx): Promise<void> {
 /* ========================================================================== */
 
 /**
- * M2: decide inside the table with `topMove` (heuristic), park behind the think
- * floor, then release via `releaseAiMove`. No `aiSeat` actor and no LLM.
+ * The model factory, built once per process from the environment.
  *
- * The later M4 path reintroduces `aiSeat.send('decide', …)` for multi-legal
- * choices; forced (single-legal) stays here either way.
+ * Memoised rather than rebuilt per decision because it is pure configuration —
+ * `createOpenRouter` holds a key and a base URL, no connection and no mutable
+ * state — so a serverless migration that drops the module simply rebuilds it.
+ * `null` (no key configured) is a supported state: every seat then plays the
+ * heuristic and the game is still complete and legal.
+ */
+let cachedFactory: ModelFactory | null | undefined;
+function aiFactory(): ModelFactory | null {
+	if (cachedFactory === undefined) cachedFactory = modelFactoryFromEnv();
+	return cachedFactory;
+}
+
+/**
+ * A stable, per-match fence nonce for the persona prompt.
+ *
+ * Derived from the match id so it survives a restart without being stored, and so
+ * a replay reproduces it. It only has to be unguessable *to the model*, whose
+ * entire view of the world is the prompt it is handed.
+ */
+function fenceNonce(matchId: string): string {
+	let h = 0x811c9dc5;
+	for (let i = 0; i < matchId.length; i++) {
+		h ^= matchId.charCodeAt(i);
+		h = Math.imul(h, 0x01000193) >>> 0;
+	}
+	return h.toString(16).padStart(8, '0') + ((h * 2654435761) >>> 0).toString(16).padStart(8, '0');
+}
+
+/**
+ * Decide an AI seat's move, then park it behind the think floor for
+ * `releaseAiMove`.
+ *
+ * **Ordering is the whole design.** The heuristic answer is parked and the
+ * watchdog armed and persisted *before* the model is called, so a crash, a
+ * serverless migration or a hung upstream mid-inference still leaves a legal move
+ * on disk ready to fire. The LLM then *upgrades* that parked decision if it
+ * answers in time and the turn has not moved on. There is no window in which the
+ * table is waiting on a model with nothing to fall back to.
+ *
+ * A single legal move short-circuits entirely: no prompt, no token, no latency.
  */
 async function dispatchAi(c: TableCtx, seat: Seat): Promise<void> {
 	const game = c.state.game;
@@ -620,24 +659,81 @@ async function dispatchAi(c: TableCtx, seat: Seat): Promise<void> {
 	const revealAt = now + thinkFloorMs(kind, game.turnId);
 	const view = project(game, seat);
 	const forced = legal.length === 1;
-	const moveId = forced
-		? legal[0]!.id
-		: (topMove(view, view.hand, legal) ?? legal[0]!.id);
+	const fallbackId = forced ? legal[0]!.id : (topMove(view, view.hand, legal) ?? legal[0]!.id);
+	const turnId = game.turnId;
 
 	game.pending = {
 		seat,
-		turnId: game.turnId,
+		turnId,
 		requestedAt: now,
 		revealAt,
-		decision: moveId,
+		decision: fallbackId,
 		source: forced ? 'forced' : 'fallback'
 	};
-	// Watchdog still arms so a stuck schedule cannot freeze the match.
-	game.turnDeadlineAt = now + TEMPO.aiHardCapMs;
-	game.watchdogId = await c.schedule.after(TEMPO.aiHardCapMs, 'onAiTimeout', game.turnId, seat);
-	game.revealId = await c.schedule.after(Math.max(0, revealAt - now), 'releaseAiMove', game.turnId);
+	const deadlineAt = now + TEMPO.aiHardCapMs;
+	game.turnDeadlineAt = deadlineAt;
+	game.watchdogId = await c.schedule.after(TEMPO.aiHardCapMs, 'onAiTimeout', turnId, seat);
+	game.revealId = await c.schedule.after(Math.max(0, revealAt - now), 'releaseAiMove', turnId);
 	await c.saveState({ immediate: true });
 	c.broadcast('thinking', { seat, on: true, extended: false });
+
+	// Forced moves are already decided; anything else goes to the model.
+	const factory = aiFactory();
+	if (forced || factory === null) return;
+
+	const assignment = c.state.personas.find((p) => p.seat === seat);
+	if (assignment === undefined) {
+		c.log.warn('no persona for AI seat; keeping heuristic', { seat });
+		return;
+	}
+
+	try {
+		const outcome = await decide(
+			{
+				factory,
+				persona: assignment.persona,
+				dossier: assignment.dossier,
+				nonce: fenceNonce(c.state.matchId),
+				now: () => Date.now()
+			},
+			{
+				internalToken: game.internalToken,
+				gameId: game.gameId,
+				seat,
+				turnId,
+				kind,
+				view,
+				legal,
+				deadlineAt
+			},
+			legal
+		);
+
+		// The turn may have advanced while the model was thinking — a watchdog fire,
+		// a reveal, or an abandon. A late answer is dropped, never applied.
+		const current = c.state.game;
+		const pending = current.pending;
+		if (current.turnId !== turnId || pending === null || pending.turnId !== turnId) {
+			c.log.info('ai answer arrived after the turn moved on; dropped', { seat, turnId });
+			return;
+		}
+		// Re-derive legality rather than trusting the reply: the model chose from a
+		// z.enum of legal ids, but the table is authoritative and cheap to re-check.
+		if (!legalMoves(current, seat).some((m) => m.id === outcome.moveId)) {
+			c.log.warn('ai returned a move outside the legal set; keeping heuristic', {
+				seat,
+				moveId: outcome.moveId
+			});
+			return;
+		}
+
+		pending.decision = outcome.moveId;
+		pending.source = outcome.source;
+		await c.saveState({ immediate: true });
+	} catch (err) {
+		// Never fatal: the heuristic decision is already parked and scheduled.
+		c.log.warn('ai decide failed; heuristic stands', { seat, e: String(err).slice(0, 200) });
+	}
 }
 
 /** M2: no `aiSeat` siblings yet — lifecycle fan-out is a no-op. */
