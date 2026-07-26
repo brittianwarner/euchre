@@ -84,9 +84,12 @@ import {
 	BANTER_MAX_CHARS,
 	PROTOCOL_ERROR_CODES,
 	PROTOCOL_VERSION,
+	type AIDecideRequest,
 	type AIDecision,
 	type AIDecisionKind,
 	type AIDecisionSource,
+	type AiSeatLifecycleKind,
+	type AiSeatLifecycleMessage,
 	type ChatKind,
 	type HandJournalEntry,
 	type LegalMoveId,
@@ -106,8 +109,9 @@ import {
 // its documented name so this file compiles the moment that module lands.
 import { makeJwks, verifyPlayer, type Jwks } from '$lib/actors/auth/verify';
 import { topMove } from '$lib/ai/heuristic';
-import { decide, modelFactoryFromEnv } from '$lib/ai';
-import type { ModelFactory } from '$lib/ai';
+// `aiSeat` owns the LLM call now (`$lib/ai` is its dependency, not this table's);
+// only the create-input shape crosses the boundary, and only as a type.
+import type { AiSeatCreateInput } from '$lib/actors/ai-seat/types';
 import {
 	tableEvents,
 	tableQueues,
@@ -601,21 +605,6 @@ async function armHumanLadder(c: TableCtx): Promise<void> {
 /* ========================================================================== */
 
 /**
- * The model factory, built once per process from the environment.
- *
- * Memoised rather than rebuilt per decision because it is pure configuration —
- * `createOpenRouter` holds a key and a base URL, no connection and no mutable
- * state — so a serverless migration that drops the module simply rebuilds it.
- * `null` (no key configured) is a supported state: every seat then plays the
- * heuristic and the game is still complete and legal.
- */
-let cachedFactory: ModelFactory | null | undefined;
-function aiFactory(): ModelFactory | null {
-	if (cachedFactory === undefined) cachedFactory = modelFactoryFromEnv();
-	return cachedFactory;
-}
-
-/**
  * A stable, per-match fence nonce for the persona prompt.
  *
  * Derived from the match id so it survives a restart without being stored, and so
@@ -631,18 +620,73 @@ function fenceNonce(matchId: string): string {
 	return h.toString(16).padStart(8, '0') + ((h * 2654435761) >>> 0).toString(16).padStart(8, '0');
 }
 
+/** This seat's snapshotted opponent, or `undefined` if the table was never given one. */
+function personaFor(c: TableCtx, seat: Seat): PersonaAssignment | undefined {
+	return c.state.personas.find((p) => p.seat === seat);
+}
+
+/**
+ * What an `aiSeat` needs the first time it is woken for this match.
+ *
+ * Built fresh on every call rather than cached: it is cheap (a handful of field
+ * reads), and `getOrCreate`'s `createWithInput` is only ever consulted on the
+ * message that actually creates the actor, so recomputing it here costs nothing
+ * and keeps this function honest about what a cold-started seat will see.
+ */
+function aiSeatCreateInput(c: TableCtx, seat: Seat, assignment: PersonaAssignment): AiSeatCreateInput {
+	const game = c.state.game;
+	const base: AiSeatCreateInput = {
+		gameId: game.gameId,
+		seat,
+		internalToken: game.internalToken,
+		fenceNonce: fenceNonce(c.state.matchId),
+		persona: assignment.persona,
+		dossier: assignment.dossier,
+		matchId: c.state.matchId
+	};
+	return c.state.ownerUserId === '' ? base : { ...base, profileKey: ['user', c.state.ownerUserId] };
+}
+
+/**
+ * A handle on the actor for one AI chair, or `null` when this table was never
+ * given a persona for it (a bare table, or a fixture) — the caller's cue to fall
+ * back to the heuristic without spending a round trip on an actor that would
+ * only answer "unprovisioned".
+ *
+ * **Both** callers below — `dispatchAi` and `notifyAiSeats` — pass the same
+ * `createWithInput` on every call, not only the first. Whichever of them
+ * actually creates the actor is the one `rivetkit` honours; the other's input is
+ * silently ignored for an actor that already exists. If only one call site
+ * supplied it, a lifecycle message arriving before this match's first decision
+ * (routine: `resetHand` fires at the very first deal, before any seat has acted)
+ * would permanently cold-create an unprovisioned seat that no later
+ * `createWithInput` could ever reach.
+ */
+function aiSeatHandle(c: TableCtx, seat: Seat): ActorSendHandle | null {
+	const assignment = personaFor(c, seat);
+	if (assignment === undefined) return null;
+	const key = ['table', c.state.game.gameId, 'seat', String(seat)];
+	return tableClient(c).aiSeat.getOrCreate(key, {
+		createWithInput: aiSeatCreateInput(c, seat, assignment)
+	});
+}
+
 /**
  * Decide an AI seat's move, then park it behind the think floor for
  * `releaseAiMove`.
  *
  * **Ordering is the whole design.** The heuristic answer is parked and the
- * watchdog armed and persisted *before* the model is called, so a crash, a
+ * watchdog armed and persisted *before* the seat is asked anything, so a crash, a
  * serverless migration or a hung upstream mid-inference still leaves a legal move
- * on disk ready to fire. The LLM then *upgrades* that parked decision if it
- * answers in time and the turn has not moved on. There is no window in which the
- * table is waiting on a model with nothing to fall back to.
+ * on disk ready to fire. `aiSeat`'s reply then *upgrades* that parked decision if
+ * it answers in time and the turn has not moved on — see `onAiDecision`, which is
+ * unchanged by this dispatch living in another actor: it still re-derives
+ * `legalMoves()`, still takes the acting seat from `hand.turnSeat`, and still
+ * drops a reply for a `turnId` that is no longer current. There is no window in
+ * which the table is waiting on a model with nothing to fall back to.
  *
- * A single legal move short-circuits entirely: no prompt, no token, no latency.
+ * A single legal move short-circuits entirely: no request, no seat wake, no
+ * latency.
  */
 async function dispatchAi(c: TableCtx, seat: Seat): Promise<void> {
 	const game = c.state.game;
@@ -674,75 +718,69 @@ async function dispatchAi(c: TableCtx, seat: Seat): Promise<void> {
 	game.turnDeadlineAt = deadlineAt;
 	game.watchdogId = await c.schedule.after(TEMPO.aiHardCapMs, 'onAiTimeout', turnId, seat);
 	game.revealId = await c.schedule.after(Math.max(0, revealAt - now), 'releaseAiMove', turnId);
-	await c.saveState({ immediate: true });
+	await c.saveState({ immediate: true }); // PERSIST — before the seat is asked anything.
 	c.broadcast('thinking', { seat, on: true, extended: false });
 
-	// Forced moves are already decided; anything else goes to the model.
-	const factory = aiFactory();
-	if (forced || factory === null) return;
+	// A forced move is already decided; nothing to ask the seat for.
+	if (forced) return;
 
-	const assignment = c.state.personas.find((p) => p.seat === seat);
-	if (assignment === undefined) {
+	const handle = aiSeatHandle(c, seat);
+	if (handle === null) {
 		c.log.warn('no persona for AI seat; keeping heuristic', { seat });
 		return;
 	}
 
+	const req: AIDecideRequest = {
+		internalToken: game.internalToken,
+		gameId: game.gameId,
+		seat,
+		turnId,
+		kind,
+		view,
+		legal,
+		deadlineAt
+	};
+
 	try {
-		const outcome = await decide(
-			{
-				factory,
-				persona: assignment.persona,
-				dossier: assignment.dossier,
-				nonce: fenceNonce(c.state.matchId),
-				now: () => Date.now()
-			},
-			{
-				internalToken: game.internalToken,
-				gameId: game.gameId,
-				seat,
-				turnId,
-				kind,
-				view,
-				legal,
-				deadlineAt
-			},
-			legal
-		);
-
-		// The turn may have advanced while the model was thinking — a watchdog fire,
-		// a reveal, or an abandon. A late answer is dropped, never applied.
-		const current = c.state.game;
-		const pending = current.pending;
-		if (current.turnId !== turnId || pending === null || pending.turnId !== turnId) {
-			c.log.info('ai answer arrived after the turn moved on; dropped', { seat, turnId });
-			return;
-		}
-		// Re-derive legality rather than trusting the reply: the model chose from a
-		// z.enum of legal ids, but the table is authoritative and cheap to re-check.
-		if (!legalMoves(current, seat).some((m) => m.id === outcome.moveId)) {
-			c.log.warn('ai returned a move outside the legal set; keeping heuristic', {
-				seat,
-				moveId: outcome.moveId
-			});
-			return;
-		}
-
-		pending.decision = outcome.moveId;
-		pending.source = outcome.source;
-		await c.saveState({ immediate: true });
+		// Fire-and-forget: `aiSeat` replies over `aiDecision`, never over this call.
+		// A blocking wait here would park the run loop on the very request the
+		// watchdog above exists to survive.
+		await handle.send('decide', req);
 	} catch (err) {
 		// Never fatal: the heuristic decision is already parked and scheduled.
-		c.log.warn('ai decide failed; heuristic stands', { seat, e: String(err).slice(0, 200) });
+		c.log.warn('dispatch to aiSeat failed; heuristic stands', { seat, e: String(err).slice(0, 200) });
 	}
 }
 
-/** M2: no `aiSeat` siblings yet — lifecycle fan-out is a no-op. */
+/**
+ * Fan out a lifecycle event to every AI chair that has a persona.
+ *
+ * Each seat is notified independently and a failure on one is logged and
+ * skipped rather than aborting the rest — a wedged seat 2 must not stop seat 1
+ * and seat 3 from clearing their own per-hand memory or flushing their own
+ * episodes.
+ */
 async function notifyAiSeats(
-	_c: TableCtx,
-	_kind: 'resetHand' | 'handEnd' | 'gameEnd',
-	_handNo?: number
+	c: TableCtx,
+	kind: AiSeatLifecycleKind,
+	handNo?: number
 ): Promise<void> {
-	// Intentionally empty until M4 registers `aiSeat`.
+	const game = c.state.game;
+	const message: AiSeatLifecycleMessage = {
+		internalToken: game.internalToken,
+		gameId: game.gameId,
+		kind,
+		...(handNo === undefined ? {} : { handNo })
+	};
+	for (const seat of AI_SEATS) {
+		const handle = aiSeatHandle(c, seat);
+		if (handle === null) continue;
+		try {
+			await handle.send(kind, message);
+		} catch (err) {
+			c.log.warn('notifyAiSeats failed', { seat, kind, e: String(err).slice(0, 200) });
+		}
+	}
 }
 
 /* ========================================================================== */

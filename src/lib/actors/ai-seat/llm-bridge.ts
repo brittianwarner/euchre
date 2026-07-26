@@ -11,14 +11,21 @@
  *
  * ## The contract this seat needs
  *
- * `$lib/ai` must export a function that takes a single self-contained
- * {@link LlmDecideInput} and resolves to an {@link LlmDecideResult}, under any of
- * the names in {@link DECIDER_EXPORT_NAMES} (`decideMove` preferred). Optionally a
- * banter writer under {@link BANTER_EXPORT_NAMES}.
+ * `$lib/ai` does not expose a single-argument decider — its real surface is
+ * `callModel(deps, req, candidates, opts)`, one constrained model call, and
+ * `decide(deps, req, candidates, opts)`, a *second*, overlapping ladder that also
+ * handles the forced/no-provider/heuristic rungs. This seat's own ladder
+ * (`./decide.ts`) is the one actually driving rung selection and candidate
+ * narrowing, so what this bridge calls per attempt is the single-call primitive,
+ * `callModel` — never the higher-level `decide`, which would silently re-run its
+ * own escalation and its own forced/heuristic short-circuits underneath this
+ * seat's. {@link resolveDecider} adapts `callModel`'s multi-argument signature
+ * into the single-object {@link LlmDecider} shape the rest of this seat expects,
+ * and is the one function in this file that changes if `$lib/ai`'s exports ever
+ * rename.
  *
  * ```ts
- * export async function decideMove(input: LlmDecideInput): Promise<LlmDecideResult>;
- * export async function generateBanter(input: LlmBanterInput): Promise<string | null>;
+ * export async function callModel(deps, req, candidates, opts): Promise<DecideOutcome>;
  * ```
  *
  * Three properties of the input are load-bearing and are the reason it is shaped
@@ -42,7 +49,7 @@
  * the ladder falls to the deterministic heuristic. The bridge never throws.
  */
 
-import * as aiModule from '$lib/ai';
+import { callModel, modelFactoryFromEnv, type DecideDeps, type DecisionRequest, type ModelFactory } from '$lib/ai';
 import type {
 	AIDecisionKind,
 	LegalMove,
@@ -122,32 +129,15 @@ export type LlmBanterWriter = (input: LlmBanterInput) => Promise<string | null>;
 /* Resolution                                                                  */
 /* ========================================================================== */
 
-/** Export names accepted for the decision function, most preferred first. */
-export const DECIDER_EXPORT_NAMES = [
-	'decideMove',
-	'decideWithLlm',
-	'decide',
-	'callModel',
-	'chooseMove'
-] as const;
-
-/** Export names accepted for the banter writer, most preferred first. */
-export const BANTER_EXPORT_NAMES = [
-	'generateBanter',
-	'generateBanterLine',
-	'writeBanter',
-	'banter'
-] as const;
-
 let deciderOverride: LlmDecider | null = null;
 let banterOverride: LlmBanterWriter | null = null;
 
 /**
- * Inject a decider and/or a banter writer, replacing whatever `$lib/ai` exports.
+ * Inject a decider and/or a banter writer, replacing the real `$lib/ai` adapter.
  *
  * This is the test seam: `MockLanguageModelV4` swaps in wholesale here, so no test
  * in this package touches the network or reads an API key. It is also the escape
- * hatch if the module's export names drift.
+ * hatch if `$lib/ai`'s exports ever rename.
  */
 export function setLlmProvider(p: {
 	readonly decide?: LlmDecider | null;
@@ -157,32 +147,89 @@ export function setLlmProvider(p: {
 	if (p.banter !== undefined) banterOverride = p.banter;
 }
 
-function lookup(names: readonly string[]): unknown {
-	let bag: Record<string, unknown>;
-	try {
-		bag = aiModule as unknown as Record<string, unknown>;
-	} catch {
-		return undefined;
-	}
-	for (const n of names) {
-		const v = bag[n];
-		if (typeof v === 'function') return v;
-	}
-	return undefined;
+/**
+ * The model factory, built once per process from the environment and reused for
+ * every decision this seat ever makes.
+ *
+ * Memoised because it is pure configuration (a base URL and a key, no open
+ * connection), not a per-decision cost, and because a serverless migration that
+ * drops the module simply rebuilds it on next use. `null` (no key configured) is
+ * the supported "play on the heuristic" state, not an error.
+ */
+let cachedFactory: ModelFactory | null | undefined;
+function factory(): ModelFactory | null {
+	if (cachedFactory === undefined) cachedFactory = modelFactoryFromEnv();
+	return cachedFactory;
 }
 
-/** The decision function, or `null` when `$lib/ai` exposes none. Never throws. */
+/**
+ * Adapts one `LlmDecideInput` into the multi-argument shape `callModel` — the
+ * single-model-call primitive, not the higher-level `decide` ladder — actually
+ * takes. `internalToken`, `gameId` and `turnId` are dummy values: `callModel`
+ * reads only `seat`, `kind`, `view` and `ranking` off the request, and this
+ * bridge is not on the wire, so nothing here is ever logged or transmitted.
+ */
+function toDecideDeps(input: LlmDecideInput, model: ModelFactory): DecideDeps {
+	return { factory: model, persona: input.persona, dossier: input.dossier, nonce: input.nonce };
+}
+
+function toDecisionRequest(input: LlmDecideInput): DecisionRequest {
+	return {
+		internalToken: '',
+		gameId: '',
+		seat: input.seat,
+		turnId: '',
+		kind: input.kind,
+		view: input.view,
+		legal: input.candidates,
+		ranking: input.ranking,
+		deadlineAt: input.deadlineAt
+	};
+}
+
+/** The real adapter: one `callModel` attempt per `LlmDecideInput`. */
+async function callModelAdapter(input: LlmDecideInput): Promise<LlmDecideResult> {
+	const model = factory();
+	if (model === null) throw new Error('no model factory configured');
+	const outcome = await callModel(toDecideDeps(input, model), toDecisionRequest(input), input.candidates, {
+		escalate: input.escalate,
+		budgetMs: input.budgetMs
+	});
+	return {
+		moveId: outcome.moveId,
+		rationale: outcome.rationale,
+		confidence: outcome.confidence,
+		usage: {
+			inputTokens: outcome.usage.inputTokens,
+			outputTokens: outcome.usage.outputTokens,
+			cacheReadTokens: outcome.usage.cacheReadTokens
+		}
+	};
+}
+
+/**
+ * The decision function, or `null` when no model provider is configured.
+ *
+ * `null` here is what makes the "no API key" state free: `runLadder` treats it
+ * identically to every other no-network rung and falls straight to the
+ * heuristic without constructing a request or starting a clock.
+ */
 export function resolveDecider(): LlmDecider | null {
 	if (deciderOverride !== null) return deciderOverride;
-	const fn = lookup(DECIDER_EXPORT_NAMES);
-	return typeof fn === 'function' ? (fn as LlmDecider) : null;
+	return factory() === null ? null : callModelAdapter;
 }
 
-/** The banter writer, or `null` when `$lib/ai` exposes none. Never throws. */
+/**
+ * The banter writer, or `null` when none is configured.
+ *
+ * `$lib/ai`'s `generateBanter(deps, req)` needs a salience score and a seeded
+ * sequence number that {@link LlmBanterInput} does not carry — banter is
+ * optional and "stay quiet" is always a safe answer, so this seat does not yet
+ * wire a real one and relies entirely on {@link setLlmProvider} until that
+ * shape is extended. Never throws.
+ */
 export function resolveBanterWriter(): LlmBanterWriter | null {
-	if (banterOverride !== null) return banterOverride;
-	const fn = lookup(BANTER_EXPORT_NAMES);
-	return typeof fn === 'function' ? (fn as LlmBanterWriter) : null;
+	return banterOverride;
 }
 
 /* ========================================================================== */

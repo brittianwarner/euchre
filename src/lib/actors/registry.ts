@@ -31,7 +31,9 @@
  */
 
 import { actor, setup } from 'rivetkit';
+import { aiSeat } from './ai-seat';
 import { euchreTable } from './euchre-table';
+import { playerProfile } from './player-profile';
 
 /**
  * Placeholder actor that exists so the Rivet wiring is testable before any
@@ -80,9 +82,15 @@ const isLocalDev = !process.env.RIVET_ENDPOINT;
 export const registry = setup({
 	use: {
 		health,
-		// M2: authoritative table with in-table heuristic AI. aiSeat / playerProfile
-		// register later; the table soft-fails when those siblings are absent.
-		euchreTable
+		// M4: the authoritative table, one actor per AI opponent (`aiSeat`, key
+		// ["table", gameId, "seat", "1"|"2"|"3"]), and the durable per-user profile
+		// (`playerProfile`, key ["user", userId]). The table dispatches a decision
+		// request to the seat that owns the acting chair and receives its reply
+		// over its own `aiDecision` queue; it never trusts the reply's `seat` or
+		// `turnId` without re-deriving both.
+		euchreTable,
+		aiSeat,
+		playerProfile
 	},
 
 	// Both of the following are local-dev only. In production `RIVET_ENDPOINT`
