@@ -28,6 +28,7 @@
 		"@tailwindcss/vite": "^4.1.17",
 		"@types/better-sqlite3": "^7.6.13",
 		"@types/node": "^24",
+		"@types/three": "0.185.1",
 		"@vitest/browser-playwright": "^4.0.10",
 		"drizzle-kit": "^0.31.7",
 		"drizzle-orm": "^0.44.7",
@@ -47,11 +48,14 @@
 		"@ai-sdk/anthropic": "4.0.21",
 		"@openrouter/ai-sdk-provider": "3.0.0",
 		"@rivetkit/svelte": "file:./rivetkit-svelte",
+		"@threlte/core": "8.5.16",
+		"@threlte/extras": "9.21.0",
 		"ai": "7.0.37",
 		"better-auth": "1.6.25",
 		"better-sqlite3": "^12.4.1",
 		"resend": "6.18.0",
 		"rivetkit": "2.3.9",
+		"three": "0.185.1",
 		"zod": "4.4.3"
 	}
 }
