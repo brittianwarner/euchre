@@ -18,6 +18,8 @@
 <script lang="ts">
 	import { T } from '@threlte/core';
 	import { DoubleSide, type Mesh } from 'three';
+	import { Tween } from 'svelte/motion';
+	import { cubicOut } from 'svelte/easing';
 	import { backTexture, faceTexture } from './cardTexture';
 	import { CARD_ASPECT } from './faces';
 	import type { CardFaceId } from './faces';
@@ -72,7 +74,15 @@
 
 	// Highlight lifts the card toward the viewer rather than scaling it, so a
 	// fanned hand keeps its spacing and nothing jumps under the pointer.
-	const lift = $derived(highlighted ? height * 0.12 : 0);
+	//
+	// Tweened rather than snapped: an instant jump under the cursor reads as a
+	// glitch, and with cards overlapping it makes the fan feel twitchy as the
+	// pointer crosses boundaries. 140ms with an ease-out is long enough to read as
+	// motion and short enough to feel immediate.
+	const lift = new Tween(0, { duration: 140, easing: cubicOut });
+	$effect(() => {
+		lift.target = highlighted ? height * 0.16 : 0;
+	});
 	const tint = $derived(dimmed ? '#8a8a8a' : '#ffffff');
 
 	let mesh = $state<Mesh | undefined>(undefined);
@@ -85,7 +95,7 @@
 </script>
 
 <T.Group
-	position={[position[0], position[1] + lift, position[2]]}
+	position={[position[0], position[1] + lift.current, position[2]]}
 	rotation={[rotation[0], rotation[1], rotation[2]]}
 >
 	<!-- Face -->

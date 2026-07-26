@@ -129,6 +129,12 @@
 		)
 	);
 
+	/**
+	 * Vertical clearance so the reclined fan never sinks into the felt.
+	 * Roughly cardHeight/2 * sin(45 deg) plus a margin, for the largest size.
+	 */
+	const HAND_LIFT = 0.085;
+
 	const poses = $derived(
 		fanPositions(cards.length, {
 			cardWidth: cardHeight * CARD_ASPECT,
@@ -155,7 +161,16 @@
 </script>
 
 <!--
-	Pulled well in from the seat anchor toward the table centre.
+	Lifted clear of the felt, and only slightly in from the seat anchor.
+
+	The LIFT is not decoration. Reclined toward the viewer, the lower half of each
+	card dips below y=0 and the table surface clips it — the bottoms of the cards
+	simply vanish. A card of height h reclined by `recline` needs at least
+	h/2 * sin(recline) of clearance; HAND_LIFT below carries that plus a margin.
+
+	The inward offset is deliberately SMALL (0.05, not 0.13). Further in and the
+	fan sprawls across the middle of the table and covers the trick — the player's
+	own hand should sit in front of them, not over the cards everyone is playing.
 
 	Note the sign: each seat group is rotated so its local +Z faces the middle of
 	the table, so moving "in" is POSITIVE z. Negative pushes the fan out over the
@@ -168,7 +183,7 @@
 	the screen entirely, so the action panel has somewhere to live that is not on
 	top of the cards the player is trying to read.
 -->
-<T.Group position={[0, 0, 0.13]}>
+<T.Group position={[0, HAND_LIFT, 0.05]}>
 	{#each cards as cardId, i (cardId)}
 		{@const pose = poses[i]}
 		<Card
