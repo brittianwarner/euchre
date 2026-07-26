@@ -63,6 +63,21 @@
 	const face = $derived(faceUp && id !== null ? faceTexture(id, fourColor) : null);
 	const back = $derived(backTexture());
 
+	$effect(() => {
+		if (faceUp) {
+			console.log(
+				'[CARD DEBUG] id=',
+				JSON.stringify(id),
+				'faceUp=',
+				faceUp,
+				'face=',
+				face ? 'CanvasTexture(' + face.uuid.slice(0, 8) + ')' : null,
+				'face.image=',
+				face?.image ? `${face.image.width}x${face.image.height}` : null
+			);
+		}
+	});
+
 	// Highlight lifts the card toward the viewer rather than scaling it, so a
 	// fanned hand keeps its spacing and nothing jumps under the pointer.
 	const lift = $derived(highlighted ? height * 0.12 : 0);

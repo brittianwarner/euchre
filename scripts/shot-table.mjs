@@ -1,14 +1,60 @@
+/**
+ * Screenshot the live 3D euchre table.
+ *
+ * Opens /play, gets past the cut so a hand actually exists (an un-cut table shows
+ * only the deck, which looks like a bug and is not), waits for the AI seats to
+ * settle, and writes a PNG.
+ *
+ *   node scripts/shot-table.mjs <outdir> [port] [width] [height]
+ *
+ * Port defaults to $PORT then 5173 (vite's default), so it works against whatever
+ * dev server is already running rather than assuming one.
+ */
 import { chromium } from 'playwright';
-const b = await chromium.launch({ args: ['--use-gl=swiftshader','--enable-unsafe-swiftshader'] });
-const p = await b.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1.5 });
-await p.goto('http://localhost:5199/play', { waitUntil:'networkidle', timeout:60000 });
-await p.waitForTimeout(4000);
-// get past the cut so a hand exists
+
+const outDir = process.argv[2] ?? '.';
+const port = Number(process.argv[3] ?? process.env.PORT ?? 5173);
+const width = Number(process.argv[4] ?? 1440);
+const height = Number(process.argv[5] ?? 900);
+const base = `http://localhost:${port}`;
+
+const browser = await chromium.launch({
+	// Headless Chromium has no GPU; without SwiftShader the WebGL context fails to
+	// create and every screenshot is a blank page.
+	args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader']
+});
+const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: 1.5 });
+
+const errors = [];
+page.on('pageerror', (e) => errors.push(`PAGEERROR ${String(e).slice(0, 220)}`));
+page.on('console', (m) => {
+	const t = m.text();
+	// The Rivet devtools asset 404s in dev and is harmless.
+	if (m.type() === 'error' && !t.includes('devtools')) errors.push(`CONSOLE ${t.slice(0, 220)}`);
+});
+
+await page.goto(`${base}/play`, { waitUntil: 'networkidle', timeout: 60_000 });
+await page.waitForTimeout(4000);
+
 for (const label of ['Bump', "Run 'em"]) {
-  const btn = p.locator(`button:has-text("${label}")`).first();
-  if (await btn.count() && await btn.isVisible().catch(()=>false)) { await btn.click().catch(()=>{}); break; }
+	const btn = page.locator(`button:has-text("${label}")`).first();
+	if ((await btn.count()) > 0 && (await btn.isVisible().catch(() => false))) {
+		await btn.click().catch(() => {});
+		break;
+	}
 }
-await p.waitForTimeout(6000);
-await p.screenshot({ path: process.argv[2] + '/table-hand.png' });
-console.log('state:', (await p.textContent('body')).replace(/\s+/g,' ').replace(/.*?Euchre/,'').slice(0,150));
-await b.close();
+await page.waitForTimeout(6000);
+
+const suffix = width < height ? 'portrait' : 'landscape';
+const path = `${outDir}/table-${suffix}-${width}x${height}.png`;
+await page.screenshot({ path });
+
+const body = (await page.textContent('body').catch(() => '')) ?? '';
+console.log(`url        ${page.url()}`);
+console.log(`screenshot ${path}`);
+console.log(`canvases   ${await page.locator('canvas').count()}`);
+console.log(`state      ${body.replace(/\s+/g, ' ').replace(/.*?Euchre/, '').slice(0, 170)}`);
+console.log(`errors     ${errors.length ? errors.slice(0, 8).join('\n           ') : '(none)'}`);
+console.log('\nNow READ the PNG. A clean typecheck has never once caught a visual bug in this project.');
+
+await browser.close();

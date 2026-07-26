@@ -10,7 +10,7 @@
   model return a schema-valid, legal move on both tiers.
 - `shot-table.mjs` — Playwright: opens `/play`, gets past the cut so a hand
   exists, and screenshots the 3D table. Needs the dev server on :5199.
-  `bunx vite dev --port 5199` then `node scripts/shot-table.mjs <outdir>`
+  `node scripts/shot-table.mjs <outdir> [port] [w] [h]` — port defaults to 5173
 
 Also `/cardtest` (a dev route) renders `Card.svelte` in isolation — the fastest
 way to tell "the card component is broken" from "the scene is placing it wrong".
