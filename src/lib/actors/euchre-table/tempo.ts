@@ -36,10 +36,17 @@ import { fnv1a } from '$lib/euchre';
 import type { AIDecisionKind } from '$lib/protocol';
 
 /**
- * Local `bun run dev` uses a fast tempo so a full match is testable in minutes.
- * Production / Rivet Cloud keeps the measured table feel from the UX spec.
+ * Fast tempo compresses every pause so a full match is testable in minutes. It is
+ * OPT-IN via `EUCHRE_FAST_TEMPO=1`.
+ *
+ * It used to be inferred from `RIVET_ENDPOINT` being unset, which meant anyone
+ * running `bun run dev` locally got 100 ms think-floors instead of 700 ms. The
+ * opponents answered instantly, cards vanished the moment you tapped them, and
+ * the game read as broken rather than fast — which is exactly how it was
+ * reported. Local play now feels like production by default, because the tempo
+ * IS the feel; a developer who wants to grind a match quickly can ask for it.
  */
-const LOCAL_FAST = !process.env.RIVET_ENDPOINT;
+const LOCAL_FAST = process.env.EUCHRE_FAST_TEMPO === '1';
 
 /** The table's whole timing policy. Frozen so a caller cannot drift one seat. */
 export const TEMPO = Object.freeze({

@@ -142,7 +142,11 @@
 	// distance from table centre to the seat and spilled past the bottom of the
 	// frame. These read large and clear while staying fully inside the camera's
 	// 21 deg half-FOV, including the lower edge once the fan is reclined.
-	const baseCardHeight = $derived(portrait ? 0.165 : narrow ? 0.185 : 0.205);
+	// Sized against HAND_FORWARD. Moving the fan toward the player also moves it
+	// toward the camera, which magnifies it — at 0.205 the cards filled half the
+	// frame and clipped at the bottom again. These keep them large and legible
+	// while sitting fully inside the viewport near the near edge.
+	const baseCardHeight = $derived(portrait ? 0.13 : narrow ? 0.145 : 0.155);
 	const baseOverlap = $derived(portrait ? 0.62 : 0.6);
 
 	const cardHeight = $derived(cardHeightProp ?? baseCardHeight);
@@ -161,8 +165,47 @@
 	 */
 	const HAND_LIFT = 0.085;
 
+	/**
+	 * How far the fan sits from the seat anchor, along the seat's local +Z (which
+	 * points at the table centre, because seat 0's group is rotated 180 deg).
+	 *
+	 * Negative moves the fan back toward the player — i.e. DOWN the screen, toward
+	 * the bottom edge. Kept small: at -0.13 the fan overshoots the rail and leaves
+	 * the frame entirely, and at +0.13 it sprawls over the trick zone in the middle
+	 * of the table.
+	 */
+	const HAND_FORWARD = -0.04;
+
+	/**
+	 * The hand as dealt, in fan order — the card's *slot*, not its current index.
+	 *
+	 * Without this the fan was laid out with `fanPositions(cards.length)`, so the
+	 * instant any card left the hand every remaining card slid to a new position
+	 * to re-centre the fan. Four seats playing meant the whole hand rearranged
+	 * several times a trick, which reads as the hand being re-dealt — it is what
+	 * "the cards keep getting redealt after each player plays" actually was.
+	 *
+	 * A real hand does not re-fan itself after every trick: your cards stay put and
+	 * the gap stays. Slots are captured at deal time and cards keep them for the
+	 * whole hand.
+	 */
+	let slotOrder = $state.raw<readonly CardId[]>([]);
+
+	/** Slots, extended for any card that arrives mid-hand (the dealer's pickup). */
+	const slots = $derived.by(() => {
+		const known = new Set(slotOrder);
+		const extra = cards.filter((c) => !known.has(c));
+		return extra.length === 0 ? slotOrder : [...slotOrder, ...extra];
+	});
+
+	/** Where a card sits in the fan. Falls back to render order before the first deal. */
+	function slotOf(cardId: CardId, fallback: number): number {
+		const i = slots.indexOf(cardId);
+		return i >= 0 ? i : fallback;
+	}
+
 	const poses = $derived(
-		fanPositions(cards.length, {
+		fanPositions(Math.max(slots.length, cards.length), {
 			cardWidth: cardHeight * CARD_ASPECT,
 			cardHeight,
 			overlap,
@@ -228,17 +271,30 @@
 			return;
 		}
 		if (signal === undefined) return;
-		const currentCards = untrack(() => cards); // read without depending on `cards` itself — see module doc
-		const order = ((seat - dealerSeat + 4) % 4) as number;
-		const flight = flightMs(TEMPO.dealFlightMs, reducedMotion);
-		const stagger = reducedMotion ? 0 : TEMPO.dealStaggerMs;
-		const fresh = new Map<CardId, Tween<number>>();
-		currentCards.forEach((id, i) => {
-			const t = new Tween(0, { easing: cubicOut });
-			fresh.set(id, t);
-			void t.set(1, { duration: flight, delay: (order + i * 4) * stagger });
+		// EVERYTHING below runs untracked.
+		//
+		// `new Tween()` owns internal `$state` that ticks every animation frame.
+		// Constructing tweens (and calling `.set()`) directly in this effect made
+		// the effect depend on that per-frame state, so each frame re-ran the
+		// effect, which built fresh tweens, which ticked again — a self-sustaining
+		// loop that restarts the deal-in continuously. On screen that reads exactly
+		// as "the game reshuffles and re-deals every hand", which is how it was
+		// reported. Same failure class as the `Hint.svelte` self-trigger: an effect
+		// must not take a reactive dependency on something it creates or writes.
+		untrack(() => {
+			const currentCards = cards;
+			slotOrder = [...currentCards]; // fix the fan's slots for this hand
+			const order = ((seat - dealerSeat + 4) % 4) as number;
+			const flight = flightMs(TEMPO.dealFlightMs, reducedMotion);
+			const stagger = reducedMotion ? 0 : TEMPO.dealStaggerMs;
+			const fresh = new Map<CardId, Tween<number>>();
+			currentCards.forEach((id, i) => {
+				const t = new Tween(0, { easing: cubicOut });
+				fresh.set(id, t);
+				void t.set(1, { duration: flight, delay: (order + i * 4) * stagger });
+			});
+			dealTweens = fresh;
 		});
-		dealTweens = fresh;
 	});
 
 	/** `poses[i]` unless that card is still (or freshly) mid-deal-flight, in which case an eased blend from `dealOrigin`. */
@@ -273,9 +329,9 @@
 	the screen entirely, so the action panel has somewhere to live that is not on
 	top of the cards the player is trying to read.
 -->
-<T.Group position={[0, HAND_LIFT, 0.05]}>
+<T.Group position={[0, HAND_LIFT, HAND_FORWARD]}>
 	{#each cards as cardId, i (cardId)}
-		{@const pose = renderPose(cardId, i)}
+		{@const pose = renderPose(cardId, slotOf(cardId, i))}
 		<Card
 			id={cardId}
 			faceUp

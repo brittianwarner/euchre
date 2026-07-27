@@ -348,7 +348,7 @@
 	 */
 	@media (max-aspect-ratio: 4/5) {
 		.footer {
-			margin-top: max(0.4rem, 32vh - 18.5rem);
+			margin-top: max(0.4rem, calc(32vh - 18.5rem));
 		}
 	}
 
