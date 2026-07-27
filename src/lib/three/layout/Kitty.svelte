@@ -25,11 +25,27 @@
   - `'buried'`     — bidding is over (ordered up, or round 2 settled): the
                      up-card is no longer distinguished from the pile; only
                      `kittyCount` (3 or 4) is shown, face down.
+
+  ## The up-card's reveal
+
+  `Card.svelte` renders face and back as two permanently-mounted, coplanar
+  meshes gated by a static `faceUp` boolean (see its own doc comment on why —
+  a `{#key}`-remounted material is a shipped regression in this project); it
+  has no notion of an in-progress flip, and giving it one is out of this
+  task's scope. So the "260ms slerp, geometry swaps at the 90deg crossing"
+  reveal `docs/04-FRONTEND-UX.md` §9.2 describes for a true rotating flip is
+  not reachable from here. What stands in for it: the up-card grows in from a
+  sliver to full size (`height` is an ordinary animatable prop, unlike a flip)
+  the moment `stage` first reads `'upcard'` for a given `upCard` — a
+  deliberate, honest substitution, not an attempt to fake the real thing.
 -->
 <script lang="ts">
 	import { T } from '@threlte/core';
+	import { Tween } from 'svelte/motion';
+	import { cubicOut } from 'svelte/easing';
 	import Card from '$lib/three/cards/Card.svelte';
 	import { CARD_ASPECT, stackPositions } from './layout';
+	import { TEMPO, flightMs } from './tempo';
 	import type { KittyStage } from './layout';
 	import type { CardId } from '$lib/euchre';
 
@@ -43,6 +59,7 @@
 		cardHeight?: number;
 		/** World offset for the whole kitty, so the composing scene can place it on the felt. */
 		position?: readonly [number, number, number];
+		reducedMotion?: boolean;
 	}
 
 	let {
@@ -51,8 +68,42 @@
 		kittyCount,
 		fourColor = false,
 		cardHeight = 0.1,
-		position = [0, 0, 0]
+		position = [0, 0, 0],
+		reducedMotion = false
 	}: Props = $props();
+
+	/** See the module doc's "up-card's reveal" note: a grow-in stands in for the flip `Card.svelte` cannot do. */
+	let revealedFor: CardId | null = null;
+	let mounted = false;
+	// `0` here is a placeholder immediately overwritten by the first `#effect`
+	// run below (which always fires once at mount, snapping to `cardHeight`
+	// with `duration: 0`) — never read before that runs, so capturing only
+	// the prop's *initial* value here is correct, not a staleness bug.
+	const revealHeight = new Tween(0, { easing: cubicOut });
+
+	$effect(() => {
+		const isUpcard = stage === 'upcard';
+		const card = upCard;
+		if (!mounted) {
+			// Mount or hard resync: show the correct size immediately, even if
+			// bidding is already mid-round-1 — a reconnect must snap, never replay
+			// the reveal (docs/04-FRONTEND-UX.md §9.3's `hardResync` rule).
+			mounted = true;
+			revealedFor = isUpcard ? card : null;
+			void revealHeight.set(cardHeight, { duration: 0 });
+			return;
+		}
+		if (isUpcard && card !== null && card !== revealedFor) {
+			revealedFor = card;
+			void revealHeight.set(cardHeight * 0.15, { duration: 0 });
+			void revealHeight.set(cardHeight, {
+				duration: flightMs(TEMPO.upCardRevealMs, reducedMotion)
+			});
+		} else if (!isUpcard) {
+			revealedFor = null;
+			void revealHeight.set(cardHeight, { duration: 0 });
+		}
+	});
 
 	/**
 	 * Before bidding resolves, `kittyCount` is still `3` (the field only counts
@@ -91,7 +142,7 @@
 			faceUp
 			position={withOrigin([0, upCardLift, 0])}
 			rotation={[-Math.PI / 2, 0, 0]}
-			height={cardHeight}
+			height={revealHeight.current}
 			{fourColor}
 		/>
 	{:else if stage === 'turnedDown'}

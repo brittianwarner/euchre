@@ -17,13 +17,17 @@
 	import BidPanel from '$lib/ui/BidPanel.svelte';
 	import DiscardPanel from '$lib/ui/DiscardPanel.svelte';
 	import HandA11y from '$lib/ui/HandA11y.svelte';
+	import Hint from '$lib/ui/Hint.svelte';
+	import RulesPanel from '$lib/ui/RulesPanel.svelte';
+	import GameAnnouncer from '$lib/ui/onboarding/GameAnnouncer.svelte';
+	import Walkthrough from '$lib/ui/onboarding/Walkthrough.svelte';
 	import ScoreBoard from '$lib/ui/ScoreBoard.svelte';
 	import TrickView from '$lib/ui/TrickView.svelte';
 	import TableStatusBar from '$lib/ui/TableStatusBar.svelte';
 
 	/** Compass names for the spoken log. Seat 0 is the player. */
 	const SEAT_NAME = ['You', 'West', 'North', 'East'] as const;
-	import type { CardId, LegalMoveId, PublicGameView, SyncEvent } from '$lib/protocol';
+	import type { CardId, LegalMoveId, PublicGameView, Step, SyncEvent } from '$lib/protocol';
 
 	let { data } = $props();
 
@@ -47,8 +51,16 @@
 		store.applyChat(payload);
 	});
 
+	/**
+	 * Every step since this connection's last sync, for the screen-reader
+	 * narration (`GameAnnouncer.svelte`) — `TableStore` only keeps `view`, so
+	 * this is captured here rather than added to the store.
+	 */
+	let lastSteps = $state.raw<readonly Step[]>([]);
+
 	table.onEvent('sync', (payload: SyncEvent) => {
 		store.applySync(payload);
+		lastSteps = payload.steps;
 	});
 
 	store.bind(table as unknown as TableActorHandle);
@@ -78,12 +90,26 @@
 		return store.view;
 	});
 
+	/**
+	 * The exact `(view, moveId)` pair of the human's last real decision, for
+	 * `Hint.svelte`'s auto-retiring coach mode: it compares the move actually
+	 * made against the suggestion it would have shown for that same `view`.
+	 * Captured here — at the moment of commit, from the pre-move view already
+	 * in scope — rather than inferred later from a view diff, so there is no
+	 * ambiguity from the optimistic/animation layers about which move this was.
+	 */
+	let lastDecision = $state<{ view: PublicGameView; moveId: LegalMoveId } | null>(null);
+
+	/** Reopens the first-run tour from `RulesPanel`'s "take the tour again" link. */
+	let tourOpen = $state(false);
+
 	/** Submits any legal move id, previewing its effect locally first. Used by every input surface — 3D card taps, the DOM bid/discard panels, and the keyboard/screen-reader hand — so the whole table gets the same instant feedback from one place. */
 	async function submitMove(moveId: LegalMoveId): Promise<void> {
 		const view = displayView;
 		if (!view) return;
 		const entry = view.legal.find((m) => m.id === moveId);
 		if (!entry) return; // Every caller here already filtered against this same `legal` set.
+		lastDecision = { view, moveId };
 		optimistic = { forV: view.v, view: applyOptimistic(view, entry.move) };
 		const ok = await store.play(moveId);
 		if (!ok) optimistic = null; // Rejected — store already resynced; show its truth, not our guess.
@@ -144,6 +170,17 @@
 </svelte:head>
 
 <main class="table-page">
+	<!--
+		Onboarding-layer overlays: neither is part of the felt's corner grid.
+		`Walkthrough` is a modal `<dialog>` (its own ::backdrop covers the
+		viewport regardless of where it sits in the DOM) that only auto-opens
+		once `displayView` exists — see its own `ready` prop — so it never
+		appears over the "Connecting…" state. `GameAnnouncer` is a visually
+		hidden aria-live region; it renders nothing on screen.
+	-->
+	<Walkthrough ready={displayView !== null} bind:open={tourOpen} />
+	<GameAnnouncer steps={lastSteps} view={displayView} />
+
 	{#if !store.view}
 		<p class="loading">
 			{table.isConnected ? 'Dealing…' : 'Connecting to the table…'}
@@ -193,6 +230,19 @@
 			<div class="corner corner-tl">
 				<ScoreBoard view={displayView} />
 				<TableStatusBar view={displayView} {illegalMessage} />
+				<Hint view={displayView} {lastDecision} />
+				<!--
+					The persistent "?" (docs/04-FRONTEND-UX.md §15) lives in this column,
+					not its own top-centre spot: `GlobalNav.svelte` is fixed top-RIGHT
+					but, being width-to-content, reaches well past horizontal centre on
+					a narrow phone — a separate centred corner collided with it there.
+					top-left's column is the one place nothing else ever grows into.
+					`.help-row` overrides the column's `align-items: stretch` so this
+					stays a small round button instead of stretching into a pill.
+				-->
+				<div class="help-row">
+					<RulesPanel view={displayView} onReplayTour={() => (tourOpen = true)} />
+				</div>
 				<p class="footer">
 					<a href="/play">Deal a new game</a>
 					· game {data.gameId.slice(0, 8)}
@@ -289,6 +339,9 @@
 		top: max(0.75rem, env(safe-area-inset-top));
 		right: max(0.75rem, env(safe-area-inset-right));
 		max-width: min(46vw, 15rem);
+	}
+	.help-row {
+		align-self: flex-start;
 	}
 	/*
 	 * The action panel lives bottom-RIGHT, not bottom-centre.

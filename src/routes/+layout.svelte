@@ -5,9 +5,12 @@
 <script lang="ts">
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
+	import GlobalNav from '$lib/ui/GlobalNav.svelte';
 
 	let { children } = $props();
 </script>
+
+<GlobalNav />
 
 <svelte:head>
 	<link rel="icon" href={favicon} />

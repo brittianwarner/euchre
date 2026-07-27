@@ -36,10 +36,16 @@
 -->
 <script lang="ts">
 	import { T, useThrelte } from '@threlte/core';
+	import { Tween } from 'svelte/motion';
+	import { cubicOut } from 'svelte/easing';
+	import { untrack } from 'svelte';
 	import Card from '$lib/three/cards/Card.svelte';
 	import { CARD_ASPECT, fanPositions } from './layout';
+	import { dealOrigin, lerpPose } from './cardMotion';
+	import { TEMPO, flightMs } from './tempo';
 	import { isNarrowLandscape, isPortrait } from '$lib/three/scene/breakpoints';
-	import type { CardId, LegalMove } from '$lib/euchre';
+	import { playLift } from '$lib/ui/sound';
+	import type { CardId, LegalMove, Seat } from '$lib/euchre';
 
 	interface Props {
 		/** `view.hand` — your own cards, and only ever your own (V8). Caller-ordered; this component does not sort. */
@@ -64,6 +70,22 @@
 		/** Fires when an illegal card is tapped, so the caller can show the engine's `whyIllegal` copy — no dead clicks. */
 		onillegal?: (cardId: CardId) => void;
 		onhover?: (cardId: CardId | null) => void;
+		/**
+		 * `view.handNo` — a change is this seat's only signal that a fresh hand
+		 * was just dealt (there is no `steps` channel reaching this component;
+		 * see `TableScene.svelte`'s doc comment on why view-diffing stands in for
+		 * one). The very first value seen is never animated (a mount/reconnect
+		 * always snaps — see the `#dealt` effect below), so passing this is safe
+		 * even when the caller cannot yet distinguish "fresh load" from "fresh
+		 * hand" itself.
+		 */
+		handNo?: number;
+		/** `view.dealerSeat` — with `seat`, only used to phase this seat's deal-in stagger against the other three (see `#dealt`). */
+		dealerSeat?: Seat;
+		/** This hand's own seat. Always `0` (the viewer), kept as a prop rather than hard-coded so the stagger math reads the same as `OpponentHand.svelte`'s. */
+		seat?: Seat;
+		/** `prefers-reduced-motion` (or the in-app override) — collapses the deal flight, per `docs/04-FRONTEND-UX.md` §9.2. */
+		reducedMotion?: boolean;
 	}
 
 	let {
@@ -97,7 +119,11 @@
 		disabled = false,
 		onplay,
 		onillegal,
-		onhover
+		onhover,
+		handNo,
+		dealerSeat = 0,
+		seat = 0,
+		reducedMotion = false
 	}: Props = $props();
 
 	// Same live-aspect signal `CameraRig` frames from — see that file for the
@@ -155,8 +181,72 @@
 	}
 
 	function handleHover(cardId: CardId | null): void {
+		const wasHovering = hoveredId !== null;
 		hoveredId = cardId;
 		onhover?.(cardId);
+		// Only the null -> id edge, not id -> id (crossing from one overlapping
+		// card straight onto its neighbour, which fires the same enter/leave
+		// pair) and not id -> null (leaving plays no sound in this design).
+		if (cardId !== null && !wasHovering) playLift();
+	}
+
+	/*
+	 * Deal-in choreography (docs/04-FRONTEND-UX.md §9.2: 60ms flight/card, 50ms
+	 * stagger, in "the engine's 3-2/2-3 packet order").
+	 *
+	 * There is no `steps` channel reaching this component (`TableScene.svelte`'s
+	 * doc comment explains why — no other file in this task's scope threads
+	 * `Step[]` down from the actor's `sync` event) so `handNo` changing is the
+	 * only signal a fresh deal just happened. This is not a second source of
+	 * truth: the *positions* rendered below always come from `poses` (a pure
+	 * function of the current `cards`/`legal` props, exactly as before this
+	 * animation existed) — `dealProgress` only ever blends *toward* that
+	 * already-correct target, and a card whose entry never gets a tween (the
+	 * component mounting mid-hand, or `reducedMotion`) just renders at its
+	 * final pose immediately, which is what `lerpPose` at `t = 1` already is.
+	 *
+	 * The engine's true packet order (which seat/how many cards per round) is
+	 * intentionally not reimplemented here — `$lib/euchre` is the one rulebook,
+	 * and packet order is a dealing-rule detail, not a rendering one. This
+	 * approximates it with a round-robin ("everyone gets a card, four times")
+	 * phased by `seat - dealerSeat`, which lands on the same 20-card/1010ms
+	 * total the tempo table gives and, being round-robin rather than
+	 * seat-by-seat, actually reads *more* like a real deal (one card at a time
+	 * around the table) than a literal 3-2 replay would from a static seat
+	 * offset alone.
+	 */
+	let dealTweens = $state.raw(new Map<CardId, Tween<number>>());
+	let sawFirstHandNo = false;
+
+	$effect(() => {
+		const signal = handNo;
+		if (!sawFirstHandNo) {
+			// First evaluation is always a mount or a hard resync — snap, per the
+			// same rule `docs/04-FRONTEND-UX.md` §9.3 gives `hardResync`: "teleport
+			// every card; no animation."
+			sawFirstHandNo = true;
+			return;
+		}
+		if (signal === undefined) return;
+		const currentCards = untrack(() => cards); // read without depending on `cards` itself — see module doc
+		const order = ((seat - dealerSeat + 4) % 4) as number;
+		const flight = flightMs(TEMPO.dealFlightMs, reducedMotion);
+		const stagger = reducedMotion ? 0 : TEMPO.dealStaggerMs;
+		const fresh = new Map<CardId, Tween<number>>();
+		currentCards.forEach((id, i) => {
+			const t = new Tween(0, { easing: cubicOut });
+			fresh.set(id, t);
+			void t.set(1, { duration: flight, delay: (order + i * 4) * stagger });
+		});
+		dealTweens = fresh;
+	});
+
+	/** `poses[i]` unless that card is still (or freshly) mid-deal-flight, in which case an eased blend from `dealOrigin`. */
+	function renderPose(cardId: CardId, i: number) {
+		const target = poses[i];
+		const tween = dealTweens.get(cardId);
+		if (!tween || tween.current >= 1) return target;
+		return lerpPose(dealOrigin(target), target, tween.current, reducedMotion ? 0 : cardHeight * 0.5);
 	}
 </script>
 
@@ -185,7 +275,7 @@
 -->
 <T.Group position={[0, HAND_LIFT, 0.05]}>
 	{#each cards as cardId, i (cardId)}
-		{@const pose = poses[i]}
+		{@const pose = renderPose(cardId, i)}
 		<Card
 			id={cardId}
 			faceUp

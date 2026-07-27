@@ -16,8 +16,13 @@
 -->
 <script lang="ts">
 	import { T } from '@threlte/core';
+	import { Tween } from 'svelte/motion';
+	import { cubicOut } from 'svelte/easing';
 	import Card from '$lib/three/cards/Card.svelte';
 	import { CARD_ASPECT, fanPositions } from './layout';
+	import { dealOrigin, lerpPose } from './cardMotion';
+	import { TEMPO, flightMs } from './tempo';
+	import type { Seat } from '$lib/euchre';
 
 	interface Props {
 		/** `view.handCounts[seat]`. Never a card id — see the file doc. */
@@ -35,6 +40,13 @@
 		 * loses information, only draw calls.
 		 */
 		maxVisible?: number;
+		/** `view.handNo` — see `Hand.svelte`'s doc comment on `handNo` for why this is the deal-in trigger. */
+		handNo?: number;
+		/** `view.dealerSeat`, with `seat` — phases this seat's deal-in stagger against the other three. */
+		dealerSeat?: Seat;
+		/** This seat (`1`/`2`/`3` — `TableScene.svelte` passes a literal per anchor). */
+		seat?: Seat;
+		reducedMotion?: boolean;
 	}
 
 	let {
@@ -44,7 +56,11 @@
 		maxTiltDeg = 8,
 		archLift = 0.03,
 		reclineDeg = 18,
-		maxVisible
+		maxVisible,
+		handNo,
+		dealerSeat = 0,
+		seat = 1,
+		reducedMotion = false
 	}: Props = $props();
 
 	const visibleCount = $derived(Math.max(0, Math.min(count, maxVisible ?? count)));
@@ -59,6 +75,44 @@
 			reclineDeg
 		})
 	);
+
+	/**
+	 * Deal-in choreography — same approximation and same "no `steps` channel
+	 * here" reasoning as `Hand.svelte`'s identical block; kept independent
+	 * (not shared) because the two components key their per-card tweens
+	 * differently (`CardId` there, positional slot here — an opponent's fan
+	 * carries no card identity at all, matching this file's own "structural
+	 * non-leakage" doc above).
+	 */
+	let dealTweens = $state.raw(new Map<number, Tween<number>>());
+	let sawFirstHandNo = false;
+
+	$effect(() => {
+		const signal = handNo;
+		if (!sawFirstHandNo) {
+			sawFirstHandNo = true;
+			return;
+		}
+		if (signal === undefined) return;
+		const n = visibleCount; // `count`/`maxVisible` at the moment of the deal — reading this here (not `untrack`) is fine, since unlike `Hand.svelte`'s per-`CardId` map a slot count changing mid-hand (a loner's sitting partner going to 0) should simply stop rendering that slot, tweened or not.
+		const order = ((seat - dealerSeat + 4) % 4) as number;
+		const flight = flightMs(TEMPO.dealFlightMs, reducedMotion);
+		const stagger = reducedMotion ? 0 : TEMPO.dealStaggerMs;
+		const fresh = new Map<number, Tween<number>>();
+		for (let i = 0; i < n; i++) {
+			const t = new Tween(0, { easing: cubicOut });
+			fresh.set(i, t);
+			void t.set(1, { duration: flight, delay: (order + i * 4) * stagger });
+		}
+		dealTweens = fresh;
+	});
+
+	function renderPose(i: number) {
+		const target = poses[i];
+		const tween = dealTweens.get(i);
+		if (!tween || tween.current >= 1) return target;
+		return lerpPose(dealOrigin(target), target, tween.current, reducedMotion ? 0 : cardHeight * 0.5);
+	}
 </script>
 
 <T.Group>
@@ -68,7 +122,8 @@
 		deliberate exception to "never key an each block by index" — there is no
 		card identity here for a real key to track.
 	-->
-	{#each poses as pose, i (`slot-${i}`)}
+	{#each poses as _, i (`slot-${i}`)}
+		{@const pose = renderPose(i)}
 		<Card faceUp={false} position={pose.position} rotation={pose.rotation} height={cardHeight} />
 	{/each}
 </T.Group>
