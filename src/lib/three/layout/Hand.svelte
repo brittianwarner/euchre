@@ -176,36 +176,8 @@
 	 */
 	const HAND_FORWARD = -0.04;
 
-	/**
-	 * The hand as dealt, in fan order — the card's *slot*, not its current index.
-	 *
-	 * Without this the fan was laid out with `fanPositions(cards.length)`, so the
-	 * instant any card left the hand every remaining card slid to a new position
-	 * to re-centre the fan. Four seats playing meant the whole hand rearranged
-	 * several times a trick, which reads as the hand being re-dealt — it is what
-	 * "the cards keep getting redealt after each player plays" actually was.
-	 *
-	 * A real hand does not re-fan itself after every trick: your cards stay put and
-	 * the gap stays. Slots are captured at deal time and cards keep them for the
-	 * whole hand.
-	 */
-	let slotOrder = $state.raw<readonly CardId[]>([]);
-
-	/** Slots, extended for any card that arrives mid-hand (the dealer's pickup). */
-	const slots = $derived.by(() => {
-		const known = new Set(slotOrder);
-		const extra = cards.filter((c) => !known.has(c));
-		return extra.length === 0 ? slotOrder : [...slotOrder, ...extra];
-	});
-
-	/** Where a card sits in the fan. Falls back to render order before the first deal. */
-	function slotOf(cardId: CardId, fallback: number): number {
-		const i = slots.indexOf(cardId);
-		return i >= 0 ? i : fallback;
-	}
-
 	const poses = $derived(
-		fanPositions(Math.max(slots.length, cards.length), {
+		fanPositions(cards.length, {
 			cardWidth: cardHeight * CARD_ASPECT,
 			cardHeight,
 			overlap,
@@ -283,7 +255,6 @@
 		// must not take a reactive dependency on something it creates or writes.
 		untrack(() => {
 			const currentCards = cards;
-			slotOrder = [...currentCards]; // fix the fan's slots for this hand
 			const order = ((seat - dealerSeat + 4) % 4) as number;
 			const flight = flightMs(TEMPO.dealFlightMs, reducedMotion);
 			const stagger = reducedMotion ? 0 : TEMPO.dealStaggerMs;
@@ -299,7 +270,12 @@
 
 	/** `poses[i]` unless that card is still (or freshly) mid-deal-flight, in which case an eased blend from `dealOrigin`. */
 	function renderPose(cardId: CardId, i: number) {
-		const target = poses[i];
+		// `poses` is always the same length as `cards`, but guard anyway: an
+		// undefined pose silently places the card at the group origin, and every
+		// card landing there produces a stack of coplanar quads that z-fight into
+		// a shredded mess with no error anywhere. Fail visible, not corrupt.
+		const target = poses[i] ?? poses[poses.length - 1];
+		if (!target) return undefined;
 		const tween = dealTweens.get(cardId);
 		if (!tween || tween.current >= 1) return target;
 		return lerpPose(dealOrigin(target), target, tween.current, reducedMotion ? 0 : cardHeight * 0.5);
@@ -331,7 +307,8 @@
 -->
 <T.Group position={[0, HAND_LIFT, HAND_FORWARD]}>
 	{#each cards as cardId, i (cardId)}
-		{@const pose = renderPose(cardId, slotOf(cardId, i))}
+		{@const pose = renderPose(cardId, i)}
+		{#if pose}
 		<Card
 			id={cardId}
 			faceUp
@@ -344,6 +321,7 @@
 			interactive={!disabled}
 			onselect={handleSelect}
 			onhover={handleHover}
-		/>
+		/>		{/if}
+
 	{/each}
 </T.Group>
