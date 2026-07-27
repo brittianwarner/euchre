@@ -231,18 +231,34 @@
 	 * offset alone.
 	 */
 	let dealTweens = $state.raw(new Map<CardId, Tween<number>>());
-	let sawFirstHandNo = false;
+	/**
+	 * The hand number we have already dealt in.
+	 *
+	 * The deal effect's only tracked read is `handNo`, yet it was firing six-plus
+	 * times per hand with an IDENTICAL value. `handNo` comes from `displayView`,
+	 * a `$derived.by` that returns a new object on every sync, so the prop is
+	 * re-assigned on each one and the effect re-runs even though the number never
+	 * changed. Each run rebuilt the tweens and replayed the deal-in — the hand
+	 * visibly re-dealing itself over and over.
+	 *
+	 * Rather than reason about when a prop signal dedupes, the effect is made
+	 * idempotent: dealing hand N happens exactly once, however often it re-runs.
+	 * `-1` means nothing has been dealt yet, so the first real hand always animates.
+	 */
+	let dealtHandNo = -1;
 
 	$effect(() => {
 		const signal = handNo;
-		if (!sawFirstHandNo) {
-			// First evaluation is always a mount or a hard resync — snap, per the
-			// same rule `docs/04-FRONTEND-UX.md` §9.3 gives `hardResync`: "teleport
-			// every card; no animation."
-			sawFirstHandNo = true;
+		if (signal === undefined) return;
+		// Already animated this hand. Re-runs are the norm, not the exception.
+		if (signal === dealtHandNo) return;
+		const firstEver = dealtHandNo === -1;
+		dealtHandNo = signal;
+		if (firstEver) {
+			// Mount or hard resync — snap, per `docs/04-FRONTEND-UX.md` §9.3:
+			// "teleport every card; no animation."
 			return;
 		}
-		if (signal === undefined) return;
 		// EVERYTHING below runs untracked.
 		//
 		// `new Tween()` owns internal `$state` that ticks every animation frame.
@@ -280,6 +296,7 @@
 		if (!tween || tween.current >= 1) return target;
 		return lerpPose(dealOrigin(target), target, tween.current, reducedMotion ? 0 : cardHeight * 0.5);
 	}
+
 </script>
 
 <!--
