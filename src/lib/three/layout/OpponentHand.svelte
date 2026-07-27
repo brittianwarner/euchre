@@ -13,15 +13,40 @@
   mistake — the type signature makes it impossible, not merely undesirable.
 
   A seat sitting out under a loner has `count === 0` (V8) and renders nothing.
+
+  ## Portrait: West/East edge clipping (this component's own fix, no caller change)
+
+  West and East sit at `x = ∓SEAT_RADIUS` (`seatLayout.ts`) with only a narrow
+  horizontal FOV to work with in portrait — `CameraRig` pulls back and widens
+  *vertically* (taller `fov`) for portrait, but the horizontal FOV is that
+  vertical FOV squeezed by the (now narrow) aspect ratio, so it shrinks, not
+  grows. `SeatAnchors` already shrinks the seat ring for portrait (0.30 m ->
+  0.26 m), but that alone still leaves West/East mostly outside the frustum —
+  confirmed by screenshot at 390×844: only a sliver of the fan's inner edge
+  crossed into frame.
+
+  Two portrait-only adjustments below, both scoped to seats 1/3 (never seat 2,
+  North, which isn't clipped and whose own local `+Z` points a different way
+  — see `seatLayout.ts`'s table): pull the whole fan toward the table's
+  centre along the anchor's local `+Z` axis (the doc-guaranteed "away from
+  the seat, across the table" direction — for West/East specifically that
+  is toward centre, never toward the human or North), and default
+  `maxVisible` to the 3-card portrait compression `docs/04-FRONTEND-UX.md`
+  §14 already calls for (a narrower fan needs less lateral room). Both are
+  no-ops in landscape and for a caller that passes its own `maxVisible`.
+  Camera and seat-ring radius are untouched — both are tuned/verified
+  elsewhere, so this fix stays local to the one component that owns "where
+  an opponent's cards render".
 -->
 <script lang="ts">
-	import { T } from '@threlte/core';
+	import { T, useThrelte } from '@threlte/core';
 	import { Tween } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
 	import Card from '$lib/three/cards/Card.svelte';
 	import { CARD_ASPECT, fanPositions } from './layout';
 	import { dealOrigin, lerpPose } from './cardMotion';
 	import { TEMPO, flightMs } from './tempo';
+	import { isPortrait } from '$lib/three/scene/breakpoints';
 	import type { Seat } from '$lib/euchre';
 
 	interface Props {
@@ -63,7 +88,33 @@
 		reducedMotion = false
 	}: Props = $props();
 
-	const visibleCount = $derived(Math.max(0, Math.min(count, maxVisible ?? count)));
+	const { size } = useThrelte();
+	const aspect = $derived($size.width / Math.max(1, $size.height));
+	const portrait = $derived(isPortrait(aspect));
+
+	/** West/East only — see the module doc's "Portrait: West/East edge clipping" section. North isn't clipped and its local `+Z` points toward the human, not the centre. */
+	const isSideSeat = $derived(seat === 1 || seat === 3);
+
+	/**
+	 * §14's "3-card visual stack" is the default the moment nobody overrides
+	 * it — a caller's own `maxVisible` (if `TableScene.svelte` ever passes
+	 * one) still wins outright.
+	 */
+	const effectiveMaxVisible = $derived(maxVisible ?? (portrait ? 3 : count));
+	const visibleCount = $derived(Math.max(0, Math.min(count, effectiveMaxVisible)));
+
+	/**
+	 * World-unit pull toward the table centre, along this anchor's local
+	 * `+Z` — the fixed amount needed to bring West/East back inside the
+	 * portrait camera's (much narrower) horizontal FOV. Verified empirically
+	 * against a 390×844 screenshot (`docs/04-FRONTEND-UX.md` §14's own
+	 * "verified against a screenshot, not guessed" standard) rather than
+	 * derived from the camera's closed form: `CameraRig`'s pitch couples fov,
+	 * `dist` and the look-at target together in a way that isn't worth
+	 * re-deriving here for a single scalar this component alone consumes.
+	 */
+	const PORTRAIT_SIDE_INSET = 0.1;
+	const sideInset = $derived(portrait && isSideSeat ? PORTRAIT_SIDE_INSET : 0);
 
 	const poses = $derived(
 		fanPositions(visibleCount, {
@@ -115,7 +166,7 @@
 	}
 </script>
 
-<T.Group>
+<T.Group position={[0, 0, sideInset]}>
 	<!--
 		These slots are anonymous and interchangeable by construction (a face-down
 		back carries no identity), so a synthetic per-slot key is the correct,

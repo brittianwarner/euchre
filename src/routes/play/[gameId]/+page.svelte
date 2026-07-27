@@ -174,11 +174,14 @@
 		Onboarding-layer overlays: neither is part of the felt's corner grid.
 		`Walkthrough` is a modal `<dialog>` (its own ::backdrop covers the
 		viewport regardless of where it sits in the DOM) that only auto-opens
-		once `displayView` exists — see its own `ready` prop — so it never
-		appears over the "Connecting…" state. `GameAnnouncer` is a visually
-		hidden aria-live region; it renders nothing on screen.
+		once `displayView` shows a real, dealt hand — it derives that itself
+		from the `view` passed straight through here, so it never appears over
+		the "Connecting…" state *or* the cutting screen (a `view` exists,
+		non-null, during `cutting` too — see `Walkthrough`'s own doc comment).
+		`GameAnnouncer` is a visually hidden aria-live region; it renders
+		nothing on screen.
 	-->
-	<Walkthrough ready={displayView !== null} bind:open={tourOpen} />
+	<Walkthrough view={displayView} bind:open={tourOpen} />
 	<GameAnnouncer steps={lastSteps} view={displayView} />
 
 	{#if !store.view}
@@ -312,6 +315,41 @@
 	}
 	.footer a {
 		color: #d4b57a;
+	}
+	/*
+	 * North's nameplate is an `<HTML center>` billboard anchored to a fixed 3D
+	 * point, not a DOM sibling this column can push against: its own font/tags
+	 * add roughly no height, but its projected screen Y is a near-constant
+	 * *fraction* of the canvas height (CameraRig's portrait fov/dist are
+	 * constants, so the vertical projection fraction of any fixed depth is
+	 * independent of the canvas's actual width or height) — confirmed by
+	 * measurement at 390 CSS px wide: its badge sits at ~28% of viewport
+	 * height at every height from 667 to 1500px.
+	 *
+	 * `.footer`, by contrast, sits at a content-driven, essentially
+	 * viewport-height-*independent* pixel offset from the top (this column's
+	 * own text never changes size with a taller window). Those two facts
+	 * combine badly for a portrait window that is merely narrow rather than
+	 * phone-shaped — e.g. a desktop browser resized narrow at full monitor
+	 * height, not just an actual handset: past roughly 960 CSS px of height
+	 * North's ~28%-of-height badge catches up to and passes this link's fixed
+	 * position, overlapping it (verified by a width/height sweep — no overlap
+	 * below ~960px or above ~1150px, real overlap in between, at every
+	 * portrait width tried from 320 to 760).
+	 *
+	 * The fix moves the chrome: give the link a floor that *also* grows with
+	 * viewport height, at a steeper 32%-of-height rate than North's ~28–31%,
+	 * so above the crossover this margin out-paces North's badge and the gap
+	 * only widens from there — while `max()` keeps it a no-op (falls back to
+	 * the plain 0.4rem above) at every normal phone height, where the vh term
+	 * is negative. Scoped to portrait only (`isPortrait`'s own 0.8 threshold,
+	 * `$lib/three/scene/breakpoints.ts`) since landscape's nameplate sits at a
+	 * different, unrelated fraction.
+	 */
+	@media (max-aspect-ratio: 4/5) {
+		.footer {
+			margin-top: max(0.4rem, 32vh - 18.5rem);
+		}
 	}
 
 	.hud {

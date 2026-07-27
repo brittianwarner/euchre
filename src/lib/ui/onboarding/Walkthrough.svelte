@@ -1,8 +1,11 @@
 <!--
   Walkthrough — the first-run table tour.
 
-  Appears exactly once per browser, the moment a real hand is on the felt
-  (`ready` flips true), and never again on its own. It never blocks play: every
+  Appears exactly once per browser, the moment a real hand is on the felt —
+  computed from the live `view` (see `ready` below), not merely from a `view`
+  existing at all: a `view` can arrive as early as the `cutting` phase, before
+  a single card is dealt, and this tour must never cover that screen. It
+  never blocks play: every
   step has a "Skip" as well as "Next", Esc and a backdrop click all dismiss it,
   and dismissing it — by any route — marks it seen for good. A caller may also
   reopen it deliberately (`bind:open`) for a "show me around again" link
@@ -17,16 +20,40 @@
   actually enforces.
 -->
 <script lang="ts">
+	import type { PublicGameView } from '$lib/protocol';
+
 	const SEEN_KEY = 'euchre:onboarding:v1:seen';
 
+	/**
+	 * Phases in which `view.hand` is legitimately still empty because no hand
+	 * has been dealt yet (`deal` is the engine-only phase between `cutting`
+	 * and the first bid — see `GamePhase`'s doc comment in `$lib/euchre/types.ts`).
+	 * Every later phase can *also* show an empty `hand` — the sitting seat under
+	 * a loner (V8) — which is exactly why "hand non-empty" alone isn't the full
+	 * gate below; either signal proves a hand was actually dealt this game.
+	 */
+	const PRE_DEAL_PHASES = new Set<PublicGameView['phase']>(['lobby', 'cutting', 'deal']);
+
 	interface Props {
-		/** True once a real hand is showing — don't open this over "Connecting…". */
-		ready: boolean;
+		/**
+		 * The live view, or `null` before one exists at all. A `view` can arrive
+		 * as early as the `cutting` phase — before a single card is dealt — so
+		 * `ready` below (a *real, dealt* hand on the felt) is computed from it
+		 * rather than taken as a caller-supplied flag: a caller checking only
+		 * "does a view exist" was exactly the bug that let this tour open over
+		 * the cutting screen.
+		 */
+		view: PublicGameView | null;
 		/** Bindable so a "replay the tour" affordance elsewhere can force it open. */
 		open?: boolean;
 	}
 
-	let { ready, open = $bindable(false) }: Props = $props();
+	let { view, open = $bindable(false) }: Props = $props();
+
+	/** True once a real, dealt hand is showing — not merely once a `view` exists (`cutting`/`deal` don't count; see `PRE_DEAL_PHASES`). */
+	const ready = $derived(
+		view !== null && (view.hand.length > 0 || !PRE_DEAL_PHASES.has(view.phase))
+	);
 
 	function hasSeenTour(): boolean {
 		try {
