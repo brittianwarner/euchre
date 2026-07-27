@@ -9,6 +9,7 @@
   the only thing that ever actually changes the game.
 -->
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { withActorParams } from '@rivetkit/svelte';
 	import { rivetContext } from '$lib/client/rivet';
 	import { TableStore, type TableActorHandle } from '$lib/game/table.svelte';
@@ -84,10 +85,30 @@
 	 * ---------------------------------------------------------------------- */
 	let optimistic = $state<{ readonly forV: number; readonly view: PublicGameView } | null>(null);
 
+	/**
+	 * The last view we ever had, never revoked.
+	 *
+	 * This is a latch on purpose. The 3D table is mounted behind `{#if displayView}`,
+	 * so a SINGLE frame where this returns `null` tears `EuchreTable3D` down and
+	 * builds it again — and a fresh mount replays the whole deal-in choreography.
+	 * On screen that is the hand appearing to be re-dealt, and because it is driven
+	 * by a transient rather than by state, it recurs unpredictably as play goes on.
+	 *
+	 * Once a hand exists there is no legitimate reason to show *nothing*: a dropped
+	 * or in-flight sync should leave the last frame on screen until the next one
+	 * lands, exactly like every other realtime renderer.
+	 */
+	let lastGoodView = $state.raw<PublicGameView | null>(null);
+
 	const displayView = $derived.by((): PublicGameView | null => {
-		if (!store.view) return null;
-		if (optimistic && optimistic.forV === store.view.v) return optimistic.view;
-		return store.view;
+		const live = store.view;
+		if (!live) return lastGoodView; // hold the last frame, never blank the table
+		return optimistic && optimistic.forV === live.v ? optimistic.view : live;
+	});
+
+	$effect(() => {
+		const v = displayView;
+		if (v) untrack(() => (lastGoodView = v));
 	});
 
 	/**
