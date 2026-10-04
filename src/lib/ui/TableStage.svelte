@@ -796,6 +796,7 @@
 		}
 		.trick-score strong {
 			font-size: 14px;
+			white-space: nowrap;
 			margin: 0;
 			gap: 6px;
 		}
@@ -926,5 +927,21 @@
 			top: -5px;
 			right: 0;
 		}
+		.bid-table h2 {
+			font-size: 18px;
+			line-height: 1.2;
+			margin: 0;
+		}
+		.bid-table p,
+		.felt-content:has(.bid-table) .trick-result {
+			display: none;
+		}
+	}
+	@media (max-width: 360px) {
+		.trump strong { font-size: 18px; }
+		.trick-score { flex-direction: column; align-items: flex-start; gap: 2px; }
+		.trick-score strong { font-size: 13px; }
+		.trick-score b { font-size: 18px; }
+		.trick-result { font-size: 12px; }
 	}
 </style>

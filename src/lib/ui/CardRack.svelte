@@ -359,12 +359,10 @@
 			padding-top: 8px;
 		}
 		.artwork {
-			width: min(100cqw, calc((100cqh - 34px) * 5 / 7));
+			width: min(100cqw, calc((100cqh - 12px) * 5 / 7));
 		}
 		.card-label {
-			font-size: 13px;
-			line-height: 1.2;
-			padding-top: 6px;
+			display: none;
 		}
 		.card-label small {
 			display: none;
@@ -383,8 +381,8 @@
 	}
 	@media (max-width: 700px) and (max-height: 750px) {
 		ul {
-			grid-template-columns: repeat(var(--card-count), minmax(0, 1fr));
-			gap: 7px;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 6px 14px;
 		}
 		.card-label {
 			font-size: 12px;

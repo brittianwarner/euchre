@@ -296,7 +296,7 @@
 									: 'Make yourself at home.'}
 						</h1>
 					</div>
-					{#if displayView.status === 'active' && (displayView.phase === 'trick_play' || displayView.phase === 'dealer_discard')}
+					{#if displayView.status === 'active' && (displayView.phase === 'trick_play' || displayView.phase === 'trick_resolve' || displayView.phase === 'dealer_discard')}
 						<button
 							type="button"
 							class="confirm-card"
@@ -640,7 +640,7 @@
 		display: grid;
 		grid-template-rows: minmax(0, 1.06fr) minmax(0, 0.94fr);
 		gap: 12px;
-		padding: 14px 28px 10px;
+		padding: 14px 28px max(10px, env(safe-area-inset-bottom));
 	}
 	.hand-area {
 		min-height: 0;
@@ -648,6 +648,10 @@
 		display: grid;
 		grid-template-rows: auto auto minmax(0, 1fr) auto;
 	}
+	.hand-heading { grid-row: 1; }
+	.instruction { grid-row: 2; }
+	.hand-area :global(.card-rack) { grid-row: 3; }
+	.bid-controls { grid-row: 4; }
 	.hand-heading h1 {
 		font-size: 27px;
 	}
@@ -706,7 +710,7 @@
 		.table-layout {
 			grid-template-rows: minmax(0, 0.92fr) minmax(0, 1.08fr);
 			gap: 8px;
-			padding: 8px 10px;
+			padding: 8px 10px max(8px, env(safe-area-inset-bottom));
 		}
 		.hand-area {
 			padding: 0 4px;
@@ -763,7 +767,7 @@
 	}
 	@media (max-width: 700px) and (max-height: 750px) {
 		.table-layout {
-			grid-template-rows: minmax(0, 1.3fr) minmax(0, 0.7fr);
+			grid-template-rows: minmax(0, 0.9fr) minmax(0, 1.1fr);
 		}
 		.hand-area.bidding .bid-controls {
 			margin: 0;
@@ -774,7 +778,21 @@
 	}
 	@media (max-width: 700px) and (max-height: 750px) {
 		.table-layout:has(.hand-area.bidding) {
-			grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+			grid-template-rows: minmax(0, 0.7fr) minmax(0, 1.3fr);
 		}
+	}
+	@media (orientation: landscape) and (max-height: 500px) {
+		.game-header { min-height: 60px; gap: 8px; padding: 6px 12px; }
+		.table-tools { width: auto; margin-left: auto; }
+		.table-layout,
+		.table-layout:has(.hand-area.bidding) {
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+			grid-template-rows: minmax(0, 1fr);
+			padding: 8px 10px max(8px, env(safe-area-inset-bottom));
+		}
+		.hand-area { padding: 0 4px; }
+		.hand-heading h1 { display: none; }
+		.hand-heading .eyebrow { font-size: 15px; }
+		.confirm-card { min-width: 0; font-size: 14px; padding: 8px; }
 	}
 </style>
