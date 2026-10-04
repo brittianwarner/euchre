@@ -14,8 +14,8 @@
   docs/02-GAME-RULES-ENGINE.md §5 and §10 for the normative source.
 -->
 <script lang="ts">
-	import { SUIT_NAME, bowersOf, cardNameLower, suitOf } from '$lib/euchre';
-	import type { GamePhase, PublicGameView, Suit } from '$lib/protocol';
+	import { SUIT_NAME, bowersOf, cardNameLower, suitOf } from '#lib/euchre/index.ts';
+	import type { GamePhase, PublicGameView, Suit } from '#lib/protocol/index.ts';
 
 	interface Props {
 		view: PublicGameView | null;
@@ -80,7 +80,10 @@
 				};
 			}
 			case 'trick_resolve':
-				return { title: 'Right now: the trick just finished', body: 'Watch the felt — the winner leads next.' };
+				return {
+					title: 'Right now: the trick just finished',
+					body: 'Watch the felt — the winner leads next.'
+				};
 			case 'hand_score':
 				return { title: 'Right now: scoring the hand', body: 'The next hand deals in a moment.' };
 			case 'game_over':
@@ -131,7 +134,7 @@
 			title: 'Bidding, round one',
 			body:
 				'One card is turned face up. Starting left of the dealer, each player may "order it up" — making ' +
-				'its suit trump for the hand — or pass. If the dealer\'s side orders it up, the dealer picks the ' +
+				"its suit trump for the hand — or pass. If the dealer's side orders it up, the dealer picks the " +
 				'card into hand and discards one card face down.'
 		},
 		{
@@ -147,7 +150,7 @@
 			title: 'Going alone',
 			body:
 				'Whoever calls trump may go alone: their partner sits out entirely and they play all five ' +
-				'tricks solo against both opponents. Win all 5 alone and it\'s worth 4 points instead of 2.'
+				"tricks solo against both opponents. Win all 5 alone and it's worth 4 points instead of 2."
 		},
 		{
 			id: 'scoring',
@@ -158,7 +161,7 @@
 		},
 		{
 			id: 'talk',
-			title: 'What you\'ll hear at the table',
+			title: "What you'll hear at the table",
 			body:
 				'"Order it up." / "I assist." (dealer\'s partner) / "I take it." or "Turn it down." (dealer) / ' +
 				'"Next." or "crossing the creek" (round two) / "You\'re stuck" (dealer forced to call) / "March!" / "Euchre!"'
@@ -168,19 +171,32 @@
 	const filtered = $derived.by((): readonly Section[] => {
 		const q = query.trim().toLowerCase();
 		if (q.length === 0) return sections;
-		return sections.filter((s) => s.title.toLowerCase().includes(q) || s.body.toLowerCase().includes(q));
+		return sections.filter(
+			(s) => s.title.toLowerCase().includes(q) || s.body.toLowerCase().includes(q)
+		);
 	});
 
 	const note = $derived(contextNote(view));
 </script>
 
-<button type="button" class="trigger" aria-haspopup="dialog" aria-label="Rules and help" onclick={open}>
+<button
+	type="button"
+	class="trigger"
+	aria-haspopup="dialog"
+	aria-label="Rules and help"
+	onclick={open}
+>
 	?
 </button>
 
-<dialog bind:this={dialogEl} class="rules" aria-labelledby="rules-title" onclick={(e) => {
-	if (e.target === dialogEl) close();
-}}>
+<dialog
+	bind:this={dialogEl}
+	class="rules"
+	aria-labelledby="rules-title"
+	onclick={(e) => {
+		if (e.target === dialogEl) close();
+	}}
+>
 	<div class="sheet">
 		<header>
 			<h2 id="rules-title">How to play</h2>

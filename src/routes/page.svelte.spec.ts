@@ -7,7 +7,9 @@ describe('/+page.svelte', () => {
 	it('should render the brand and deal CTA', async () => {
 		render(Page);
 
-		await expect.element(page.getByRole('link', { name: 'Deal a hand' })).toBeInTheDocument();
-		await expect.element(page.getByText('Kitchen-table euchre against three sharp seats.')).toBeInTheDocument();
+		await expect.element(page.getByRole('link', { name: /Let’s play/ })).toBeInTheDocument();
+		await expect
+			.element(page.getByRole('heading', { level: 1, name: 'A little nerve. A great hand.' }))
+			.toBeInTheDocument();
 	});
 });

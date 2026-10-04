@@ -3,23 +3,29 @@
  * The browser never creates a game; this load is the only CREATE path for M2.
  */
 
+import * as env from '$app/env/private';
 import { redirect } from '@sveltejs/kit';
-import { DEV_USER_ID } from '$lib/actors/auth/verify';
-import { getRivetClient } from '$lib/server/rivet';
-import { defaultPersonas } from '$lib/server/personas';
+import { guestIdentity } from '#lib/server/guest.ts';
+import { getRivetClient } from '#lib/server/rivet.ts';
+import { defaultPersonas } from '#lib/server/personas.ts';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ fetch, cookies }) => {
+	// Cold local starts must initialize the engine before the first actor create.
+	if (!env.RIVET_ENDPOINT) {
+		const response = await fetch('/api/rivet/metadata');
+		if (!response.ok) throw new Error('The local table service could not start');
+	}
 	const gameId = crypto.randomUUID();
 	const client = getRivetClient();
 
 	await client.euchreTable.create(['table', gameId], {
 		input: {
-			ownerUserId: DEV_USER_ID,
+			ownerUserId: await guestIdentity(cookies),
 			seed: gameId.replace(/-/g, '').slice(0, 32),
 			personas: defaultPersonas(),
-			// Local M2: shorter matches while tempo/AI pacing is still being tuned.
-			cfg: { gameTo: 5 }
+			// Standard euchre match.
+			cfg: { gameTo: 10 }
 		}
 	});
 

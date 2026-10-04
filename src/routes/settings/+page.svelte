@@ -15,10 +15,10 @@
 		PERSONA_NAME_MAX_CHARS,
 		PERSONA_PROMPT_MAX_CHARS,
 		type Difficulty
-	} from '$lib/protocol';
-	import { AI_SEATS } from '$lib/actors/player-profile/types';
-	import IdentityGate from '$lib/ui/IdentityGate.svelte';
-	import PlayingAs from '$lib/ui/PlayingAs.svelte';
+	} from '#lib/protocol/index.ts';
+	import { AI_SEATS } from '#lib/actors/player-profile/types.ts';
+	import IdentityGate from '#lib/ui/IdentityGate.svelte';
+	import PlayingAs from '#lib/ui/PlayingAs.svelte';
 	import { PERSONA_PRESETS, type PersonaPreset } from './presets';
 
 	let { data, form } = $props();
@@ -99,202 +99,206 @@
 </svelte:head>
 
 <main class="page">
-<div class="content">
-	{#if data.identity === null}
-		<IdentityGate
-			heading="Whose opponents are these?"
-			lede="Tell us an email and the three seats you set up here will be waiting every time you play."
-			errorMessage={form?.error ?? null}
-		/>
-	{:else}
-		<header class="page-head">
-			<p class="brand">Euchre</p>
-			<h1>Settings</h1>
-			<PlayingAs email={data.identity.email} />
-		</header>
+	<div class="content">
+		{#if data.identity === null}
+			<IdentityGate
+				heading="Whose opponents are these?"
+				lede="Tell us an email and the three seats you set up here will be waiting every time you play."
+				errorMessage={form?.error ?? null}
+			/>
+		{:else}
+			<header class="page-head">
+				<p class="brand">Euchre</p>
+				<h1>Settings</h1>
+				<PlayingAs email={data.identity.email} />
+			</header>
 
-		{#if data.loadError}
-			<p class="banner error">Couldn't open your settings just now. Try refreshing the page.</p>
-		{:else if data.settings}
-			<div class="disclaimer">
-				<p>
-					<strong>What this does and doesn't do:</strong> everything below shapes how your three opponents
-					sound and how readily they bid or gamble. <strong>It cannot change the rules of euchre, let a
-					seat see cards it shouldn't, or make an illegal move legal</strong> — those are enforced by the
-					game itself and no amount of text here reaches them. Treat these prompts the way you'd treat
-					a note passed to an actor, not a rulebook.
-				</p>
-			</div>
-
-			<form method="POST" action="?/save" class="settings-form">
-				{#if form?.error}
-					<p class="banner error" role="alert">{form.error}</p>
-				{/if}
-				{#if form?.saved}
-					<p class="banner success" role="status">Saved. Your next match will use these.</p>
-				{/if}
-
-				<section class="card">
-					<h2>The table</h2>
-					<p class="hint">How the game presents itself. Nothing here touches how anyone plays.</p>
-					<div class="table-grid">
-						<label class="field">
-							<span>Pace</span>
-							<select name="pace" bind:value={table.pace}>
-								<option value="brisk">Brisk</option>
-								<option value="normal">Normal</option>
-								<option value="relaxed">Relaxed</option>
-							</select>
-						</label>
-						<label class="check">
-							<input type="checkbox" name="banter" bind:checked={table.banter} />
-							<span>Let opponents talk at the table</span>
-						</label>
-						<label class="check">
-							<input type="checkbox" name="showRationale" bind:checked={table.showRationale} />
-							<span>Show each seat's reasoning after a hand</span>
-						</label>
-						<label class="check">
-							<input type="checkbox" name="sound" bind:checked={table.sound} />
-							<span>Sound</span>
-						</label>
-						<label class="check">
-							<input type="checkbox" name="reduceMotion" bind:checked={table.reduceMotion} />
-							<span>Reduce motion</span>
-						</label>
-					</div>
-				</section>
-
-				<section class="card">
-					<h2>House prompt</h2>
-					<p class="hint">
-						Sets the overall mood of the table — applies quietly to all three opponents at once.
+			{#if data.loadError}
+				<p class="banner error">Couldn't open your settings just now. Try refreshing the page.</p>
+			{:else if data.settings}
+				<div class="disclaimer">
+					<p>
+						<strong>What this does and doesn't do:</strong> everything below shapes how your three
+						opponents sound and how readily they bid or gamble.
+						<strong
+							>It cannot change the rules of euchre, let a seat see cards it shouldn't, or make an
+							illegal move legal</strong
+						> — those are enforced by the game itself and no amount of text here reaches them. Treat these
+						prompts the way you'd treat a note passed to an actor, not a rulebook.
 					</p>
-					<textarea
-						name="housePrompt"
-						rows="3"
-						maxlength={HOUSE_PROMPT_MAX_CHARS}
-						bind:value={housePrompt}
-					></textarea>
-					<p class="count" class:near={housePrompt.length > HOUSE_PROMPT_MAX_CHARS * 0.9}>
-						{housePrompt.length} / {HOUSE_PROMPT_MAX_CHARS}
-					</p>
-				</section>
+				</div>
 
-				{#each AI_SEATS as seat, index (seat)}
-					{@const pf = personaForms[index]}
-					<section class="card persona">
-						<h2>{SEAT_LABEL[seat]}</h2>
+				<form method="POST" action="?/save" class="settings-form">
+					{#if form?.error}
+						<p class="banner error" role="alert">{form.error}</p>
+					{/if}
+					{#if form?.saved}
+						<p class="banner success" role="status">Saved. Your next match will use these.</p>
+					{/if}
 
-						<label class="field">
-							<span>Name</span>
-							<input
-								type="text"
-								name={fieldName(seat, 'name')}
-								maxlength={PERSONA_NAME_MAX_CHARS}
-								bind:value={pf.name}
-							/>
-						</label>
-						<p class="count" class:near={pf.name.length > PERSONA_NAME_MAX_CHARS * 0.9}>
-							{pf.name.length} / {PERSONA_NAME_MAX_CHARS}
-						</p>
-
-						<label class="field">
-							<span>One-line blurb (shown at the table)</span>
-							<input
-								type="text"
-								name={fieldName(seat, 'blurb')}
-								maxlength={PERSONA_BLURB_MAX_CHARS}
-								bind:value={pf.blurb}
-							/>
-						</label>
-						<p class="count" class:near={pf.blurb.length > PERSONA_BLURB_MAX_CHARS * 0.9}>
-							{pf.blurb.length} / {PERSONA_BLURB_MAX_CHARS}
-						</p>
-
-						<fieldset class="dials">
-							<label class="dial">
-								<span>How eagerly they bid — {pct(pf.aggression)}</span>
-								<input
-									type="range"
-									name={fieldName(seat, 'aggression')}
-									min={DIAL_MIN}
-									max={DIAL_MAX}
-									step="0.05"
-									bind:value={pf.aggression}
-								/>
+					<section class="card">
+						<h2>The table</h2>
+						<p class="hint">How the game presents itself. Nothing here touches how anyone plays.</p>
+						<div class="table-grid">
+							<label class="field">
+								<span>Pace</span>
+								<select name="pace" bind:value={table.pace}>
+									<option value="brisk">Brisk</option>
+									<option value="normal">Normal</option>
+									<option value="relaxed">Relaxed</option>
+								</select>
 							</label>
-							<label class="dial">
-								<span>How much they'll gamble on a call — {pct(pf.risk)}</span>
-								<input
-									type="range"
-									name={fieldName(seat, 'risk')}
-									min={DIAL_MIN}
-									max={DIAL_MAX}
-									step="0.05"
-									bind:value={pf.risk}
-								/>
+							<label class="check">
+								<input type="checkbox" name="banter" bind:checked={table.banter} />
+								<span>Let opponents talk at the table</span>
 							</label>
-							<label class="dial">
-								<span>How much they talk — {pct(pf.chattiness)}</span>
-								<input
-									type="range"
-									name={fieldName(seat, 'chattiness')}
-									min={DIAL_MIN}
-									max={DIAL_MAX}
-									step="0.05"
-									bind:value={pf.chattiness}
-								/>
+							<label class="check">
+								<input type="checkbox" name="showRationale" bind:checked={table.showRationale} />
+								<span>Show each seat's reasoning after a hand</span>
 							</label>
-						</fieldset>
-
-						<label class="field">
-							<span>Difficulty</span>
-							<select name={fieldName(seat, 'difficulty')} bind:value={pf.difficulty}>
-								{#each DIFFICULTIES as level (level)}
-									<option value={level}>{level}</option>
-								{/each}
-							</select>
-						</label>
-						<p class="hint small">{DIFFICULTY_EXPLAIN[pf.difficulty]}</p>
-
-						<div class="presets">
-							<p class="hint small">One-tap starting points — fills in the blurb, prompt and
-								dials below, doesn't save until you do:</p>
-							<div class="chips">
-								{#each PERSONA_PRESETS as preset (preset.id)}
-									<button
-										type="button"
-										class="chip"
-										title={preset.hint}
-										onclick={() => applyPreset(index, preset)}
-									>
-										{preset.label}
-									</button>
-								{/each}
-							</div>
+							<label class="check">
+								<input type="checkbox" name="sound" bind:checked={table.sound} />
+								<span>Sound</span>
+							</label>
+							<label class="check">
+								<input type="checkbox" name="reduceMotion" bind:checked={table.reduceMotion} />
+								<span>Reduce motion</span>
+							</label>
 						</div>
+					</section>
 
-						<label class="field">
-							<span>Character prompt — untrusted text, style only</span>
-							<textarea
-								name={fieldName(seat, 'prompt')}
-								rows="4"
-								maxlength={PERSONA_PROMPT_MAX_CHARS}
-								bind:value={pf.prompt}
-							></textarea>
-						</label>
-						<p class="count" class:near={pf.prompt.length > PERSONA_PROMPT_MAX_CHARS * 0.9}>
-							{pf.prompt.length} / {PERSONA_PROMPT_MAX_CHARS}
+					<section class="card">
+						<h2>House prompt</h2>
+						<p class="hint">
+							Sets the overall mood of the table — applies quietly to all three opponents at once.
+						</p>
+						<textarea
+							name="housePrompt"
+							rows="3"
+							maxlength={HOUSE_PROMPT_MAX_CHARS}
+							bind:value={housePrompt}
+						></textarea>
+						<p class="count" class:near={housePrompt.length > HOUSE_PROMPT_MAX_CHARS * 0.9}>
+							{housePrompt.length} / {HOUSE_PROMPT_MAX_CHARS}
 						</p>
 					</section>
-				{/each}
 
-				<button type="submit" class="save">Save changes</button>
-			</form>
+					{#each AI_SEATS as seat, index (seat)}
+						{@const pf = personaForms[index]}
+						<section class="card persona">
+							<h2>{SEAT_LABEL[seat]}</h2>
+
+							<label class="field">
+								<span>Name</span>
+								<input
+									type="text"
+									name={fieldName(seat, 'name')}
+									maxlength={PERSONA_NAME_MAX_CHARS}
+									bind:value={pf.name}
+								/>
+							</label>
+							<p class="count" class:near={pf.name.length > PERSONA_NAME_MAX_CHARS * 0.9}>
+								{pf.name.length} / {PERSONA_NAME_MAX_CHARS}
+							</p>
+
+							<label class="field">
+								<span>One-line blurb (shown at the table)</span>
+								<input
+									type="text"
+									name={fieldName(seat, 'blurb')}
+									maxlength={PERSONA_BLURB_MAX_CHARS}
+									bind:value={pf.blurb}
+								/>
+							</label>
+							<p class="count" class:near={pf.blurb.length > PERSONA_BLURB_MAX_CHARS * 0.9}>
+								{pf.blurb.length} / {PERSONA_BLURB_MAX_CHARS}
+							</p>
+
+							<fieldset class="dials">
+								<label class="dial">
+									<span>How eagerly they bid — {pct(pf.aggression)}</span>
+									<input
+										type="range"
+										name={fieldName(seat, 'aggression')}
+										min={DIAL_MIN}
+										max={DIAL_MAX}
+										step="0.05"
+										bind:value={pf.aggression}
+									/>
+								</label>
+								<label class="dial">
+									<span>How much they'll gamble on a call — {pct(pf.risk)}</span>
+									<input
+										type="range"
+										name={fieldName(seat, 'risk')}
+										min={DIAL_MIN}
+										max={DIAL_MAX}
+										step="0.05"
+										bind:value={pf.risk}
+									/>
+								</label>
+								<label class="dial">
+									<span>How much they talk — {pct(pf.chattiness)}</span>
+									<input
+										type="range"
+										name={fieldName(seat, 'chattiness')}
+										min={DIAL_MIN}
+										max={DIAL_MAX}
+										step="0.05"
+										bind:value={pf.chattiness}
+									/>
+								</label>
+							</fieldset>
+
+							<label class="field">
+								<span>Difficulty</span>
+								<select name={fieldName(seat, 'difficulty')} bind:value={pf.difficulty}>
+									{#each DIFFICULTIES as level (level)}
+										<option value={level}>{level}</option>
+									{/each}
+								</select>
+							</label>
+							<p class="hint small">{DIFFICULTY_EXPLAIN[pf.difficulty]}</p>
+
+							<div class="presets">
+								<p class="hint small">
+									One-tap starting points — fills in the blurb, prompt and dials below, doesn't save
+									until you do:
+								</p>
+								<div class="chips">
+									{#each PERSONA_PRESETS as preset (preset.id)}
+										<button
+											type="button"
+											class="chip"
+											title={preset.hint}
+											onclick={() => applyPreset(index, preset)}
+										>
+											{preset.label}
+										</button>
+									{/each}
+								</div>
+							</div>
+
+							<label class="field">
+								<span>Character prompt — untrusted text, style only</span>
+								<textarea
+									name={fieldName(seat, 'prompt')}
+									rows="4"
+									maxlength={PERSONA_PROMPT_MAX_CHARS}
+									bind:value={pf.prompt}
+								></textarea>
+							</label>
+							<p class="count" class:near={pf.prompt.length > PERSONA_PROMPT_MAX_CHARS * 0.9}>
+								{pf.prompt.length} / {PERSONA_PROMPT_MAX_CHARS}
+							</p>
+						</section>
+					{/each}
+
+					<button type="submit" class="save">Save changes</button>
+				</form>
+			{/if}
 		{/if}
-	{/if}
-</div>
+	</div>
 </main>
 
 <style>

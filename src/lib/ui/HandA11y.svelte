@@ -3,7 +3,7 @@
   M2 ships this un-hidden as the playable card table (no 3D yet).
 -->
 <script lang="ts">
-	import type { LegalMoveId, PublicGameView } from '$lib/protocol';
+	import type { LegalMoveId, PublicGameView } from '#lib/protocol/index.ts';
 
 	let {
 		view,
@@ -41,9 +41,7 @@
 					type="button"
 					class:legal
 					disabled={disabled || !legal || view.phase !== 'trick_play'}
-					aria-label={legal
-						? `${card}, playable`
-						: `${card}, not playable`}
+					aria-label={legal ? `${card}, playable` : `${card}, not playable`}
 					onclick={() => onPlay(id)}
 				>
 					{card}

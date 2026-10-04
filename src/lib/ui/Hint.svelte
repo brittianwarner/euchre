@@ -19,8 +19,8 @@
 -->
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { rankMoves } from '$lib/ai/heuristic';
-	import type { LegalMoveId, PublicGameView } from '$lib/protocol';
+	import { rankMoves } from '#lib/ai/heuristic.ts';
+	import type { LegalMoveId, PublicGameView } from '#lib/protocol/index.ts';
 
 	const ENABLED_KEY = 'euchre:hints:v1:enabled';
 	const STREAK_KEY = 'euchre:hints:v1:streaks';
@@ -140,7 +140,8 @@
 
 	/** Some heuristic `why` strings ("run 'em") just restate the move's own label ("Run 'em") — skip the redundant echo. */
 	const whyIsRedundant = $derived(
-		suggestion !== null && suggestion.why.trim().toLowerCase() === suggestion.label.trim().toLowerCase()
+		suggestion !== null &&
+			suggestion.why.trim().toLowerCase() === suggestion.label.trim().toLowerCase()
 	);
 
 	/**
@@ -174,13 +175,18 @@
 
 <div class="hint">
 	<label class="toggle">
-		<input type="checkbox" checked={enabled} onchange={(e) => setEnabled(e.currentTarget.checked)} />
+		<input
+			type="checkbox"
+			checked={enabled}
+			onchange={(e) => setEnabled(e.currentTarget.checked)}
+		/>
 		Hints
 	</label>
 
 	{#if enabled && suggestion !== null && !retired}
 		<p class="suggestion" role="status">
-			Try: <strong>{suggestion.label}</strong>{#if suggestion.why && !whyIsRedundant} — {gloss(suggestion.why)}{/if}
+			Try: <strong>{suggestion.label}</strong>{#if suggestion.why && !whyIsRedundant}
+				— {gloss(suggestion.why)}{/if}
 		</p>
 	{/if}
 </div>

@@ -43,11 +43,11 @@
 	import { T } from '@threlte/core';
 	import { Tween } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
-	import Card from '$lib/three/cards/Card.svelte';
+	import Card from '#lib/three/cards/Card.svelte';
 	import { CARD_ASPECT, stackPositions } from './layout';
 	import { TEMPO, flightMs } from './tempo';
 	import type { KittyStage } from './layout';
-	import type { CardId } from '$lib/euchre';
+	import type { CardId } from '#lib/euchre/index.ts';
 
 	interface Props {
 		stage: KittyStage;

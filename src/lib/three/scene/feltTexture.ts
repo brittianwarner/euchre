@@ -20,7 +20,7 @@ import {
 	SRGBColorSpace
 } from 'three';
 
-const SIZE = 256;
+const SIZE = 512;
 let cached: CanvasTexture | null = null;
 
 /** Deterministic "noise" — a fixed felt grain, not a per-load random one, so screenshots are stable. */
@@ -30,8 +30,8 @@ function grain(x: number, y: number): number {
 }
 
 function paint(ctx: CanvasRenderingContext2D): void {
-	const base = '#2c5c46'; // warm felt green, not a cold billiard green
-	const edge = '#1c3f30';
+	const base = '#245a49'; // warm felt green, not a cold billiard green
+	const edge = '#10382c';
 
 	const grad = ctx.createRadialGradient(
 		SIZE / 2,
@@ -55,6 +55,25 @@ function paint(ctx: CanvasRenderingContext2D): void {
 		ctx.fillStyle = `rgba(${shade},${shade},${shade},0.05)`;
 		ctx.fillRect(x, y, 1, 1);
 	}
+	// Baked tailoring and a quiet club mark add detail without extra geometry,
+	// lights, shaders, or work in the animation loop.
+	ctx.strokeStyle = 'rgba(218,230,176,0.22)';
+	ctx.lineWidth = 1;
+	ctx.beginPath();
+	ctx.arc(SIZE / 2, SIZE / 2, SIZE * 0.455, 0, Math.PI * 2);
+	ctx.stroke();
+	ctx.setLineDash([2, 4]);
+	ctx.beginPath();
+	ctx.arc(SIZE / 2, SIZE / 2, SIZE * 0.443, 0, Math.PI * 2);
+	ctx.stroke();
+	ctx.setLineDash([]);
+	ctx.fillStyle = 'rgba(223,234,197,0.16)';
+	ctx.textAlign = 'center';
+	ctx.textBaseline = 'middle';
+	ctx.font = '36px Georgia';
+	ctx.fillText('♣', SIZE / 2, SIZE * 0.38);
+	ctx.font = 'italic 20px Georgia';
+	ctx.fillText('euchre', SIZE / 2, SIZE * 0.45);
 }
 
 function makeCanvas(): HTMLCanvasElement | null {

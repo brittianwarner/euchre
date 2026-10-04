@@ -52,7 +52,7 @@ import type {
 	Step,
 	Suit,
 	Team
-} from '$lib/euchre';
+} from '#lib/euchre/index.ts';
 
 /* ========================================================================== */
 /* Engine re-exports                                                          */
@@ -95,7 +95,7 @@ export type {
 	Suit,
 	Team,
 	Trick
-} from '$lib/euchre';
+} from '#lib/euchre/index.ts';
 
 /**
  * `GameState` is deliberately **not** re-exported. It holds all four hands, the
@@ -140,6 +140,8 @@ export const PROTOCOL_VERSION = 1 as const;
  * @see TableConnState for the server-derived twin.
  */
 export interface TableConnectParams {
+	/** Server-only per-match credential for stateless actor messages. */
+	readonly internalToken?: string;
 	/**
 	 * A short-lived (~15 min) JWT minted by `POST /api/rivet-token`, audience
 	 * `euchre-actors`. Verified in `createConnState` against the JWKS cached in
@@ -166,7 +168,7 @@ export interface TableConnectParams {
  * projection seat is not its owner's seat, which requires re-deriving the whole of
  * `docs/01-ARCHITECTURE.md` §6.2. Spectators do not exist.
  */
-export type ConnRole = 'player';
+export type ConnRole = 'player' | 'internal';
 
 /**
  * **SERVER-DERIVED. TRUSTED.** What `createConnState` computed after verifying

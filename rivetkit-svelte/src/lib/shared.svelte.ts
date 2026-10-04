@@ -7,7 +7,7 @@
  * @module
  */
 
-import type { ActorOptions, AnyActorRegistry } from "@rivetkit/framework-base";
+import type { AnyActorRegistry } from "./internal/framework-base.js";
 import type {
   ActorConn,
   ActorConnStatus,
@@ -18,6 +18,7 @@ import type {
 import {
   createRivetKitWithClient,
   type RivetKit,
+  type SvelteActorOptions,
   type SvelteRivetKitOptions,
 } from "./rivetkit.svelte.js";
 import type { MaybeGetter } from "./internal/types.js";
@@ -51,9 +52,9 @@ export function withActorParams<
   Registry extends AnyActorRegistry,
   ActorName extends keyof ExtractActorsFromRegistry<Registry> & string,
 >(
-  base: MaybeGetter<ActorOptions<Registry, ActorName>>,
+  base: MaybeGetter<SvelteActorOptions<Registry, ActorName>>,
   params: MaybeGetter<Record<string, unknown> | undefined>,
-): () => ActorOptions<Registry, ActorName> {
+): () => SvelteActorOptions<Registry, ActorName> {
   return () => {
     const resolvedBase = extract(base);
     const resolvedParams = extract(params);
@@ -78,8 +79,14 @@ export interface ReactiveConnection {
   readonly connStatus: ActorConnStatus;
   readonly error: Error | null;
   readonly isConnected: boolean;
+  /** Open or return the current socket. */
   connect(): ActorConn<AnyActorDefinition>;
+  /** Disconnect the socket while retaining event registrations for reconnect. */
   disconnect(): Promise<void>;
+  /**
+   * Backward-compatible alias for {@link ReactiveConnection.disconnect}.
+   * Event registrations remain available for a later `connect()` call.
+   */
   dispose(): Promise<void>;
   onEvent(eventName: string, handler: (...args: unknown[]) => void): () => void;
   /**
@@ -124,6 +131,7 @@ export function createReactiveConnection(
 
   let cleanupStatus: (() => void) | null = null;
   let cleanupError: (() => void) | null = null;
+  let disconnectPromise: Promise<void> | null = null;
 
   function bindConnection(conn: ActorConn<AnyActorDefinition>): void {
     cleanupStatus?.();
@@ -132,6 +140,9 @@ export function createReactiveConnection(
     _connection = conn;
     _connStatus = conn.connStatus;
     _error = null;
+    if (_connStatus === "connected") {
+      cancelPendingConnections(true);
+    }
 
     cleanupStatus = conn.onStatusChange((status) => {
       _connStatus = status;
@@ -147,10 +158,20 @@ export function createReactiveConnection(
 
     for (const listener of listeners) {
       listener.unsubscribe?.();
-      listener.unsubscribe = conn.on(
-        listener.eventName,
-        listener.handler,
-      ) as unknown as () => void | Promise<unknown>;
+      // `ActorConn<AnyActorDefinition>` erases `on` at the type level (rivetkit
+      // 2.3.13 omits it from the raw class and re-adds it only through the
+      // definition-mapped event map). Runtime `on(event, handler)` is event
+      // subscribe and returns an unsubscribe — cast the connection, not the
+      // property, the same way `subscribe()` below does.
+      const subscribe = (
+        conn as unknown as {
+          on: (
+            eventName: string,
+            handler: (payload: unknown) => void,
+          ) => () => void | Promise<unknown>;
+        }
+      ).on;
+      listener.unsubscribe = subscribe(listener.eventName, listener.handler);
     }
   }
 
@@ -161,26 +182,57 @@ export function createReactiveConnection(
     return conn;
   }
 
-  async function disconnect(): Promise<void> {
+  function disconnect(): Promise<void> {
     const conn = _connection;
-    if (!conn) return;
 
-    cleanupStatus?.();
+    // A waiter may be registered before connect() is called. Disconnect still
+    // settles that waiter even when there is no active transport yet.
+    cancelPendingConnections(false);
+    if (!conn) return disconnectPromise ?? Promise.resolve();
+
+    // Detach synchronously before running cleanup or awaiting transport
+    // teardown. A slow, rejected, or unexpectedly throwing close path must
+    // never leave this socket reusable by a concurrent caller.
+    _connection = null;
+    _connStatus = "disconnected";
+    _error = null;
+
+    const teardownTasks: Promise<unknown>[] = [];
+    const synchronousErrors: unknown[] = [];
+    const runTeardown = (callback: (() => unknown) | null): void => {
+      if (!callback) return;
+      try {
+        teardownTasks.push(Promise.resolve(callback()));
+      } catch (error) {
+        synchronousErrors.push(error);
+      }
+    };
+
+    runTeardown(cleanupStatus);
     cleanupStatus = null;
-    cleanupError?.();
+    runTeardown(cleanupError);
     cleanupError = null;
 
-    // Cancel any pending whenConnected promises before tearing down
-    cancelPendingConnections(false);
-
     for (const listener of listeners) {
-      listener.unsubscribe?.();
+      runTeardown(listener.unsubscribe ?? null);
       listener.unsubscribe = undefined;
     }
 
-    await conn.dispose();
-    _connection = null;
-    _connStatus = "disconnected";
+    runTeardown(() => conn.dispose());
+
+    const result = Promise.allSettled(teardownTasks).then((settlements) => {
+      if (synchronousErrors.length > 0) throw synchronousErrors[0];
+      const failed = settlements.find(
+        (settlement): settlement is PromiseRejectedResult =>
+          settlement.status === "rejected",
+      );
+      if (failed) throw failed.reason;
+    });
+    const pending = result.finally(() => {
+      if (disconnectPromise === pending) disconnectPromise = null;
+    });
+    disconnectPromise = pending;
+    return pending;
   }
 
   return {
@@ -198,9 +250,7 @@ export function createReactiveConnection(
     },
     connect,
     disconnect,
-    dispose() {
-      return disconnect();
-    },
+    dispose: disconnect,
     whenConnected(timeout = 30_000): Promise<boolean> {
       if (_connStatus === "connected") return Promise.resolve(true);
 

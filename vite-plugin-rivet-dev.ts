@@ -8,6 +8,7 @@
  * the bytes. Production (Vercel) uses the SvelteKit route as usual.
  */
 
+import { resolve } from 'node:path';
 import type { Plugin, ViteDevServer } from 'vite';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
@@ -71,6 +72,8 @@ export function rivetDevMiddleware(): Plugin {
 	return {
 		name: 'rivet-dev-middleware',
 		configureServer(server) {
+			// Dev-only path stays out of production dependency tracing.
+			if (!process.env.RIVET_ENDPOINT) process.env.RIVETKIT_STORAGE_PATH ??= resolve('.rivetkit');
 			server.middlewares.use((req, res, next) => {
 				if (!req.url?.startsWith('/api/rivet')) {
 					next();

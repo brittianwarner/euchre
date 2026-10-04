@@ -3,7 +3,7 @@
   whole match; the list below is every hand that made it up.
 -->
 <script lang="ts">
-	import type { HandResult, Seat, Suit } from '$lib/protocol';
+	import type { HandResult, Seat, Suit } from '#lib/protocol/index.ts';
 
 	let { data } = $props();
 	const replay = $derived(data.replay);
@@ -43,75 +43,82 @@
 </svelte:head>
 
 <main class="page">
-<div class="content">
-	<a class="back" href="/games">← Back to your games</a>
+	<div class="content">
+		<a class="back" href="/games">← Back to your games</a>
 
-	<header class="head">
-		<p class="date">{dateFormatter.format(new Date(replay.playedAt))}</p>
-		<h1>{OUTCOME_LABEL[replay.outcome]}</h1>
-		<p class="score">You {replay.score[0]} – {replay.score[1]} them</p>
-		{#if replay.opponents.length > 0}
-			<p class="table">At the table: {replay.opponents.join(' · ')}</p>
+		<header class="head">
+			<p class="date">{dateFormatter.format(new Date(replay.playedAt))}</p>
+			<h1>{OUTCOME_LABEL[replay.outcome]}</h1>
+			<p class="score">You {replay.score[0]} – {replay.score[1]} them</p>
+			{#if replay.opponents.length > 0}
+				<p class="table">At the table: {replay.opponents.join(' · ')}</p>
+			{/if}
+		</header>
+
+		<section class="stats" aria-label="Match totals">
+			<div class="stat">
+				<span class="value">{replay.handsPlayed}</span>
+				<span class="label">Hands played</span>
+			</div>
+			<div class="stat">
+				<span class="value">{replay.stats.euchresFor}–{replay.stats.euchresAgainst}</span>
+				<span class="label">Euchres sent–taken</span>
+			</div>
+			<div class="stat">
+				<span class="value">{replay.stats.lonersMade}/{replay.stats.lonersAttempted}</span>
+				<span class="label">Loners made</span>
+			</div>
+			<div class="stat">
+				<span class="value">{replay.stats.marches}</span>
+				<span class="label">Marches</span>
+			</div>
+			<div class="stat">
+				<span class="value">{replay.stats.throwIns}</span>
+				<span class="label">Thrown in</span>
+			</div>
+			<div class="stat">
+				<span class="value">{replay.stats.tricks[0]}–{replay.stats.tricks[1]}</span>
+				<span class="label">Tricks won</span>
+			</div>
+		</section>
+
+		{#if replay.hands.length > 0}
+			<ol class="hands">
+				{#each replay.hands as hand (hand.handNo)}
+					<li class="hand">
+						<div class="hand-top">
+							<span class="hand-no">Hand {hand.handNo + 1}</span>
+							<span class="dealer">Dealer: {seatName(hand.dealerSeat)}</span>
+						</div>
+						<div class="hand-mid">
+							{#if hand.trump}
+								<span class="trump suit-{hand.trump}">
+									{SUIT_SYMBOL[hand.trump]}
+									{SUIT_NAME[hand.trump]} called by {seatName(hand.makerSeat)}
+									{#if hand.aloneSeat !== null}· alone{/if}
+								</span>
+							{:else}
+								<span class="trump muted">No trump — thrown in</span>
+							{/if}
+							<span class="tricks">{hand.tricksWon[0]}–{hand.tricksWon[1]} tricks</span>
+						</div>
+						<p class="result">
+							{hand.result ? RESULT_LABEL[hand.result] : 'Unresolved'}
+							{#if hand.delta}
+								<span class="delta"
+									>({hand.delta[0] > 0
+										? `+${hand.delta[0]} us`
+										: hand.delta[1] > 0
+											? `+${hand.delta[1]} them`
+											: 'no score'})</span
+								>
+							{/if}
+						</p>
+					</li>
+				{/each}
+			</ol>
 		{/if}
-	</header>
-
-	<section class="stats" aria-label="Match totals">
-		<div class="stat">
-			<span class="value">{replay.handsPlayed}</span>
-			<span class="label">Hands played</span>
-		</div>
-		<div class="stat">
-			<span class="value">{replay.stats.euchresFor}–{replay.stats.euchresAgainst}</span>
-			<span class="label">Euchres sent–taken</span>
-		</div>
-		<div class="stat">
-			<span class="value">{replay.stats.lonersMade}/{replay.stats.lonersAttempted}</span>
-			<span class="label">Loners made</span>
-		</div>
-		<div class="stat">
-			<span class="value">{replay.stats.marches}</span>
-			<span class="label">Marches</span>
-		</div>
-		<div class="stat">
-			<span class="value">{replay.stats.throwIns}</span>
-			<span class="label">Thrown in</span>
-		</div>
-		<div class="stat">
-			<span class="value">{replay.stats.tricks[0]}–{replay.stats.tricks[1]}</span>
-			<span class="label">Tricks won</span>
-		</div>
-	</section>
-
-	{#if replay.hands.length > 0}
-		<ol class="hands">
-			{#each replay.hands as hand (hand.handNo)}
-				<li class="hand">
-					<div class="hand-top">
-						<span class="hand-no">Hand {hand.handNo + 1}</span>
-						<span class="dealer">Dealer: {seatName(hand.dealerSeat)}</span>
-					</div>
-					<div class="hand-mid">
-						{#if hand.trump}
-							<span class="trump suit-{hand.trump}">
-								{SUIT_SYMBOL[hand.trump]} {SUIT_NAME[hand.trump]} called by {seatName(hand.makerSeat)}
-								{#if hand.aloneSeat !== null}· alone{/if}
-							</span>
-						{:else}
-							<span class="trump muted">No trump — thrown in</span>
-						{/if}
-						<span class="tricks">{hand.tricksWon[0]}–{hand.tricksWon[1]} tricks</span>
-					</div>
-					<p class="result">
-						{hand.result ? RESULT_LABEL[hand.result] : 'Unresolved'}
-						{#if hand.delta}
-							<span class="delta">({hand.delta[0] > 0 ? `+${hand.delta[0]} us` : hand.delta[1] > 0 ? `+${hand.delta[1]} them` : 'no score'})</span>
-						{/if}
-					</p>
-				</li>
-			{/each}
-		</ol>
-	{/if}
-</div>
+	</div>
 </main>
 
 <style>

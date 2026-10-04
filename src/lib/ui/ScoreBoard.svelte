@@ -1,77 +1,161 @@
-<!--
-  ScoreBoard — team scores, trump, and whose turn it is.
-  One job: show match status so the player always knows the state of play.
--->
 <script lang="ts">
-	import type { PublicGameView } from '$lib/protocol';
-
+	import type { PublicGameView } from '#lib/protocol/index.ts';
 	let { view }: { view: PublicGameView } = $props();
-
-	const SEAT_NAME = ['You', 'Rita (W)', 'Ned (N)', 'Eva (E)'] as const;
-
-	const turnLabel = $derived(
-		view.turnSeat === null
-			? view.phase.replaceAll('_', ' ')
-			: `${SEAT_NAME[view.turnSeat]} to act`
-	);
+	const glyph = { S: '♠', H: '♥', D: '♦', C: '♣' };
 </script>
 
-<section class="score" aria-live="polite">
-	<p class="brand">Euchre</p>
-	<p class="scores">
-		<span>Us {view.score[0]}</span>
-		<span class="sep">–</span>
-		<span>Them {view.score[1]}</span>
-	</p>
-	<p class="meta">
-		Hand {view.handNo + 1}
-		{#if view.trump}
-			· Trump {view.trump}
-		{/if}
-		{#if view.upCard && !view.upCardTurnedDown}
-			· Up {view.upCard}
-		{/if}
-	</p>
-	<p class="turn">{turnLabel}</p>
-	{#if view.status === 'complete'}
-		<p class="result">
-			{view.winnerTeam === 0 ? 'You win.' : 'They win.'}
-		</p>
-	{/if}
+<section class="score" aria-label="Match score" aria-live="polite">
+	<a class="brand" href="/" aria-label="Euchre home">euchre<span aria-hidden="true">♣</span></a>
+	<div class="scoreline">
+		<div><span>US</span><strong>{view.score[0]}</strong></div>
+		<span class="divider">:</span>
+		<div><strong>{view.score[1]}</strong><span>THEM</span></div>
+	</div>
+	<div class="meta">
+		<span>HAND <b>{view.handNo + 1}</b></span><span class="meta-divider"></span><span
+			>{view.trump ? 'TRUMP' : 'FIRST TO'}
+			<b class:red={view.trump === 'H' || view.trump === 'D'}
+				>{view.trump ? glyph[view.trump] : '10'}</b
+			></span
+		>
+	</div>
 </section>
 
 <style>
 	.score {
-		display: grid;
-		gap: 0.35rem;
-		padding: 1rem 1.25rem 0;
+		display: flex;
+		align-items: center;
+		gap: 42px;
+		color: #233e32;
+		min-width: 0;
+		flex: 1;
+		font-family: var(--font-sans);
 	}
 	.brand {
-		margin: 0;
-		font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, serif;
-		font-size: clamp(2rem, 5vw, 2.75rem);
-		letter-spacing: -0.02em;
-		color: #f2e8d5;
+		font: 600 34px/1 var(--font-serif);
+		letter-spacing: -0.075em;
+		text-decoration: none;
+		white-space: nowrap;
 	}
-	.scores {
-		margin: 0;
-		font-size: 1.35rem;
-		font-weight: 600;
-		color: #f7f1e4;
+	.brand span {
+		font-size: 20px;
+		margin-left: 5px;
 	}
-	.sep {
-		opacity: 0.5;
-		margin: 0 0.35rem;
+	.scoreline {
+		display: flex;
+		align-items: center;
+		gap: 17px;
+		padding-left: 35px;
+		border-left: 1px solid #d9ded2;
 	}
-	.meta,
-	.turn,
-	.result {
-		margin: 0;
-		color: #c9b89a;
-		font-size: 0.95rem;
+	.scoreline div {
+		display: flex;
+		gap: 13px;
+		align-items: center;
 	}
-	.result {
-		color: #e8c27a;
-		font-weight: 600;
+	.scoreline span {
+		font-size: 12px;
+		font-weight: 650;
+		letter-spacing: 0.1em;
+		color: #778271;
+	}
+	.scoreline strong {
+		font-size: 32px;
+		font-weight: 500;
+		font-variant-numeric: tabular-nums;
+		line-height: 1;
+	}
+	.scoreline .divider {
+		font-size: 20px;
+		color: #a6b19c;
+	}
+	.meta {
+		margin-left: auto;
+		display: flex;
+		align-items: center;
+		gap: 20px;
+		font-size: 12px;
+		letter-spacing: 0.12em;
+		color: #778271;
+	}
+	.meta > span {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
+	.meta b {
+		font-size: 15px;
+		color: #233e32;
+		font-weight: 550;
+	}
+	.meta b.red {
+		color: #b64e3c;
+	}
+	.meta .meta-divider {
+		width: 1px;
+		height: 20px;
+		background: #d9ded2;
+	}
+	@media (max-width: 700px) {
+		.score {
+			gap: 20px;
+			align-items: flex-start;
+		}
+		.brand {
+			font-size: 27px;
+		}
+		.brand span {
+			font-size: 16px;
+		}
+		.scoreline {
+			padding-left: 18px;
+			gap: 10px;
+			height: 30px;
+		}
+		.scoreline div {
+			gap: 7px;
+		}
+		.scoreline strong {
+			font-size: 24px;
+		}
+		.scoreline span {
+			font-size: 10px;
+		}
+		.meta {
+			position: absolute;
+			bottom: 12px;
+			left: 20px;
+			right: 20px;
+			justify-content: center;
+			gap: 18px;
+		}
+		.meta b {
+			font-size: 13px;
+		}
+		.meta .meta-divider {
+			height: 12px;
+		}
+	}
+	@media (max-width: 380px) {
+		.score {
+			gap: 11px;
+		}
+		.scoreline {
+			padding-left: 11px;
+			gap: 7px;
+		}
+		.scoreline div {
+			gap: 5px;
+		}
+		.scoreline div > span {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			clip: rect(0, 0, 0, 0);
+			overflow: hidden;
+		}
+		.brand {
+			font-size: 24px;
+		}
 	}
 </style>

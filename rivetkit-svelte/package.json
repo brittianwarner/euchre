@@ -1,56 +1,61 @@
 {
-  "name": "@rivetkit/svelte",
-  "version": "0.1.0",
-  "description": "Svelte 5 runes integration for RivetKit actors",
-  "license": "Apache-2.0",
-  "type": "module",
-  "svelte": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "svelte": "./dist/index.js",
-      "default": "./dist/index.js"
-    },
-    "./testing": {
-      "types": "./dist/testing/index.d.ts",
-      "svelte": "./dist/testing/index.js",
-      "default": "./dist/testing/index.js"
-    }
-  },
-  "files": [
-    "dist",
-    "src/lib"
-  ],
-  "scripts": {
-    "build": "svelte-package -i src/lib",
-    "check-types": "svelte-check --tsconfig ./tsconfig.json",
-    "test": "vitest run --environment jsdom src/lib/__tests__/*.test.ts",
-    "bench": "vitest bench --run --environment jsdom src/lib/__bench__/*.bench.ts"
-  },
-  "peerDependencies": {
-    "rivetkit": "^2.3.9",
-    "svelte": "^5.55.9"
-  },
-  "dependencies": {
-    "@rivetkit/framework-base": "2.3.9",
-    "esm-env": "^1.2.2"
-  },
-  "devDependencies": {
-    "@sveltejs/package": "^2.5.7",
-    "jsdom": "^28.0.0",
-    "svelte": "^5.55.9",
-    "svelte-check": "^4.4.8",
-    "typescript": "^5.9.3",
-    "vitest": "^4.0.0"
-  },
-  "keywords": [
-    "rivetkit",
-    "svelte",
-    "svelte5",
-    "runes",
-    "actors",
-    "realtime",
-    "websocket"
-  ]
+	"name": "@rivetkit/svelte",
+	"version": "0.1.0",
+	"description": "Svelte 5 runes integration for RivetKit actors",
+	"license": "Apache-2.0",
+	"type": "module",
+	"sideEffects": false,
+	"svelte": "./src/lib/index.ts",
+	"types": "./src/lib/index.ts",
+	"exports": {
+		".": {
+			"types": "./src/lib/index.ts",
+			"svelte": "./src/lib/index.ts",
+			"default": "./src/lib/index.ts"
+		},
+		"./testing": {
+			"types": "./src/lib/testing/index.ts",
+			"svelte": "./src/lib/testing/index.ts",
+			"default": "./src/lib/testing/index.ts"
+		}
+	},
+	"files": [
+		"dist",
+		"src/lib",
+		"!dist/__bench__",
+		"!dist/__tests__",
+		"!src/lib/__bench__",
+		"!src/lib/__tests__"
+	],
+	"scripts": {
+		"build": "svelte-package -i src/lib",
+		"check-types": "svelte-check --tsconfig ./tsconfig.json",
+		"test": "vitest run --config ./vitest.config.ts",
+		"bench": "vitest bench --run --config ./vitest.config.ts --environment jsdom src/lib/__bench__/*.bench.ts"
+	},
+	"peerDependencies": {
+		"rivetkit": "^2.3.23",
+		"svelte": "^5.57.0"
+	},
+	"dependencies": {
+		"esm-env": "^1.2.2",
+		"fast-deep-equal": "^3.1.3"
+	},
+	"devDependencies": {
+		"@sveltejs/package": "^2.5.8",
+		"jsdom": "^30.0.1",
+		"svelte": "^5.57.0",
+		"svelte-check": "^4.7.6",
+		"typescript": "^6.0.3",
+		"vitest": "^4.0.18"
+	},
+	"keywords": [
+		"rivetkit",
+		"svelte",
+		"svelte5",
+		"runes",
+		"actors",
+		"realtime",
+		"websocket"
+	]
 }

@@ -12,33 +12,52 @@
  * @module
  */
 
+import { ActorError } from "rivetkit/client";
+
+/** Serializable shape recognized by RivetKit's actor-error guard. */
+export interface ActorErrorLike {
+  /** Optional runtime discriminator; modern RivetKit uses `RivetError`. */
+  __type?: "RivetError" | "ActorError";
+  /** Error family (`user`, `actor`, `client`, and so on). */
+  group: string;
+  /** Machine-readable failure code. */
+  code: string;
+  /** Human-readable failure message. */
+  message: string;
+  /** Optional structured details safe for the caller. */
+  metadata?: unknown;
+  /** Optional request identifier used to correlate the error with engine logs. */
+  rayId?: string;
+  /** Whether the error is safe to expose outside the actor runtime. */
+  public?: boolean;
+  /** Optional HTTP status override associated with the error. */
+  statusCode?: number;
+  /** Actor generation that was handling work when the error was produced. */
+  actor?: {
+    actorId: string;
+    generation: number;
+    key?: string;
+  };
+}
+
 /**
  * Type guard: is the error an `ActorError` from rivetkit/client?
  *
- * `ActorError` sets `__type = "ActorError"` as a discriminator,
- * which survives serialization boundaries and avoids `instanceof`
- * issues across package boundaries.
+ * Delegates to RivetKit's structural guard so modern `RivetError` instances,
+ * legacy `ActorError` tags, and serialized errors all work across realms. The
+ * `Error` intersection preserves the package's historical narrowing contract
+ * for existing callers; use {@link ActorErrorLike} when typing a serialized
+ * value before it reaches this guard.
  */
-export function isActorError(err: unknown): err is Error & {
-  group: string;
-  code: string;
-  metadata?: unknown;
-  __type: "ActorError";
-} {
-  return (
-    err instanceof Error &&
-    "__type" in err &&
-    (err as Record<string, unknown>).__type === "ActorError"
-  );
+export function isActorError(err: unknown): err is Error & ActorErrorLike {
+  return ActorError.isActorError(err);
 }
 
 /**
  * Extract the machine-readable error code from an error, if it's an ActorError.
  * Returns `undefined` for non-ActorError instances.
  */
-export function actorErrorCode(
-  err: Error | null | undefined,
-): string | undefined {
+export function actorErrorCode(err: unknown): string | undefined {
   if (!err) return undefined;
   if (isActorError(err)) return err.code;
   return undefined;
@@ -51,11 +70,13 @@ export function actorErrorCode(
  *
  * Returns `undefined` for null/undefined input.
  */
-export function actorErrorMessage(
-  err: Error | null | undefined,
-): string | undefined {
+export function actorErrorMessage(err: unknown): string | undefined {
   if (!err) return undefined;
-  return err.message || undefined;
+  if (typeof err === "object" && "message" in err) {
+    const message = (err as { message?: unknown }).message;
+    return typeof message === "string" && message ? message : undefined;
+  }
+  return undefined;
 }
 
 /**
@@ -85,9 +106,9 @@ export interface ActionErrorInfo {
  * }
  * ```
  */
-export function getActionError(
-  handle: { lastActionError: Error | null | undefined },
-): ActionErrorInfo | null {
+export function getActionError(handle: {
+  lastActionError: unknown;
+}): ActionErrorInfo | null {
   const err = handle.lastActionError;
   if (!err) return null;
   return {

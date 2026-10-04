@@ -39,13 +39,13 @@
 	import { Tween } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
 	import { untrack } from 'svelte';
-	import Card from '$lib/three/cards/Card.svelte';
+	import Card from '#lib/three/cards/Card.svelte';
 	import { CARD_ASPECT, fanPositions } from './layout';
 	import { dealOrigin, lerpPose } from './cardMotion';
 	import { TEMPO, flightMs } from './tempo';
-	import { isNarrowLandscape, isPortrait } from '$lib/three/scene/breakpoints';
-	import { playLift } from '$lib/ui/sound';
-	import type { CardId, LegalMove, Seat } from '$lib/euchre';
+	import { isNarrowLandscape, isPortrait } from '#lib/three/scene/breakpoints.ts';
+	import { playLift } from '#lib/ui/sound/index.ts';
+	import type { CardId, LegalMove, Seat } from '#lib/euchre/index.ts';
 
 	interface Props {
 		/** `view.hand` — your own cards, and only ever your own (V8). Caller-ordered; this component does not sort. */
@@ -95,7 +95,7 @@
 		cardHeight: cardHeightProp,
 		overlap: overlapProp,
 		maxTiltDeg = 10,
-		archLift = 0.04,
+		archLift = 0.018,
 		/**
 		 * Recline the fan toward the viewer.
 		 *
@@ -115,7 +115,7 @@
 		 * 180 deg seat rotation maps to (0, 0.707, 0.707) in world space — square
 		 * to the camera. If you move the camera, recompute; do not eyeball it.
 		 */
-		reclineDeg = -45,
+		reclineDeg = -25,
 		disabled = false,
 		onplay,
 		onillegal,
@@ -146,8 +146,10 @@
 	// toward the camera, which magnifies it — at 0.205 the cards filled half the
 	// frame and clipped at the bottom again. These keep them large and legible
 	// while sitting fully inside the viewport near the near edge.
-	const baseCardHeight = $derived(portrait ? 0.13 : narrow ? 0.145 : 0.155);
-	const baseOverlap = $derived(portrait ? 0.62 : 0.6);
+	const baseCardHeight = $derived(
+		portrait ? (cards.length > 5 ? 0.29 : 0.33) : narrow ? 0.19 : 0.2
+	);
+	const baseOverlap = $derived(portrait ? 0.44 : 0.55);
 
 	const cardHeight = $derived(cardHeightProp ?? baseCardHeight);
 	const overlap = $derived(overlapProp ?? baseOverlap);
@@ -174,7 +176,7 @@
 	 * the frame entirely, and at +0.13 it sprawls over the trick zone in the middle
 	 * of the table.
 	 */
-	const HAND_FORWARD = -0.04;
+	const HAND_FORWARD = -0.018;
 
 	const poses = $derived(
 		fanPositions(cards.length, {
@@ -231,55 +233,30 @@
 	 * offset alone.
 	 */
 	let dealTweens = $state.raw(new Map<CardId, Tween<number>>());
-	/**
-	 * The hand number we have already dealt in.
-	 *
-	 * The deal effect's only tracked read is `handNo`, yet it was firing six-plus
-	 * times per hand with an IDENTICAL value. `handNo` comes from `displayView`,
-	 * a `$derived.by` that returns a new object on every sync, so the prop is
-	 * re-assigned on each one and the effect re-runs even though the number never
-	 * changed. Each run rebuilt the tweens and replayed the deal-in — the hand
-	 * visibly re-dealing itself over and over.
-	 *
-	 * Rather than reason about when a prop signal dedupes, the effect is made
-	 * idempotent: dealing hand N happens exactly once, however often it re-runs.
-	 * `-1` means nothing has been dealt yet, so the first real hand always animates.
-	 */
-	let dealtHandNo = -1;
+	let dealtHandNo: number | undefined;
 
 	$effect(() => {
 		const signal = handNo;
-		if (signal === undefined) return;
-		// Already animated this hand. Re-runs are the norm, not the exception.
-		if (signal === dealtHandNo) return;
-		const firstEver = dealtHandNo === -1;
+		if (signal === undefined || signal === dealtHandNo) return;
+		const previousHandNo = dealtHandNo;
 		dealtHandNo = signal;
-		if (firstEver) {
-			// Mount or hard resync — snap, per `docs/04-FRONTEND-UX.md` §9.3:
-			// "teleport every card; no animation."
-			return;
-		}
-		// EVERYTHING below runs untracked.
-		//
-		// `new Tween()` owns internal `$state` that ticks every animation frame.
-		// Constructing tweens (and calling `.set()`) directly in this effect made
-		// the effect depend on that per-frame state, so each frame re-ran the
-		// effect, which built fresh tweens, which ticked again — a self-sustaining
-		// loop that restarts the deal-in continuously. On screen that reads exactly
-		// as "the game reshuffles and re-deals every hand", which is how it was
-		// reported. Same failure class as the `Hint.svelte` self-trigger: an effect
-		// must not take a reactive dependency on something it creates or writes.
+		// Initial mount and reconnect display the authoritative hand immediately.
+		if (previousHandNo === undefined) return;
+
+		// Only hand identity is a dependency. Counts, layout, preferences, and
+		// Tween internals are snapshots of this deal, never reasons to redeal it.
 		untrack(() => {
-			const currentCards = cards;
-			const order = ((seat - dealerSeat + 4) % 4) as number;
-			const flight = flightMs(TEMPO.dealFlightMs, reducedMotion);
-			const stagger = reducedMotion ? 0 : TEMPO.dealStaggerMs;
 			const fresh = new Map<CardId, Tween<number>>();
-			currentCards.forEach((id, i) => {
-				const t = new Tween(0, { easing: cubicOut });
-				fresh.set(id, t);
-				void t.set(1, { duration: flight, delay: (order + i * 4) * stagger });
-			});
+			if (!reducedMotion) {
+				const currentCards = cards;
+				const order = (seat - dealerSeat + 4) % 4;
+				const flight = flightMs(TEMPO.dealFlightMs, false);
+				currentCards.forEach((id, index) => {
+					const tween = new Tween(0, { easing: cubicOut });
+					fresh.set(id, tween);
+					void tween.set(1, { duration: flight, delay: (order + index * 4) * TEMPO.dealStaggerMs });
+				});
+			}
 			dealTweens = fresh;
 		});
 	});
@@ -293,10 +270,14 @@
 		const target = poses[i] ?? poses[poses.length - 1];
 		if (!target) return undefined;
 		const tween = dealTweens.get(cardId);
-		if (!tween || tween.current >= 1) return target;
-		return lerpPose(dealOrigin(target), target, tween.current, reducedMotion ? 0 : cardHeight * 0.5);
+		if (reducedMotion || !tween || tween.current >= 1) return target;
+		return lerpPose(
+			dealOrigin(target),
+			target,
+			tween.current,
+			reducedMotion ? 0 : cardHeight * 0.5
+		);
 	}
-
 </script>
 
 <!--
@@ -326,19 +307,19 @@
 	{#each cards as cardId, i (cardId)}
 		{@const pose = renderPose(cardId, i)}
 		{#if pose}
-		<Card
-			id={cardId}
-			faceUp
-			position={pose.position}
-			rotation={pose.rotation}
-			height={cardHeight}
-			{fourColor}
-			dimmed={!legalIds.has(cardId)}
-			highlighted={!disabled && hoveredId === cardId}
-			interactive={!disabled}
-			onselect={handleSelect}
-			onhover={handleHover}
-		/>		{/if}
-
+			<Card
+				id={cardId}
+				faceUp
+				position={pose.position}
+				rotation={pose.rotation}
+				height={cardHeight}
+				{fourColor}
+				dimmed={legalIds.size > 0 && !legalIds.has(cardId)}
+				highlighted={!disabled && hoveredId === cardId}
+				interactive={!disabled}
+				onselect={handleSelect}
+				onhover={handleHover}
+			/>
+		{/if}
 	{/each}
 </T.Group>

@@ -10,7 +10,7 @@
  * `deadlineAt`, so lowering the table's cap cannot be defeated by a stale default.
  */
 
-import type { AIDecisionKind } from '$lib/protocol';
+import type { AIDecisionKind } from '#lib/protocol/index.ts';
 import type { DecisionBudget } from './types';
 
 /**
@@ -42,7 +42,9 @@ export const DEFAULT_DECISION_BUDGET: DecisionBudget = {
 };
 
 export function resolveBudget(overrides?: Partial<DecisionBudget>): DecisionBudget {
-	return overrides === undefined ? DEFAULT_DECISION_BUDGET : { ...DEFAULT_DECISION_BUDGET, ...overrides };
+	return overrides === undefined
+		? DEFAULT_DECISION_BUDGET
+		: { ...DEFAULT_DECISION_BUDGET, ...overrides };
 }
 
 /**

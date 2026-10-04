@@ -49,7 +49,14 @@
  * the ladder falls to the deterministic heuristic. The bridge never throws.
  */
 
-import { callModel, modelFactoryFromEnv, type DecideDeps, type DecisionRequest, type ModelFactory } from '$lib/ai';
+import {
+	generateBanter,
+	callModel,
+	modelFactoryFromEnv,
+	type DecideDeps,
+	type DecisionRequest,
+	type ModelFactory
+} from '#lib/ai/index.ts';
 import type {
 	AIDecisionKind,
 	LegalMove,
@@ -57,7 +64,7 @@ import type {
 	PublicGameView,
 	RankedMove,
 	Seat
-} from '$lib/protocol';
+} from '#lib/protocol/index.ts';
 
 /* ========================================================================== */
 /* The contract                                                                */
@@ -191,10 +198,15 @@ function toDecisionRequest(input: LlmDecideInput): DecisionRequest {
 async function callModelAdapter(input: LlmDecideInput): Promise<LlmDecideResult> {
 	const model = factory();
 	if (model === null) throw new Error('no model factory configured');
-	const outcome = await callModel(toDecideDeps(input, model), toDecisionRequest(input), input.candidates, {
-		escalate: input.escalate,
-		budgetMs: input.budgetMs
-	});
+	const outcome = await callModel(
+		toDecideDeps(input, model),
+		toDecisionRequest(input),
+		input.candidates,
+		{
+			escalate: input.escalate,
+			budgetMs: input.budgetMs
+		}
+	);
 	return {
 		moveId: outcome.moveId,
 		rationale: outcome.rationale,
@@ -216,7 +228,7 @@ async function callModelAdapter(input: LlmDecideInput): Promise<LlmDecideResult>
  */
 export function resolveDecider(): LlmDecider | null {
 	if (deciderOverride !== null) return deciderOverride;
-	return factory() === null ? null : callModelAdapter;
+	return factory()?.decision ? callModelAdapter : null;
 }
 
 /**
@@ -229,7 +241,27 @@ export function resolveDecider(): LlmDecider | null {
  * shape is extended. Never throws.
  */
 export function resolveBanterWriter(): LlmBanterWriter | null {
-	return banterOverride;
+	if (banterOverride) return banterOverride;
+	if (!factory()) return null;
+	return async (input) => {
+		const out = await generateBanter(
+			{
+				factory: factory(),
+				persona: input.persona,
+				dossier: input.dossier,
+				nonce: input.nonce,
+				budget: { banterMs: input.budgetMs }
+			},
+			{
+				view: input.view,
+				situation: input.situation,
+				salience: 1,
+				force: true,
+				seq: input.view.handNo
+			}
+		);
+		return out.spoke ? out.text : null;
+	};
 }
 
 /* ========================================================================== */
@@ -261,7 +293,8 @@ export function parseDecideResult(
 	return {
 		moveId,
 		rationale: typeof rationale === 'string' ? rationale : undefined,
-		confidence: typeof confidence === 'number' && Number.isFinite(confidence) ? confidence : undefined,
+		confidence:
+			typeof confidence === 'number' && Number.isFinite(confidence) ? confidence : undefined,
 		usage: isRecord(usage)
 			? {
 					inputTokens: numberOr(usage['inputTokens'], 0),

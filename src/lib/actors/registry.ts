@@ -1,33 +1,7 @@
 /**
- * Rivet actor registry.
- *
- * This registry is mounted INSIDE the SvelteKit app at `/api/rivet/*`
- * (see `src/routes/api/rivet/[...all]/+server.ts`). There is no separate
- * backend process — one deployable, running in Rivet's **serverless** runtime
- * mode against Rivet Cloud.
- *
- * Topology reminder: the browser opens its WebSocket directly to Rivet Cloud.
- * Rivet Cloud then issues ordinary HTTPS requests back to `/api/rivet/*` on
- * this deployment (`GET /api/rivet/metadata` to validate config, and
- * `GET /api/rivet/start` to run an actor). Nothing here terminates a socket.
- *
- * Endpoints are configured purely by environment variable and read by RivetKit
- * at runtime — see `.env.example`:
- *   - `RIVET_ENDPOINT`        (secret, `sk_` token) — where this backend finds the engine
- *   - `RIVET_PUBLIC_ENDPOINT` (publishable, `pk_` token) — what `/api/rivet/metadata`
- *     hands back to browsers so they know where to open their WebSocket
- *
- * Without `RIVET_ENDPOINT`, RivetKit falls back to its filesystem driver, which
- * fails on Vercel's read-only filesystem.
- *
- * Persistence rule for every actor added here: durable data lives in
- * `c.state` (small, bounded, CBOR-serializable), `c.kv` (unbounded key/value),
- * or `c.db` (actor-local SQLite). Never `c.vars` — that is wiped on sleep,
- * restart, crash, and every serverless function migration. There is no external
- * database in this project.
- *
- * @see https://rivet.dev/docs/general/runtime-modes
- * @see https://rivet.dev/docs/general/endpoints
+ * Local serverless development and the production Railway envoy share actors.
+ * server/index.ts starts the production registry against a private engine.
+ * Durable state belongs in c.state/c.kv/c.db, never c.vars or the app filesystem.
  */
 
 import { actor, setup } from 'rivetkit';
@@ -80,6 +54,7 @@ const DEV_SERVERLESS_URL = 'http://127.0.0.1:5173/api/rivet';
 const isLocalDev = !process.env.RIVET_ENDPOINT;
 
 export const registry = setup({
+	shutdown: isLocalDev ? undefined : { disableSignalHandlers: true, gracePeriodMs: 90000 },
 	use: {
 		health,
 		// M4: the authoritative table, one actor per AI opponent (`aiSeat`, key
@@ -93,14 +68,9 @@ export const registry = setup({
 		playerProfile
 	},
 
-	// Both of the following are local-dev only. In production `RIVET_ENDPOINT`
-	// points at Rivet Cloud, whose provider URL is the deployed Vercel origin —
-	// configured in the Rivet dashboard, never hardcoded here.
-	//
-	// `configurePool` is rejected by RivetKit unless paired with `startEngine`
-	// or an explicit endpoint ("configurePool requires either endpoint or
-	// startEngine"), hence both flip together.
+	// Only development configures a serverless callback. Production uses an envoy.
 	startEngine: isLocalDev ? true : undefined,
+	startServices: false,
 	configurePool: isLocalDev
 		? { url: process.env.RIVET_DEV_SERVERLESS_URL ?? DEV_SERVERLESS_URL }
 		: undefined

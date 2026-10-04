@@ -42,12 +42,13 @@
 	import { T, useThrelte } from '@threlte/core';
 	import { Tween } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
-	import Card from '$lib/three/cards/Card.svelte';
+	import { untrack } from 'svelte';
+	import Card from '#lib/three/cards/Card.svelte';
 	import { CARD_ASPECT, fanPositions } from './layout';
 	import { dealOrigin, lerpPose } from './cardMotion';
 	import { TEMPO, flightMs } from './tempo';
-	import { isPortrait } from '$lib/three/scene/breakpoints';
-	import type { Seat } from '$lib/euchre';
+	import { isPortrait } from '#lib/three/scene/breakpoints.ts';
+	import type { Seat } from '#lib/euchre/index.ts';
 
 	interface Props {
 		/** `view.handCounts[seat]`. Never a card id — see the file doc. */
@@ -76,11 +77,11 @@
 
 	let {
 		count,
-		cardHeight = 0.09,
+		cardHeight = 0.088,
 		overlap = 0.6,
 		maxTiltDeg = 8,
-		archLift = 0.03,
-		reclineDeg = 18,
+		archLift = 0.01,
+		reclineDeg = 0,
 		maxVisible,
 		handNo,
 		dealerSeat = 0,
@@ -113,7 +114,7 @@
 	 * `dist` and the look-at target together in a way that isn't worth
 	 * re-deriving here for a single scalar this component alone consumes.
 	 */
-	const PORTRAIT_SIDE_INSET = 0.1;
+	const PORTRAIT_SIDE_INSET = 0.0;
 	const sideInset = $derived(portrait && isSideSeat ? PORTRAIT_SIDE_INSET : 0);
 
 	const poses = $derived(
@@ -136,33 +137,44 @@
 	 * non-leakage" doc above).
 	 */
 	let dealTweens = $state.raw(new Map<number, Tween<number>>());
-	let sawFirstHandNo = false;
+	let dealtHandNo: number | undefined;
 
 	$effect(() => {
 		const signal = handNo;
-		if (!sawFirstHandNo) {
-			sawFirstHandNo = true;
-			return;
-		}
-		if (signal === undefined) return;
-		const n = visibleCount; // `count`/`maxVisible` at the moment of the deal — reading this here (not `untrack`) is fine, since unlike `Hand.svelte`'s per-`CardId` map a slot count changing mid-hand (a loner's sitting partner going to 0) should simply stop rendering that slot, tweened or not.
-		const order = ((seat - dealerSeat + 4) % 4) as number;
-		const flight = flightMs(TEMPO.dealFlightMs, reducedMotion);
-		const stagger = reducedMotion ? 0 : TEMPO.dealStaggerMs;
-		const fresh = new Map<number, Tween<number>>();
-		for (let i = 0; i < n; i++) {
-			const t = new Tween(0, { easing: cubicOut });
-			fresh.set(i, t);
-			void t.set(1, { duration: flight, delay: (order + i * 4) * stagger });
-		}
-		dealTweens = fresh;
+		if (signal === undefined || signal === dealtHandNo) return;
+		const previousHandNo = dealtHandNo;
+		dealtHandNo = signal;
+		// Initial mount and reconnect display the authoritative hand immediately.
+		if (previousHandNo === undefined) return;
+
+		// Only hand identity is a dependency. Counts, layout, preferences, and
+		// Tween internals are snapshots of this deal, never reasons to redeal it.
+		untrack(() => {
+			const fresh = new Map<number, Tween<number>>();
+			if (!reducedMotion) {
+				const currentCards = Array.from({ length: visibleCount }, (_, index) => index);
+				const order = (seat - dealerSeat + 4) % 4;
+				const flight = flightMs(TEMPO.dealFlightMs, false);
+				currentCards.forEach((id, index) => {
+					const tween = new Tween(0, { easing: cubicOut });
+					fresh.set(id, tween);
+					void tween.set(1, { duration: flight, delay: (order + index * 4) * TEMPO.dealStaggerMs });
+				});
+			}
+			dealTweens = fresh;
+		});
 	});
 
 	function renderPose(i: number) {
 		const target = poses[i];
 		const tween = dealTweens.get(i);
-		if (!tween || tween.current >= 1) return target;
-		return lerpPose(dealOrigin(target), target, tween.current, reducedMotion ? 0 : cardHeight * 0.5);
+		if (reducedMotion || !tween || tween.current >= 1) return target;
+		return lerpPose(
+			dealOrigin(target),
+			target,
+			tween.current,
+			reducedMotion ? 0 : cardHeight * 0.5
+		);
 	}
 </script>
 

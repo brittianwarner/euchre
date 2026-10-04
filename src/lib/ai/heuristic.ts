@@ -52,7 +52,7 @@ import {
 	suitOf,
 	teamOf,
 	trumpRank
-} from '$lib/euchre';
+} from '#lib/euchre/index.ts';
 import type {
 	CardId,
 	LegalMove,
@@ -64,7 +64,7 @@ import type {
 	SeatRole,
 	Suit,
 	Team
-} from '$lib/protocol';
+} from '#lib/protocol/index.ts';
 
 /* ========================================================================== */
 /* Tunables                                                                    */
@@ -697,7 +697,11 @@ function scoreRound1(
 	return legal.map((m) => {
 		if (m.id === 'pass') return { id: m.id, score: 0, why: 'not enough here' };
 		if (m.id === 'orderUp+alone') {
-			return { id: m.id, score: alone, why: shortlist ? 'this one plays itself' : 'I can see three' };
+			return {
+				id: m.id,
+				score: alone,
+				why: shortlist ? 'this one plays itself' : 'I can see three'
+			};
 		}
 		if (m.id === 'orderUp') {
 			return {

@@ -3,7 +3,7 @@
 //
 // THE PROBLEM it solves: a half-open "zombie" WebSocket (NAT/LB idle cull,
 // half-open TCP) keeps reporting connStatus === "connected", so a plain
-// dispose() + mount() REUSES it — @rivetkit/framework-base only creates a fresh
+// dispose() + mount() REUSES it — the framework core only creates a fresh
 // connection from "idle", and the zombie never reaches "idle". apps/web's
 // liveness probe → forceReconnect() recovery is a no-op without a real socket
 // swap.
@@ -15,7 +15,7 @@
 // disable has flushed) re-creates from "idle", opening a brand-new socket.
 //
 // WHY THIS TEST IS NOT VACUOUS: the discriminating behavior lives entirely
-// inside @rivetkit/framework-base's effect/idle-gate machinery, so the test
+// inside the framework core's effect/idle-gate machinery, so the test
 // runs the REAL framework-base (NOT vi.mock'd) over a fake rivetkit client whose
 // connections are zombies (report "connected" forever, record dispose()). The
 // "control" test proves that WITHOUT reconnect() the zombie persists and no new
@@ -39,8 +39,13 @@ interface TestHandle {
 interface TestRivet {
   createReactiveActor: (opts: unknown) => TestHandle;
 }
-const makeRivet = (client: unknown): TestRivet =>
-  (createRivetKitWithClient as unknown as (c: unknown) => TestRivet)(client);
+const makeRivet = (client: unknown, opts?: unknown): TestRivet =>
+  (
+    createRivetKitWithClient as unknown as (
+      c: unknown,
+      options?: unknown,
+    ) => TestRivet
+  )(client, opts);
 
 interface FakeConn {
   id: number;
@@ -181,5 +186,29 @@ describe("ReactiveActorHandle.reconnect()", () => {
     });
     // Never mounted → nothing to reconnect; must not throw.
     expect(() => handle.reconnect()).not.toThrow();
+  });
+
+  test("keeps lifecycle-only enabled out of custom identity hashes", async () => {
+    const { client, conns } = makeZombieClient();
+    const hashInputs: Array<Record<string, unknown>> = [];
+    const rivet = makeRivet(client, {
+      hashFunction: (opts: Record<string, unknown>) => {
+        hashInputs.push(opts);
+        return JSON.stringify({ name: opts.name, key: opts.key });
+      },
+    });
+    const handle = rivet.createReactiveActor({
+      name: "wsV2",
+      key: ["wsV2", "agent-1"],
+    });
+    handle.mount();
+    await flush();
+
+    handle.reconnect();
+    await flush();
+
+    expect(conns).toHaveLength(2);
+    expect(hashInputs.length).toBeGreaterThanOrEqual(3);
+    expect(hashInputs.every((opts) => !("enabled" in opts))).toBe(true);
   });
 });

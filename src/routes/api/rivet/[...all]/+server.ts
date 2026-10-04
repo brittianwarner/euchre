@@ -1,19 +1,5 @@
-/**
- * Rivet serverless mount point.
- *
- * Every request Rivet Cloud makes to this deployment lands here:
- *   - `GET /api/rivet/metadata` — validates config, returns the public
- *     endpoint/namespace/token the browser uses to reach Rivet Cloud
- *   - `GET|POST /api/rivet/start` — runs an actor for the lifetime of the request
- *
- * In local `vite dev`, `vite-plugin-rivet-dev.ts` intercepts this path so the
- * binary start payload is not dropped by SvelteKit's empty-body quirk. This
- * route remains the production path on Vercel.
- *
- * @see https://rivet.dev/docs/connect/vercel
- */
-
-import { registry } from '$lib/actors/registry';
+/** Local development mount; the production Bun entry blocks this public path. */
+import { registry } from '#lib/actors/registry.ts';
 import type { RequestHandler } from './$types';
 
 const handle: RequestHandler = async ({ request }) => {

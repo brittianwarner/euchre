@@ -79,7 +79,7 @@ import {
 	type Seat,
 	type Step,
 	type Trick
-} from '$lib/euchre';
+} from '#lib/euchre/index.ts';
 import {
 	BANTER_MAX_CHARS,
 	PROTOCOL_ERROR_CODES,
@@ -104,17 +104,17 @@ import {
 	type TableConnState,
 	type TableConnectParams,
 	type TableEventName
-} from '$lib/protocol';
+} from '#lib/protocol/index.ts';
 // Owned by the auth agent; see `docs/06-REVISED-ARCHITECTURE.md` §5.5. Imported by
 // its documented name so this file compiles the moment that module lands.
-import { makeJwks, verifyPlayer, type Jwks } from '$lib/actors/auth/verify';
-import { topMove } from '$lib/ai/heuristic';
+import { makeJwks, verifyPlayer, type Jwks } from '#lib/actors/auth/verify.ts';
+import { topMove } from '#lib/ai/heuristic.ts';
 // `aiSeat` owns the LLM call now (`$lib/ai` is its dependency, not this table's);
 // only the create-input shape crosses the boundary, and only as a type.
-import type { AiSeatCreateInput } from '$lib/actors/ai-seat/types';
+import type { AiSeatCreateInput } from '#lib/actors/ai-seat/types.ts';
 // `playerProfile` owns its own SQL and validation; only the envelope shapes for
 // the two queues this table calls cross the boundary, and only as types.
-import type { RecordGameMessage, RecordHandsMessage } from '$lib/actors/player-profile/types';
+import type { RecordGameMessage, RecordHandsMessage } from '#lib/actors/player-profile/types.ts';
 import {
 	tableEvents,
 	tableQueues,
@@ -313,10 +313,7 @@ interface ActorSendHandle {
  */
 interface TableClient {
 	readonly aiSeat: {
-		getOrCreate(
-			key: readonly string[],
-			opts?: { createWithInput?: unknown }
-		): ActorSendHandle;
+		getOrCreate(key: readonly string[], opts?: { createWithInput?: unknown }): ActorSendHandle;
 	};
 	readonly playerProfile: {
 		getOrCreate(key: readonly string[]): ActorSendHandle;
@@ -393,7 +390,8 @@ function accumulateStats(prev: MatchStats, hand: HandState): MatchStats {
 		euchresFor: prev.euchresFor + (euchre && makerTeam === 1 ? 1 : 0),
 		euchresAgainst: prev.euchresAgainst + (euchre && makerTeam === 0 ? 1 : 0),
 		lonersAttempted: prev.lonersAttempted + (lone ? 1 : 0),
-		lonersMade: prev.lonersMade + (lone && (result === 'lone_point' || result === 'lone_march') ? 1 : 0),
+		lonersMade:
+			prev.lonersMade + (lone && (result === 'lone_point' || result === 'lone_march') ? 1 : 0),
 		marches: prev.marches + (result === 'march' || result === 'lone_march' ? 1 : 0),
 		throwIns: prev.throwIns + (result === 'throw_in' ? 1 : 0),
 		tricks: [prev.tricks[0] + hand.tricksWon[0], prev.tricks[1] + hand.tricksWon[1]]
@@ -441,6 +439,7 @@ function screenLine(text: unknown, max: number): string {
 function pushSync(c: TableCtx, steps: readonly Step[]): void {
 	const game = c.state.game;
 	for (const conn of c.conns.values()) {
+		if (conn.state.role !== 'player') continue;
 		const seat = conn.state.seat;
 		const payload: SyncEvent = {
 			v: game.v,
@@ -654,7 +653,11 @@ function personaFor(c: TableCtx, seat: Seat): PersonaAssignment | undefined {
  * message that actually creates the actor, so recomputing it here costs nothing
  * and keeps this function honest about what a cold-started seat will see.
  */
-function aiSeatCreateInput(c: TableCtx, seat: Seat, assignment: PersonaAssignment): AiSeatCreateInput {
+function aiSeatCreateInput(
+	c: TableCtx,
+	seat: Seat,
+	assignment: PersonaAssignment
+): AiSeatCreateInput {
 	const game = c.state.game;
 	const base: AiSeatCreateInput = {
 		gameId: game.gameId,
@@ -769,7 +772,10 @@ async function dispatchAi(c: TableCtx, seat: Seat): Promise<void> {
 		await handle.send('decide', req);
 	} catch (err) {
 		// Never fatal: the heuristic decision is already parked and scheduled.
-		c.log.warn('dispatch to aiSeat failed; heuristic stands', { seat, e: String(err).slice(0, 200) });
+		c.log.warn('dispatch to aiSeat failed; heuristic stands', {
+			seat,
+			e: String(err).slice(0, 200)
+		});
 	}
 }
 
@@ -891,11 +897,7 @@ async function autoPlay(c: TableCtx, seat: Seat, reason: AutoReason): Promise<vo
  * occur at all; the branch exists so that turning the variant off is not a
  * silent data-loss bug.)
  */
-async function handBoundary(
-	c: TableCtx,
-	before: GameState,
-	steps: readonly Step[]
-): Promise<void> {
+async function handBoundary(c: TableCtx, before: GameState, steps: readonly Step[]): Promise<void> {
 	const game = c.state.game;
 	const thrownIn = steps.some((s) => s.t === 'throwIn');
 
@@ -1463,7 +1465,8 @@ export const euchreTable = actor({
 	 * help. In production an empty allowlist is a hard deny rather than a
 	 * permissive default: failing open here would let any page drive a table.
 	 */
-	onBeforeConnect: (c): void => {
+	onBeforeConnect: (c, params: TableConnectParams): void => {
+		if (params?.internalToken && tokenOk(c.state.game.internalToken, params.internalToken)) return;
 		const origin = c.request?.headers.get('origin') ?? '';
 		const allowed = allowedOrigins();
 		if (allowed.length === 0) {
@@ -1494,6 +1497,9 @@ export const euchreTable = actor({
 	 * dealt someone else's cards.
 	 */
 	createConnState: async (c, params: TableConnectParams): Promise<TableConnState> => {
+		if (params?.internalToken && tokenOk(c.state.game.internalToken, params.internalToken)) {
+			return { userId: 'internal', seat: HUMAN_SEAT, role: 'internal', since: Date.now() };
+		}
 		if (params?.protocolVersion !== undefined && params.protocolVersion !== PROTOCOL_VERSION) {
 			throw new UserError('Unsupported protocol version', {
 				code: PROTOCOL_ERROR_CODES.protocol_version_mismatch
@@ -1541,6 +1547,7 @@ export const euchreTable = actor({
 	 * reconnect protocol, and it is why `v` is monotonic.
 	 */
 	onConnect: (c, conn): void => {
+		if (conn.state.role !== 'player') return;
 		const seat = conn.state.seat;
 		const payload: SyncEvent = { v: c.state.game.v, view: project(c.state.game, seat), steps: [] };
 		conn.send('sync', payload);
@@ -1548,6 +1555,7 @@ export const euchreTable = actor({
 	},
 
 	onDisconnect: (c, conn): void => {
+		if (conn.state.role !== 'player') return;
 		c.broadcast('presence', { seat: conn.state.seat, online: false });
 	},
 

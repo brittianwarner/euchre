@@ -16,8 +16,8 @@
  * of the same durable message. Randomness never enters this actor from the runtime.
  */
 
-import { fnv1a, mulberry32 } from '$lib/euchre';
-import type { Difficulty, LegalMove, LegalMoveId, RankedMove, Seat } from '$lib/protocol';
+import { fnv1a, mulberry32 } from '#lib/euchre/index.ts';
+import type { Difficulty, LegalMove, LegalMoveId, RankedMove, Seat } from '#lib/protocol/index.ts';
 
 /** How many moves `casual` and `rookie` see. */
 const NARROW_TO = 3;

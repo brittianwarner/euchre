@@ -13,6 +13,7 @@
 
 import { createGame, legalMoves, apply, advance, project } from '../src/lib/euchre/index';
 import type { GameState, Seat, LegalMove } from '../src/lib/euchre/index';
+import { JEV_MODEL } from '../src/lib/ai/jev';
 import { decide, modelFactoryFromEnv } from '../src/lib/ai';
 import { defaultPersonas } from '../src/lib/server/personas';
 import { topMove } from '../src/lib/ai/heuristic';
@@ -40,15 +41,17 @@ function kindFor(phase: string): 'cut' | 'bid1' | 'discard' | 'bid2' | 'play' | 
 }
 
 const factory = modelFactoryFromEnv(process.env);
-if (factory === null) {
+if (!factory?.decision) {
 	console.log('✗ no model factory — set OPENROUTER_API_KEY');
 	process.exit(1);
 }
-console.log(`provider: ${factory.provider}   play→${factory.slugFor('claude-haiku-4-5')}   bid→${factory.slugFor('claude-opus-5')}\n`);
+console.log(`decisions: ${JEV_MODEL} via OpenRouter Decisions API\n`);
 
 const personas = defaultPersonas();
 for (const p of personas) {
-	console.log(`  seat ${p.seat} ${NAME[p.seat]!.padEnd(11)} "${p.persona.name}" — ${p.persona.blurb}`);
+	console.log(
+		`  seat ${p.seat} ${NAME[p.seat]!.padEnd(11)} "${p.persona.name}" — ${p.persona.blurb}`
+	);
 }
 console.log();
 

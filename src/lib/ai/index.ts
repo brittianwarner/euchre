@@ -5,7 +5,7 @@
  * a latency budget, without ever being able to produce an illegal move.
  *
  * ```ts
- * import { decide, modelFactoryFromEnv } from '$lib/ai';
+ * import { decide, modelFactoryFromEnv } from '#lib/ai/index.ts';
  *
  * // Once, at a composition root — never inside a decision:
  * const factory = modelFactoryFromEnv();          // null when there is no API key
@@ -136,5 +136,5 @@ export {
 /**
  * `./testing` is intentionally **not** re-exported here. It imports `ai/test`,
  * which has no place in a production import graph. Tests import it by path:
- * `import { scriptedModel } from '$lib/ai/testing';`
+ * `import { scriptedModel } from '#lib/ai/testing.ts';`
  */

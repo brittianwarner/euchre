@@ -7,7 +7,7 @@
  */
 
 import { fail, redirect } from '@sveltejs/kit';
-import { AI_SEATS } from '$lib/actors/player-profile/types';
+import { AI_SEATS } from '#lib/actors/player-profile/types.ts';
 import {
 	clearIdentityCookie,
 	connectProfile,

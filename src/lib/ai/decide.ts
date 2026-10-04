@@ -21,18 +21,16 @@
  * takes the seat down with it. Failure walks down the ladder, it does not loop.
  */
 
-import { APICallError, NoObjectGeneratedError, generateObject } from 'ai';
-import type { LegalMove, LegalMoveId, RankedMove } from '$lib/protocol';
+import { APICallError, NoObjectGeneratedError } from 'ai';
+import { JEV_MODEL } from './jev';
+import type { LegalMove, LegalMoveId, RankedMove } from '#lib/protocol/index.ts';
 import { allowsEscalation, isDeliberate, resolveBudget } from './config';
-import { modelParams } from './model';
 import { encodeForLlm } from './notation';
-import { buildLayers, toInstructions } from './prompt';
-import { SCHEMA_DESCRIPTION, decisionSchema, idsOf, schemaNameFor } from './schema';
-import { cleanRationale } from './screen';
+import { buildLayers } from './prompt';
+import { idsOf } from './schema';
 import {
 	ZERO_USAGE,
 	noopLog,
-	type AnthropicModelId,
 	type DecideDeps,
 	type DecideOutcome,
 	type DecideUsage,
@@ -68,105 +66,50 @@ export interface CallModelOptions {
 	readonly budgetMs: number;
 }
 
-/**
- * Issue exactly one `generateObject` call.
- *
- * Three details are deliberate and each has bitten someone:
- *
- * - `maxRetries: 0`. `abortSignal` is a wall-clock budget spanning the entire
- *   call *including* the SDK's own retries, so stacking retries inside it is inert
- *   at best and silently eats the whole budget at worst. One retry budget, owned
- *   by the ladder.
- * - The abort signal is the caller's signal *combined* with our own timeout, so a
- *   cancelled turn tears the request down immediately rather than waiting out a
- *   budget that no longer matters.
- * - `experimental_repairText` pulls the first `{...}` out of the response before
- *   parsing. Models occasionally wrap JSON in a code fence or a sentence of
- *   preamble; that is a formatting slip, not a decision failure, and repairing it
- *   is far cheaper than a fallback. It cannot smuggle an illegal move in: the
- *   repaired text still has to satisfy the enum.
- */
+/** One bounded Jev decision. Conversational models cannot enter this path. */
 export async function callModel(
 	deps: DecideDeps,
 	req: DecisionRequest,
 	candidates: readonly LegalMove[],
 	opts: CallModelOptions
 ): Promise<DecideOutcome> {
-	const factory = deps.factory;
-	if (factory === null) throw new Error('callModel requires a model factory');
-
-	const budget = resolveBudget(deps.budget);
-	const deliberate = isDeliberate(req.kind) || opts.escalate;
-	const modelId: AnthropicModelId = deliberate ? deps.persona.bidModelId : deps.persona.modelId;
-	const model = deliberate ? factory.bid(modelId) : factory.play(modelId);
-
-	const ids = idsOf(candidates);
+	const decision = deps.factory?.decision;
+	if (!decision) throw new Error('Jev decision provider is not configured');
+	const legalIds = new Set(req.legal.map((move) => move.id));
+	const allowed = candidates.filter((move) => legalIds.has(move.id));
+	if (!allowed.length) throw new NoLegalMovesError();
+	const remaining = Math.min(opts.budgetMs, req.deadlineAt - (deps.now ?? Date.now)());
+	if (remaining <= 0) throw new DOMException('Decision deadline expired', 'TimeoutError');
+	const timeout = AbortSignal.timeout(Math.max(1, Math.floor(remaining)));
+	const signal = deps.signal ? AbortSignal.any([deps.signal, timeout]) : timeout;
 	const layers = buildLayers({
 		kind: req.kind,
 		persona: deps.persona,
 		dossier: deps.dossier,
 		nonce: deps.nonce,
 		seat: req.seat,
-		body: encodeForLlm(req.view, candidates, {
+		body: encodeForLlm(req.view, allowed, {
 			...(req.ranking === undefined ? {} : { ranking: req.ranking }),
 			...(deps.memoryLines === undefined ? {} : { notes: deps.memoryLines })
-		}),
-		...(deps.log === undefined ? {} : { log: deps.log })
+		})
 	});
-
-	const timeout = AbortSignal.timeout(opts.budgetMs);
-	const signal = deps.signal === undefined ? timeout : AbortSignal.any([deps.signal, timeout]);
-
-	const res = await generateObject({
-		model,
-		schema: decisionSchema(req.kind, ids),
-		schemaName: schemaNameFor(req.kind),
-		schemaDescription: SCHEMA_DESCRIPTION,
-		instructions: toInstructions(layers),
-		messages: [{ role: 'user', content: layers.user }],
-		maxOutputTokens: isDeliberate(req.kind) ? budget.maxOutputTokensBid : budget.maxOutputTokensPlay,
-		maxRetries: 0,
-		abortSignal: signal,
-		...modelParams(
-			deps.factory?.slugFor(modelId) ?? modelId,
-			deps.persona.temperature,
-			deps.factory?.provider
-		),
-		experimental_repairText: async ({ text }) => {
-			const m = /\{[\s\S]*\}/.exec(text);
-			return m === null ? null : m[0];
-		}
-	});
-
-	const obj = res.object;
-	const engineWhy = topRanked(req.ranking, ids)?.why ?? '';
-
+	// Opaque option labels avoid provider restrictions on punctuation in move ids.
+	const criteria = Object.fromEntries(
+		allowed.map((move, i) => [`move_${i}`, JSON.stringify(move.move)])
+	);
+	const out = await decision({ state: JSON.stringify(layers), criteria, signal });
+	const index = Object.keys(criteria).indexOf(out.choice);
+	const chosen = allowed[index];
+	if (!chosen) throw new Error('Jev returned a choice outside the legal set');
 	return {
-		moveId: obj.moveId,
+		moveId: chosen.id,
 		source: 'llm',
-		rationale: cleanRationale(obj.why, engineWhy, req.view),
-		confidence: typeof obj.confidence === 'number' ? obj.confidence : DEFAULT_CONFIDENCE,
-		usage: flattenUsage(res.usage),
-		modelId,
+		// Jev generates no prose. Only use the engine explanation for THIS move.
+		rationale: req.ranking?.find((move) => move.id === chosen.id)?.why ?? '',
+		confidence: out.confidence,
+		usage: out.usage,
+		modelId: JEV_MODEL,
 		attempts: 1
-	};
-}
-
-interface SdkUsage {
-	readonly inputTokens?: number | undefined;
-	readonly outputTokens?: number | undefined;
-	readonly inputTokenDetails?: {
-		readonly cacheReadTokens?: number | undefined;
-		readonly cacheWriteTokens?: number | undefined;
-	};
-}
-
-function flattenUsage(u: SdkUsage | undefined): DecideUsage {
-	return {
-		inputTokens: u?.inputTokens ?? 0,
-		outputTokens: u?.outputTokens ?? 0,
-		cacheReadTokens: u?.inputTokenDetails?.cacheReadTokens ?? 0,
-		cacheWriteTokens: u?.inputTokenDetails?.cacheWriteTokens ?? 0
 	};
 }
 
@@ -223,7 +166,7 @@ export async function decide(
 
 	// Rung 2: no provider configured. A missing API key degrades the opponent's
 	// personality, never the game — this is a supported state, not an error.
-	if (deps.factory === null) {
+	if (!deps.factory?.decision) {
 		log('ai_no_provider', { seat: req.seat, kind: req.kind });
 		return heuristic;
 	}
@@ -304,10 +247,7 @@ function shouldContinueAfter(
  * of the legal set — which is deterministic and legal, if less clever. Either way
  * there is always a move to return, which is the only property that matters here.
  */
-export function heuristicOutcome(
-	req: DecisionRequest,
-	set: readonly LegalMove[]
-): DecideOutcome {
+export function heuristicOutcome(req: DecisionRequest, set: readonly LegalMove[]): DecideOutcome {
 	const ids = idsOf(set);
 	const top = topRanked(req.ranking, ids);
 	const moveId = top?.id ?? set[0]?.id ?? req.legal[0].id;

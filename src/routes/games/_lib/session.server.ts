@@ -25,9 +25,9 @@
  */
 
 import type { Cookies } from '@sveltejs/kit';
-import { dev } from '$app/environment';
-import { env } from '$env/dynamic/private';
-import { getRivetClient } from '$lib/server/rivet';
+import { dev } from '$app/env';
+import * as env from '$app/env/private';
+import { getRivetClient } from '#lib/server/rivet.ts';
 
 /** Cookie carrying the normalized email. `httpOnly` — read only from `load`/actions. */
 export const IDENTITY_COOKIE = 'euchre_email';

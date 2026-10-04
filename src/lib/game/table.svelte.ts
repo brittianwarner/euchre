@@ -5,7 +5,7 @@
  * submits moves through the Rivet actor handle.
  */
 
-import type { LegalMoveId, PublicGameView, SyncEvent } from '$lib/protocol';
+import type { LegalMoveId, PublicGameView, SyncEvent } from '#lib/protocol/index.ts';
 
 /** Minimal actor surface the play page injects (proxied Rivet methods). */
 export interface TableActorHandle {

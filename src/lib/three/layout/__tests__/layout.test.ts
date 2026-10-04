@@ -21,7 +21,7 @@ import {
 	stackPositions,
 	trickCardPose
 } from '../layout';
-import type { Seat } from '$lib/euchre';
+import type { Seat } from '#lib/euchre/index.ts';
 
 const SEATS: readonly Seat[] = [0, 1, 2, 3];
 

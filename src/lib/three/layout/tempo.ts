@@ -24,21 +24,21 @@
 
 export const TEMPO = {
 	/** Deal: per-card flight duration once its packet's turn comes up. */
-	dealFlightMs: 60,
+	dealFlightMs: 180,
 	/** Deal: stagger between successive cards' flight start, in the engine's packet order (approximated — see `Hand.svelte`). */
 	dealStaggerMs: 50,
 
 	/** Card play: the card's flight from hand to trick slot. */
-	cardPlayFlightMs: 220,
+	cardPlayFlightMs: 560,
 	/** Card play: height of the mid-flight arc, world metres. */
 	cardPlayArcM: 0.03,
 
 	/** Trick sweep: winner's ring pulse fires this long after the trick reads as resolved. */
 	trickWinnerPulseDelayMs: 150,
 	/** Trick sweep: flight duration from trick slot to the winner's pile. */
-	trickSweepMs: 420,
+	trickSweepMs: 680,
 	/** Trick sweep: stagger between the (up to four) cascading cards. */
-	trickSweepStaggerMs: 40,
+	trickSweepStaggerMs: 80,
 
 	/** Hand score: delay before the counter starts — comprehension time, preserved under reduced motion. */
 	handScoreDelayMs: 600,

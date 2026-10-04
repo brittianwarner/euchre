@@ -15,6 +15,7 @@ export {
   type PreloadActorOptions,
   type ActionDefaults,
   type SvelteRivetKitOptions,
+  type SvelteActorOptions,
 } from "./rivetkit.svelte.js";
 
 // Context helpers
@@ -38,12 +39,24 @@ export {
   type HealthStatus,
 } from "./connection-health.svelte.js";
 
+// Opt-in live connection registry (local-dev overlays)
+export {
+  createConnectionInspector,
+  normalizeActorKey,
+  fallbackInspectorHash,
+  CONNECTION_INSPECTOR_SAMPLE_KEYS,
+  type ConnectionInspector,
+  type ConnectionInspectorSample,
+  type ConnectionInspectorReport,
+} from "./connection-inspector.svelte.js";
+
 // Error utilities
 export {
   isActorError,
   actorErrorCode,
   actorErrorMessage,
   getActionError,
+  type ActorErrorLike,
   type ActionErrorInfo,
 } from "./errors.js";
 

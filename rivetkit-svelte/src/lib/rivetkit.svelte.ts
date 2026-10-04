@@ -1,8 +1,8 @@
 /**
  * @rivetkit/svelte — Svelte 5 runes integration for RivetKit actors.
  *
- * Thin adapter over `@rivetkit/framework-base` that bridges actor state
- * into Svelte 5 reactive primitives (`$state`, `$effect`).
+ * Bridges Rivet actor state into Svelte 5 reactive primitives (`$state`,
+ * `$effect`) through the package-local ref-counted framework core.
  *
  * @module
  */
@@ -12,7 +12,7 @@ import {
   type ActorOptions,
   type AnyActorRegistry,
   type CreateRivetKitOptions,
-} from "@rivetkit/framework-base";
+} from "./internal/framework-base.js";
 import {
   type Client,
   createClient,
@@ -25,10 +25,17 @@ import {
 import { BROWSER, DEV } from "esm-env";
 import type { MaybeGetter } from "./internal/types.js";
 import { extract } from "./internal/extract.js";
+import {
+  createConnectionInspector,
+  type ConnectionInspector,
+} from "./connection-inspector.svelte.js";
 
-export type { ActorConnStatus } from "@rivetkit/framework-base";
+export type { ActorConnStatus } from "./internal/framework-base.js";
 export { createClient } from "rivetkit/client";
-export type { ActorOptions, AnyActorRegistry } from "@rivetkit/framework-base";
+export type {
+  ActorOptions,
+  AnyActorRegistry,
+} from "./internal/framework-base.js";
 
 // ---------------------------------------------------------------------------
 // Warm-up types
@@ -123,12 +130,15 @@ export interface ActionDefaults {
    *
    * When an action exceeds this duration, the promise resolves to `undefined`
    * (or rejects if `throwOnError` is enabled) and `lastActionError` is set
-   * to a timeout error.
+   * to a timeout error. This bounds the local caller only; actor-side work
+   * already in progress is not cancelled.
    *
    * Default: none (actions run until the actor responds or the connection
    * drops — Rivet's server-side `actionTimeout` is the ultimate backstop).
    */
   timeout?: number;
+  /** Finite positive per-action deadlines; invalid entries fall back to timeout. */
+  timeoutByAction?: Readonly<Record<string, number>>;
 
   /**
    * Controls whether action errors reject the returned promise.
@@ -148,13 +158,21 @@ export interface ActionDefaults {
   /**
    * Guard against calling actions while disconnected.
    *
-   * When `true` (default), actions called while the WebSocket connection is
-   * not established will immediately fail with a connection error instead of
-   * queuing or hanging.
+   * When `true` (default), a lost connection (`disconnected` / error-like)
+   * fails immediately. A first-paint handshake (`idle` / `connecting`) waits
+   * for {@link ReactiveActor.whenConnected} and then dispatches — a 200
+   * token mint is not a connected actor, and failing those calls left
+   * `setActiveContext` / `createDraft` dead after mint (002).
    */
   guardConnection?: boolean;
 
-  /** Called when any action call starts. */
+  /**
+   * Called when any action call starts.
+   *
+   * Lifecycle callbacks are observational. If one throws, the returned action
+   * promise rejects with that callback error after internal tracking is cleaned
+   * up, regardless of `throwOnError`.
+   */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onActionStart?: (actionName: string, args: any[]) => void;
   /** Called when an action completes successfully. */
@@ -167,7 +185,7 @@ export interface ActionDefaults {
 
 /**
  * Internal interceptor function type. Built from {@link ActionDefaults}
- * and passed to {@link proxyWithConnection}.
+ * and applied by the stable recursive action proxy.
  *
  * @param actionName - The name of the actor action being called.
  * @param args - Arguments passed to the action.
@@ -178,7 +196,7 @@ export interface ActionDefaults {
 type ActionInterceptor = (
   actionName: string,
   args: any[],
-  call: () => any,
+  call: (signal?: AbortSignal) => any,
 ) => Promise<any>;
 
 // ---------------------------------------------------------------------------
@@ -188,8 +206,8 @@ type ActionInterceptor = (
 /**
  * Proxied actor methods forwarded from the underlying connection at runtime.
  *
- * rivetkit 2.1.10 introduced deeply nested conditional types inside
- * `ActorConn` that exceed TypeScript's instantiation depth limit when
+ * RivetKit's deeply nested conditional types inside `ActorConn` exceed
+ * TypeScript's instantiation depth limit when
  * wrapped in `Omit`. This permissive index signature preserves the
  * "call any actor action on the object" DX while avoiding TS2589.
  * All reactive state properties above remain fully typed.
@@ -433,7 +451,7 @@ export interface RivetKit<Registry extends AnyActorRegistry> {
   useActor: <
     ActorName extends keyof ExtractActorsFromRegistry<Registry> & string,
   >(
-    opts: MaybeGetter<ActorOptions<Registry, ActorName>>,
+    opts: MaybeGetter<SvelteActorOptions<Registry, ActorName>>,
   ) => ActorState<Registry, ActorName>;
 
   /**
@@ -449,7 +467,7 @@ export interface RivetKit<Registry extends AnyActorRegistry> {
   createReactiveActor: <
     ActorName extends keyof ExtractActorsFromRegistry<Registry> & string,
   >(
-    opts: ActorOptions<Registry, ActorName>,
+    opts: SvelteActorOptions<Registry, ActorName>,
   ) => ReactiveActorHandle<Registry, ActorName>;
 
   /**
@@ -522,8 +540,16 @@ export interface RivetKit<Registry extends AnyActorRegistry> {
   preConnect: <
     ActorName extends keyof ExtractActorsFromRegistry<Registry> & string,
   >(
-    opts: ActorOptions<Registry, ActorName>,
+    opts: SvelteActorOptions<Registry, ActorName>,
   ) => PreConnectHandle;
+
+  /**
+   * Live registry of package-managed sockets. Present only when
+   * {@link SvelteRivetKitOptions.connectionInspector} is `true`; otherwise
+   * `null` and applyState does not report. Lists distinct sockets by
+   * actor name + key (never params or tokens).
+   */
+  connectionInspector: ConnectionInspector | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -554,7 +580,30 @@ export interface SvelteRivetKitOptions<
    * ```
    */
   actionDefaults?: ActionDefaults;
+
+  /**
+   * Opt-in live connection registry for local-dev overlays.
+   *
+   * When `true`, the returned RivetKit exposes {@link RivetKit.connectionInspector}
+   * and `useActor` / `createReactiveActor` / `preConnect` report status at
+   * applyState. Off by default — production callers must not enable this.
+   * The registry never records `params`, `getParams`, tokens, or payloads.
+   */
+  connectionInspector?: boolean;
 }
+
+/**
+ * Actor options accepted by the Svelte adapter.
+ *
+ * Extends framework-base options with per-actor action middleware defaults.
+ * Actor-level values shallow-merge over client-level defaults.
+ */
+export type SvelteActorOptions<
+  Registry extends AnyActorRegistry,
+  ActorName extends keyof ExtractActorsFromRegistry<Registry> & string,
+> = ActorOptions<Registry, ActorName> & {
+  actionDefaults?: ActionDefaults;
+};
 
 /**
  * Create a RivetKit instance with a new client.
@@ -600,18 +649,48 @@ export function createRivetKit<Registry extends AnyActorRegistry>(
 export function createRivetKitWithClient<Registry extends AnyActorRegistry>(
   client: Client<Registry>,
   opts: SvelteRivetKitOptions<Registry> = {},
-) {
+): RivetKit<Registry> {
   // Internal implementations erase the ActorName generic. The deeply nested
   // conditional types inside ActorConn (rivetkit 2.1.10) exceed TypeScript's
   // instantiation depth when evaluated in generic function bodies. The public
   // RivetKit<Registry> interface provides full type safety to consumers.
-  const { actionDefaults: clientActionDefaults, ...frameworkOpts } = opts;
+  const {
+    actionDefaults: clientActionDefaults,
+    connectionInspector: enableInspector = false,
+    hashFunction: customHashFunction,
+    ...baseFrameworkOpts
+  } = opts;
+  // `enabled` is lifecycle state, never actor identity. Normalizing it here
+  // guarantees reconnect's enabled toggle targets the same framework entry,
+  // even when a consumer supplies a custom hash function.
+  const frameworkOpts: CreateRivetKitOptions<Registry> = customHashFunction
+    ? {
+        ...baseFrameworkOpts,
+        hashFunction: (actorOpts) => {
+          const { enabled: _enabled, ...identityOpts } = actorOpts;
+          return customHashFunction(
+            identityOpts as ActorOptions<
+              Registry,
+              keyof ExtractActorsFromRegistry<Registry> & string
+            >,
+          );
+        },
+      }
+    : baseFrameworkOpts;
+  // Strip the Svelte-only flag before handing opts to the framework core.
+  const inspector = enableInspector ? createConnectionInspector() : null;
+  let inspectorOwnerSeq = 0;
+  function nextInspectorOwnerId(): string {
+    inspectorOwnerSeq += 1;
+    return `rivet-conn:${inspectorOwnerSeq}`;
+  }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { getOrCreateActor } = createVanillaRivetKit<Registry>(
     client,
     frameworkOpts,
   ) as {
     getOrCreateActor: (actorOpts: any) => {
+      key: string;
       mount: () => () => void;
       state: any;
     };
@@ -621,8 +700,8 @@ export function createRivetKitWithClient<Registry extends AnyActorRegistry>(
   // Action interceptor builder — creates a closure-based interceptor
   // that captures $state variables for reactive action tracking.
   //
-  // The interceptor is called by proxyWithConnection for every forwarded
-  // action call, providing: timeout, error capture to $state, loading
+  // The interceptor is called by the recursive action proxy for every
+  // forwarded action call, providing: timeout, error capture to $state, loading
   // tracking, and lifecycle callbacks — without manual wrapping.
   // -------------------------------------------------------------------
 
@@ -642,6 +721,18 @@ export function createRivetKitWithClient<Registry extends AnyActorRegistry>(
   // with lifecycle-specific methods (onEvent, mount, dispose).
   // -------------------------------------------------------------------
 
+  /**
+   * Optional bridge from applyState into the opted-in connection inspector.
+   * `isActive` gates reports so a disposed / unmounted handle cannot
+   * re-register itself from a leftover derived subscription.
+   */
+  type InspectorBridge = {
+    inspector: ConnectionInspector;
+    ownerId: string;
+    getIdentity: () => { name: string; key: string | string[] };
+    isActive: () => boolean;
+  };
+
   function createActorCoreState(
     actorActionDefaults: ActionDefaults | undefined,
     onConnectionChange?: (
@@ -650,6 +741,7 @@ export function createRivetKitWithClient<Registry extends AnyActorRegistry>(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       newConn: ActorConn<any> | null,
     ) => void,
+    inspectorBridge?: InspectorBridge | null,
   ) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let _connection = $state.raw<ActorConn<any> | null>(null);
@@ -674,7 +766,17 @@ export function createRivetKitWithClient<Registry extends AnyActorRegistry>(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let connectionValue: ActorConn<any> | null = null;
     let connStatusValue: ActorConnStatus = "idle" as ActorConnStatus;
+    let hasEverConnectedValue = false;
+    let hashValue = "";
     let pendingActionsValue = 0;
+    let stateGeneration = 0;
+    const activeActionControllers = new Set<AbortController>();
+    let actionInvocationSequence = 0;
+    let latestActionInvocation = 0;
+    // Installed by createProxy. Action invokers are rebound only when the
+    // connection identity changes, keeping the per-call path branch-free.
+    let updateProxyConnection:
+      ((connection: ActorConn<any> | null) => void) | undefined;
 
     // whenConnected callback set — fired by applyState when connected.
     // Each callback accepts a boolean: true = connected, false = cancelled/disposed.
@@ -687,14 +789,13 @@ export function createRivetKitWithClient<Registry extends AnyActorRegistry>(
     );
 
     // Inlined interceptor — closes over $state variables directly, avoiding
-    // 6 getter/setter calls per action invocation. Collapses the promise
-    // chain to a single `.then(onSuccess, onError)` (1 microtask tick instead
-    // of 3) when no `finally`-style hook is needed.
+    // getter/setter dispatch per action invocation. The success path uses one
+    // `.then(onSuccess, onError)` while cleanup remains exception-safe when a
+    // consumer lifecycle callback throws.
     let interceptAction: ActionInterceptor | undefined;
     if (resolvedDefaults) {
       const defaults = resolvedDefaults;
       const guardOn = defaults.guardConnection !== false;
-      const hasTimeout = defaults.timeout != null && defaults.timeout > 0;
       const onStart = defaults.onActionStart;
       const onSuccess = defaults.onActionSuccess;
       const onError = defaults.onActionError;
@@ -707,33 +808,107 @@ export function createRivetKitWithClient<Registry extends AnyActorRegistry>(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         args: any[],
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        call: () => any,
+        call: (signal?: AbortSignal) => any,
       ) => {
-        const shouldThrowError = (err: Error) =>
-          throwIsFn
-            ? (throwMode as (e: Error, n: string) => boolean)(err, actionName)
-            : throwMode === true;
+        const actionGeneration = stateGeneration;
+        const actionInvocation = ++actionInvocationSequence;
+        let actionController: AbortController | undefined;
+        latestActionInvocation = actionInvocation;
+        const override = defaults.timeoutByAction?.[actionName];
+        const timeoutMs =
+          typeof override === "number" &&
+          Number.isFinite(override) &&
+          override > 0
+            ? override
+            : (defaults.timeout ?? 0);
+        const hasTimeout = Number.isFinite(timeoutMs) && timeoutMs > 0;
+        const deadline = hasTimeout ? Date.now() + timeoutMs : 0;
+        const ownsLatestActionState = (): boolean =>
+          actionGeneration === stateGeneration &&
+          actionInvocation === latestActionInvocation;
+        const beginAction = (): Error | null => {
+          pendingActionsValue += 1;
+          _pendingActions = pendingActionsValue;
+          _isMutating = true;
+          _lastAction = actionName;
+          return runCallback(
+            onStart ? () => onStart(actionName, args) : undefined,
+            null,
+          );
+        };
+
+        const toError = (error: unknown): Error =>
+          error instanceof Error ? error : new Error(String(error));
+
+        const runCallback = (
+          callback: (() => void) | undefined,
+          previousError: Error | null,
+        ): Error | null => {
+          if (!callback) return previousError;
+          try {
+            callback();
+            return previousError;
+          } catch (error) {
+            return previousError ?? toError(error);
+          }
+        };
+
+        const finishPending = (
+          timeoutId?: ReturnType<typeof setTimeout>,
+        ): void => {
+          if (timeoutId !== undefined) clearTimeout(timeoutId);
+          if (actionController) {
+            activeActionControllers.delete(actionController);
+            actionController.abort();
+          }
+          // A disposed or identity-switched consumer owns a fresh state epoch;
+          // a late action from the previous actor must not mutate it.
+          if (actionGeneration !== stateGeneration) return;
+          const newPending = Math.max(0, pendingActionsValue - 1);
+          pendingActionsValue = newPending;
+          _pendingActions = newPending;
+          _isMutating = newPending > 0;
+        };
+
+        const rejectForCallbackOrPolicy = (
+          err: Error,
+          callbackError: Error | null,
+        ): Promise<undefined> => {
+          if (callbackError) return Promise.reject(callbackError);
+
+          let shouldThrow: boolean;
+          try {
+            shouldThrow = throwIsFn
+              ? (throwMode as (e: Error, n: string) => boolean)(err, actionName)
+              : throwMode === true;
+          } catch (error) {
+            return Promise.reject(toError(error));
+          }
+
+          return shouldThrow ? Promise.reject(err) : Promise.resolve(undefined);
+        };
 
         const settleFailure = (
           error: unknown,
           timeoutId?: ReturnType<typeof setTimeout>,
         ) => {
-          const err = error instanceof Error ? error : new Error(String(error));
-          _lastActionError = err;
-          if (onError) onError(err, actionName);
-          if (timeoutId !== undefined) clearTimeout(timeoutId);
-          const newPending = Math.max(0, pendingActionsValue - 1);
-          pendingActionsValue = newPending;
-          _pendingActions = newPending;
-          _isMutating = newPending > 0;
-          if (onSettled) onSettled(actionName);
-
-          if (shouldThrowError(err)) return Promise.reject(err);
-          return undefined;
+          const err = toError(error);
+          if (ownsLatestActionState()) {
+            _lastActionError = err;
+          }
+          finishPending(timeoutId);
+          let callbackError = runCallback(
+            onError ? () => onError(err, actionName) : undefined,
+            null,
+          );
+          callbackError = runCallback(
+            onSettled ? () => onSettled(actionName) : undefined,
+            callbackError,
+          );
+          return rejectForCallbackOrPolicy(err, callbackError);
         };
 
-        // Fast guard — fail before any pending-count bookkeeping.
-        if (guardOn && (!connectionValue || connStatusValue !== "connected")) {
+        const failGuard = () => {
           const notYet =
             connStatusValue === "idle" || connStatusValue === "connecting";
           const err = Object.assign(
@@ -745,91 +920,171 @@ export function createRivetKitWithClient<Registry extends AnyActorRegistry>(
               connStatus: connStatusValue,
             },
           );
-          _lastActionError = err;
-          _lastAction = actionName;
-          if (onError) onError(err, actionName);
-          if (onSettled) onSettled(actionName);
+          if (ownsLatestActionState()) {
+            _lastActionError = err;
+            _lastAction = actionName;
+          }
+          finishPending();
+          let callbackError = runCallback(
+            onError ? () => onError(err, actionName) : undefined,
+            null,
+          );
+          callbackError = runCallback(
+            onSettled ? () => onSettled(actionName) : undefined,
+            callbackError,
+          );
+          return rejectForCallbackOrPolicy(err, callbackError);
+        };
 
-          return shouldThrowError(err)
-            ? Promise.reject(err)
-            : Promise.resolve(undefined);
+        const startError = beginAction();
+        if (startError) {
+          if (ownsLatestActionState()) {
+            _lastActionError = startError;
+          }
+          finishPending();
+          const callbackError = runCallback(
+            onSettled ? () => onSettled(actionName) : undefined,
+            startError,
+          );
+          return Promise.reject(callbackError);
         }
 
-        // Track pending actions — direct $state writes, no setter dispatch.
-        pendingActionsValue = pendingActionsValue + 1;
-        _pendingActions = pendingActionsValue;
-        _isMutating = true;
-        _lastAction = actionName;
-        if (onStart) onStart(actionName, args);
-
-        let callPromise: Promise<unknown>;
-        try {
-          callPromise = Promise.resolve(call());
-        } catch (error) {
-          return Promise.resolve(settleFailure(error));
-        }
-
-        // Manual race against timeout. This avoids both `Promise.race`
-        // (which adds an aggregator and at least one extra Promise
-        // allocation) and the unhandled-rejection suppression
-        // `callPromise.catch(noop)` that the race version needed for the
-        // case where the timeout wins. Direct .then on callPromise inside
-        // our deferred handles both resolution paths cleanly.
-        //
-        // We keep setTimeout registration EAGER (not behind a
-        // queueMicrotask) so vitest's `vi.useFakeTimers()` +
-        // `vi.advanceTimersByTime()` test pattern still works — the
-        // timer must be visible to fake-timer advancement at the call
-        // site, not on the next microtask.
-        let raced: Promise<unknown>;
-        let timeoutId: ReturnType<typeof setTimeout> | undefined;
-        if (hasTimeout) {
-          const ms = defaults.timeout as number;
-          raced = new Promise<unknown>((resolve, reject) => {
-            let settled = false;
-            timeoutId = setTimeout(() => {
-              if (settled) return;
-              settled = true;
-              reject(
-                new Error(`Action "${actionName}" timed out after ${ms}ms`),
+        // Lost sockets fail immediately. A first-paint handshake
+        // (idle/connecting after token mint) waits, then dispatches —
+        // otherwise createDraft / setActiveContext die on ACTOR_NOT_YET_CONNECTED.
+        if (guardOn && (!connectionValue || connStatusValue !== "connected")) {
+          const notYet =
+            connStatusValue === "idle" || connStatusValue === "connecting";
+          if (!notYet) return failGuard();
+          const waitMs = hasTimeout
+            ? Math.min(Math.max(0, deadline - Date.now()), 30_000)
+            : 30_000;
+          return whenConnected(waitMs).then((ok) => {
+            if (actionGeneration !== stateGeneration) {
+              const err = Object.assign(
+                new Error(
+                  `Action "${actionName}" was cancelled because the actor identity changed`,
+                ),
+                { code: "ACTOR_IDENTITY_CHANGED" },
               );
-            }, ms);
-            callPromise.then(
-              (val) => {
-                if (settled) return;
-                settled = true;
-                clearTimeout(timeoutId);
-                resolve(val);
-              },
-              (err) => {
-                if (settled) return;
-                settled = true;
-                clearTimeout(timeoutId);
-                reject(err);
-              },
-            );
+              return settleFailure(err);
+            }
+            if (!ok || !connectionValue || connStatusValue !== "connected") {
+              return failGuard();
+            }
+            return dispatchCall();
           });
-        } else {
-          raced = callPromise;
         }
 
-        // Single `.then(onSuccess, onError)` = 1 microtask tick. We inline the
-        // cleanup into both branches instead of using `.finally()` (which would
-        // chain another promise).
-        return raced.then(
-          (result) => {
-            _lastActionError = null;
-            if (onSuccess) onSuccess(actionName, result);
-            if (timeoutId !== undefined) clearTimeout(timeoutId);
-            const newPending = Math.max(0, pendingActionsValue - 1);
-            pendingActionsValue = newPending;
-            _pendingActions = newPending;
-            _isMutating = newPending > 0;
-            if (onSettled) onSettled(actionName);
-            return result;
-          },
-          (error) => settleFailure(error, timeoutId),
-        );
+        return dispatchCall();
+
+        function dispatchCall(): Promise<unknown> {
+          if (hasTimeout && deadline <= Date.now()) {
+            return settleFailure(
+              new Error(
+                `Action "${actionName}" timed out after ${timeoutMs}ms`,
+              ),
+            );
+          }
+
+          let callPromise: Promise<unknown>;
+          try {
+            const controller = new AbortController();
+            actionController = controller;
+            activeActionControllers.add(controller);
+            const aborted = new Promise<never>((_, reject) => {
+              controller.signal.addEventListener(
+                "abort",
+                () => reject(new Error("Actor action cancelled")),
+                { once: true },
+              );
+            });
+            // Dispatch can synchronously dispose the consumer or throw.
+            // Register first; self-handle until the race owns the rejection.
+            void aborted.catch(() => {});
+            const returned = call(controller.signal);
+            callPromise = Promise.race([Promise.resolve(returned), aborted]);
+          } catch (error) {
+            return settleFailure(error);
+          }
+
+          // Manual race against timeout. This avoids both `Promise.race`
+          // (which adds an aggregator and at least one extra Promise
+          // allocation) and the unhandled-rejection suppression
+          // `callPromise.catch(noop)` that the race version needed for the
+          // case where the timeout wins. Direct .then on callPromise inside
+          // our deferred handles both resolution paths cleanly.
+          //
+          // We keep setTimeout registration EAGER (not behind a
+          // queueMicrotask) so vitest's `vi.useFakeTimers()` +
+          // `vi.advanceTimersByTime()` test pattern still works — the
+          // timer must be visible to fake-timer advancement at the call
+          // site, not on the next microtask.
+          let raced: Promise<unknown>;
+          let timeoutId: ReturnType<typeof setTimeout> | undefined;
+          if (hasTimeout) {
+            // Connection readiness and dispatch share one caller deadline.
+            // Time spent waiting for the initial socket is not granted again
+            // once the action reaches the wire.
+            const remainingMs = Math.max(0, deadline - Date.now());
+            raced = new Promise<unknown>((resolve, reject) => {
+              let settled = false;
+              timeoutId = setTimeout(() => {
+                if (settled) return;
+                settled = true;
+                reject(
+                  new Error(
+                    `Action "${actionName}" timed out after ${timeoutMs}ms`,
+                  ),
+                );
+              }, remainingMs);
+              callPromise.then(
+                (val) => {
+                  if (settled) return;
+                  settled = true;
+                  clearTimeout(timeoutId);
+                  resolve(val);
+                },
+                (err) => {
+                  if (settled) return;
+                  settled = true;
+                  clearTimeout(timeoutId);
+                  reject(err);
+                },
+              );
+            });
+          } else {
+            raced = callPromise;
+          }
+
+          // Single `.then(onSuccess, onError)` = 1 microtask tick. We inline the
+          // cleanup into both branches instead of using `.finally()` (which would
+          // chain another promise).
+          return raced.then(
+            (result) => {
+              if (ownsLatestActionState()) {
+                _lastActionError = null;
+              }
+              finishPending(timeoutId);
+              let callbackError = runCallback(
+                onSuccess ? () => onSuccess(actionName, result) : undefined,
+                null,
+              );
+              callbackError = runCallback(
+                onSettled ? () => onSettled(actionName) : undefined,
+                callbackError,
+              );
+              if (callbackError) {
+                if (ownsLatestActionState()) {
+                  _lastActionError = callbackError;
+                }
+                return Promise.reject(callbackError);
+              }
+              return result;
+            },
+            (error) => settleFailure(error, timeoutId),
+          );
+        }
       };
     }
 
@@ -839,10 +1094,25 @@ export function createRivetKitWithClient<Registry extends AnyActorRegistry>(
     // callback path on every subscribe push from useActor.
     const watchConnChange = onConnectionChange !== undefined;
 
+    function syncInspector(): void {
+      if (!inspectorBridge || !inspectorBridge.isActive()) return;
+      const identity = inspectorBridge.getIdentity();
+      const name = String(identity.name ?? "");
+      if (!name) return;
+      inspectorBridge.inspector.report({
+        ownerId: inspectorBridge.ownerId,
+        name,
+        key: identity.key,
+        hash: hashValue,
+        connStatus: connStatusValue,
+        hasConnection: connectionValue != null,
+      });
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function applyState(val: any): void {
       if (!val) return;
-      const prevConn = watchConnChange ? connectionValue : null;
+      const prevConn = connectionValue;
       const nextConn = val.connection;
       const nextStatus = val.connStatus;
       const nextError = val.error;
@@ -854,6 +1124,10 @@ export function createRivetKitWithClient<Registry extends AnyActorRegistry>(
       _connStatus = nextStatus;
       _error = nextError;
 
+      if (prevConn !== nextConn) {
+        updateProxyConnection?.(nextConn);
+      }
+
       // Only write `_lastError` when we actually have a new error to record.
       // Saves a read-modify-write on every state push where val.error is null,
       // which is the common case once a connection is healthy.
@@ -862,12 +1136,14 @@ export function createRivetKitWithClient<Registry extends AnyActorRegistry>(
       // `_hasEverConnected` is a monotonic latch — once true, never reverts.
       // Skipping the read+coalesce after the first connection means later
       // reconnects don't keep re-triggering the $state setter.
-      if (!_hasEverConnected && nextStatus === "connected") {
+      if (!hasEverConnectedValue && nextStatus === "connected") {
+        hasEverConnectedValue = true;
         _hasEverConnected = true;
       }
 
       // Skip the `?? ""` allocation when hash is already a string.
-      _hash = val.hash != null ? val.hash : "";
+      hashValue = val.hash != null ? val.hash : "";
+      _hash = hashValue;
 
       // Notify connection change listeners (used by createReactiveActor
       // to rebind event listeners on reconnect). Gated by `watchConnChange`
@@ -886,6 +1162,8 @@ export function createRivetKitWithClient<Registry extends AnyActorRegistry>(
         _onConnectedCallbacks.clear();
         for (const cb of snapshot) cb(true);
       }
+
+      syncInspector();
     }
 
     /**
@@ -930,6 +1208,34 @@ export function createRivetKitWithClient<Registry extends AnyActorRegistry>(
       for (const cb of snapshot) cb(false);
     }
 
+    /** Detach this consumer from the last framework state snapshot. */
+    function detach(): void {
+      const prevConn = connectionValue;
+      stateGeneration += 1;
+      for (const controller of activeActionControllers) controller.abort();
+      activeActionControllers.clear();
+      connectionValue = null;
+      connStatusValue = "idle" as ActorConnStatus;
+      hasEverConnectedValue = false;
+      hashValue = "";
+      pendingActionsValue = 0;
+      _connection = null;
+      _handle = null;
+      _connStatus = "idle" as ActorConnStatus;
+      _error = null;
+      _lastError = null;
+      _hasEverConnected = false;
+      _hash = "";
+      _pendingActions = 0;
+      _isMutating = false;
+      _lastActionError = null;
+      _lastAction = null;
+      updateProxyConnection?.(null);
+      if (watchConnChange && prevConn) {
+        onConnectionChange!(prevConn, null);
+      }
+    }
+
     // Stable, per-actor references to the two state-mutating helpers.
     // Hoisted out of `publicState` so the proxy.get switch can return them
     // without re-binding on every read.
@@ -947,13 +1253,108 @@ export function createRivetKitWithClient<Registry extends AnyActorRegistry>(
       inner: T,
       ownKnownProps: ReadonlySet<string>,
     ): T {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let cachedConn: ActorConn<any> | null = null;
-      // Map (not Object.create(null)) — measured ~9% faster for the
-      // single-actor cached-method read path. The keys arrive from outside,
-      // so the cache's hidden class is unstable; Map's monomorphic
-      // `get(key)` outperforms property-access dict-mode lookup here.
-      let cachedMethods: Map<string, unknown> = new Map();
+      // Action proxies are stable for the life of this consumer, matching the
+      // stable mutation/send functions exposed by mature Svelte adapters. Each
+      // proxy is rebound when connection identity changes, so destructured
+      // handlers survive reconnects without a per-call identity comparison.
+      const cachedMethods = new Map<string, unknown>();
+      const connectionBinders = new Set<
+        (connection: ActorConn<any> | null) => void
+      >();
+
+      updateProxyConnection = (connection) => {
+        for (const bindConnection of connectionBinders) {
+          bindConnection(connection);
+        }
+      };
+
+      function getActionProxy(path: string[], actionName: string): unknown {
+        const cached = cachedMethods.get(actionName);
+        if (cached !== undefined) return cached;
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let resolvedInvoke: ((...args: any[]) => unknown) | null = null;
+
+        const bindConnection = (conn: ActorConn<any> | null): void => {
+          if (!conn) {
+            resolvedInvoke = null;
+            return;
+          }
+
+          let value: unknown = conn;
+          for (const segment of path) {
+            if (
+              value == null ||
+              (typeof value !== "object" && typeof value !== "function")
+            ) {
+              resolvedInvoke = null;
+              return;
+            }
+            value = (value as Record<string, unknown>)[segment];
+          }
+          resolvedInvoke =
+            typeof value === "function"
+              ? (value as (...callArgs: unknown[]) => unknown)
+              : null;
+        };
+        connectionBinders.add(bindConnection);
+        bindConnection(connectionValue);
+
+        const invokeCurrent = (...args: unknown[]): unknown => {
+          const invoke = resolvedInvoke;
+          if (!invoke) {
+            const notYet =
+              connStatusValue === "idle" || connStatusValue === "connecting";
+            if (connectionValue) {
+              return Promise.reject(
+                new TypeError(`Actor action "${actionName}" is not callable`),
+              );
+            }
+            return Promise.reject(
+              Object.assign(
+                new Error(
+                  `Action "${actionName}" called while ${notYet ? "not yet connected" : "disconnected"}`,
+                ),
+                {
+                  code: notYet
+                    ? "ACTOR_NOT_YET_CONNECTED"
+                    : "ACTOR_DISCONNECTED",
+                  connStatus: connStatusValue,
+                },
+              ),
+            );
+          }
+
+          // Rivet nested-action functions are Proxies: direct invocation is
+          // required because `.apply` itself is interpreted as another path.
+          return invoke(...args);
+        };
+
+        const callable = interceptAction
+          ? (...args: unknown[]): unknown =>
+              interceptAction(actionName, args, (signal) => {
+                const conn = connectionValue;
+                if (conn && typeof conn.action === "function") {
+                  return conn.action({ name: actionName, args, signal });
+                }
+                return invokeCurrent(...args);
+              })
+          : invokeCurrent;
+
+        const actionProxy = new Proxy(callable, {
+          get(target, prop, receiver) {
+            if (typeof prop !== "string") {
+              return Reflect.get(target, prop, receiver);
+            }
+            // Match Rivet's own proxy and avoid Promise/await assimilation.
+            if (prop === "then") return undefined;
+            const nestedName = `${actionName}.${prop}`;
+            return getActionProxy([...path, prop], nestedName);
+          },
+        });
+        cachedMethods.set(actionName, actionProxy);
+        return actionProxy;
+      }
 
       return new Proxy(inner, {
         get(target, prop, receiver) {
@@ -965,6 +1366,8 @@ export function createRivetKitWithClient<Registry extends AnyActorRegistry>(
           // observed access frequency — connStatus/isConnected/connection
           // dominate template re-reads.
           switch (prop) {
+            case "then":
+              return undefined;
             case "connStatus":
               return _connStatus;
             case "isConnected":
@@ -1000,59 +1403,25 @@ export function createRivetKitWithClient<Registry extends AnyActorRegistry>(
             return (target as Record<string, unknown>)[prop];
           }
 
+          const cachedAction = cachedMethods.get(prop);
+          if (cachedAction !== undefined) return cachedAction;
+
           const conn = connectionValue;
           if (conn) {
-            if (conn !== cachedConn) {
-              cachedConn = conn;
-              cachedMethods = new Map();
-            }
-            const cached = cachedMethods.get(prop);
-            if (cached !== undefined) return cached;
-
             const val = (conn as unknown as Record<string, unknown>)[prop];
             if (typeof val !== "function") return val;
-
-            // Invoke via Reflect.apply — never `val.apply(...)`.
-            // Rivet's actor connection is a Proxy whose `get` trap treats every
-            // unknown property as a nested action path (`snapshot.apply` etc.),
-            // so reading `.apply` does not yield Function.prototype.apply and
-            // the call hangs until the client action timeout.
-            //
-            // We use a closure rather than `Function.prototype.bind`:
-            // measured ~30% faster for cached-method invocation. V8 inlines
-            // small arrow closures aggressively at hot call sites, but bound
-            // functions take a slower dispatch path.
-            const bound = interceptAction
-              ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (...args: any[]) =>
-                  interceptAction!(prop, args, () =>
-                    Reflect.apply(val as Function, conn, args),
-                  )
-              : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (...args: any[]) => Reflect.apply(val as Function, conn, args);
-            cachedMethods.set(prop, bound);
-            return bound;
           }
-
-          if (interceptAction) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            return (...args: any[]) =>
-              interceptAction!(prop, args, () =>
-                Promise.reject(
-                  new Error(`Action "${prop}" called while disconnected`),
-                ),
-              );
-          }
-          return undefined;
+          return getActionProxy([prop], prop);
         },
       });
     }
 
     return {
       applyState,
+      syncInspector,
       cancelPendingConnections,
+      detach,
       getConnection: () => _connection,
-      interceptAction,
       createProxy,
     };
   }
@@ -1074,18 +1443,58 @@ export function createRivetKitWithClient<Registry extends AnyActorRegistry>(
     // Resolve action defaults from the initial options (not reactive —
     // actionDefaults are structural config, not per-render state).
     const initialOpts = extract(optsOrGetter);
-    const core = createActorCoreState(initialOpts?.actionDefaults);
+    const inspectorOwnerId = inspector ? nextInspectorOwnerId() : "";
+    const identity = {
+      name: String(initialOpts?.name ?? ""),
+      key: (initialOpts?.key ?? []) as string | string[],
+    };
+    const core = createActorCoreState(
+      initialOpts?.actionDefaults,
+      undefined,
+      inspector
+        ? {
+            inspector,
+            ownerId: inspectorOwnerId,
+            getIdentity: () => identity,
+            isActive: () => true,
+          }
+        : null,
+    );
+    let activeFrameworkKey: string | null = null;
+    let lifecycleRevision = 0;
 
     $effect(() => {
       const actorOpts = extract(optsOrGetter);
+      identity.name = String(actorOpts?.name ?? "");
+      identity.key = (actorOpts?.key ?? []) as string | string[];
 
-      // Strip actionDefaults before passing to framework-base
+      // Strip actionDefaults before passing to the framework core
       // (it doesn't know about our Svelte-specific extension)
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { actionDefaults: _ad, ...baseOpts } = actorOpts ?? {};
 
-      const { mount, state: derived } = getOrCreateActor(baseOpts);
+      const {
+        key: nextFrameworkKey,
+        mount,
+        state: derived,
+      } = getOrCreateActor(baseOpts);
       const unmount = mount();
+
+      // Effect teardowns run both before a dependency refresh and on final
+      // destruction. Defer final detachment by one microtask so a replacement
+      // effect body can compare framework identity first. Same-hash option
+      // refreshes retain action waiters and state; only a true actor identity
+      // change starts a fresh state generation.
+      lifecycleRevision += 1;
+      if (
+        activeFrameworkKey !== null &&
+        activeFrameworkKey !== nextFrameworkKey
+      ) {
+        core.cancelPendingConnections();
+        core.detach();
+        inspector?.unregister(inspectorOwnerId);
+      }
+      activeFrameworkKey = nextFrameworkKey;
 
       core.applyState(derived.state);
 
@@ -1097,7 +1506,14 @@ export function createRivetKitWithClient<Registry extends AnyActorRegistry>(
       return () => {
         unsub();
         unmount();
-        core.cancelPendingConnections();
+        const cleanupRevision = ++lifecycleRevision;
+        queueMicrotask(() => {
+          if (cleanupRevision !== lifecycleRevision) return;
+          activeFrameworkKey = null;
+          core.cancelPendingConnections();
+          core.detach();
+          inspector?.unregister(inspectorOwnerId);
+        });
       };
     });
 
@@ -1125,11 +1541,39 @@ export function createRivetKitWithClient<Registry extends AnyActorRegistry>(
   // -------------------------------------------------------------------
 
   /**
-   * Set of actor hashes that have already been warmed (or are in-flight).
+   * Set of actor hashes whose resolve request is currently in flight.
    * Keyed by a length-prefixed actor identity tuple so compound keys containing
-   * separators cannot suppress unrelated warm-ups.
+   * separators cannot suppress unrelated warm-ups. Completed requests leave
+   * the set so a later hover can wake an actor that has since gone back to sleep.
    */
-  const _warmed = new Set<string>();
+  const _warming = new Set<string>();
+  const _warmInputRefs = new WeakMap<object, number>();
+  let _warmInputRefSeq = 0;
+
+  function warmUpInputHash(value: unknown): string {
+    try {
+      const serialized = JSON.stringify(value);
+      if (serialized !== undefined) return `json:${serialized}`;
+    } catch {
+      // Cyclic and BigInt-containing values may still be valid for Rivet's
+      // encoder; fall through to an identity-safe, non-throwing hash.
+    }
+
+    if (
+      (typeof value === "object" && value !== null) ||
+      typeof value === "function"
+    ) {
+      const reference = value as object;
+      let id = _warmInputRefs.get(reference);
+      if (id === undefined) {
+        id = ++_warmInputRefSeq;
+        _warmInputRefs.set(reference, id);
+      }
+      return `ref:${id}`;
+    }
+
+    return `${typeof value}:${String(value)}`;
+  }
 
   function warmUpHash(
     name: string,
@@ -1148,42 +1592,50 @@ export function createRivetKitWithClient<Registry extends AnyActorRegistry>(
     }
     return createWithInput === undefined
       ? hash
-      : `${hash}|input:${JSON.stringify(createWithInput)}`;
+      : `${hash}|input:${warmUpInputHash(createWithInput)}`;
   }
 
   function warmUp(opts: WarmUpActorOptions): void {
     if (!BROWSER) return;
 
     const keyArray = Array.isArray(opts.key) ? opts.key : [opts.key];
-    const hash = warmUpHash(
-      opts.name as string,
-      keyArray,
-      opts.noCreate,
-      opts.createInRegion,
-      opts.createWithInput,
-    );
-    if (_warmed.has(hash)) return;
-    _warmed.add(hash);
+    let hash: string | undefined;
+    try {
+      hash = warmUpHash(
+        opts.name as string,
+        keyArray,
+        opts.noCreate,
+        opts.createInRegion,
+        opts.createWithInput,
+      );
+      if (_warming.has(hash)) return;
+      _warming.add(hash);
 
-    const accessor = (client as Record<string, unknown>)[
-      opts.name as string
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ] as any;
+      const accessor = (client as Record<string, unknown>)[
+        opts.name as string
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ] as any;
 
-    const handle = opts.noCreate
-      ? accessor.get(keyArray)
-      : accessor.getOrCreate(keyArray, {
-          ...(opts.createInRegion !== undefined
-            ? { createInRegion: opts.createInRegion }
-            : {}),
-          ...(opts.createWithInput !== undefined
-            ? { createWithInput: opts.createWithInput }
-            : {}),
-        });
+      const handle = opts.noCreate
+        ? accessor.get(keyArray)
+        : accessor.getOrCreate(keyArray, {
+            ...(opts.createInRegion !== undefined
+              ? { createInRegion: opts.createInRegion }
+              : {}),
+            ...(opts.createWithInput !== undefined
+              ? { createWithInput: opts.createWithInput }
+              : {}),
+          });
 
-    handle.resolve().catch(() => {
-      _warmed.delete(hash);
-    });
+      void Promise.resolve(handle.resolve()).then(
+        () => _warming.delete(hash!),
+        () => _warming.delete(hash!),
+      );
+    } catch {
+      // Warm-up is deliberately best-effort: hashing, accessor construction,
+      // and resolve may all fail synchronously without affecting navigation.
+      if (hash !== undefined) _warming.delete(hash);
+    }
   }
 
   // -------------------------------------------------------------------
@@ -1203,25 +1655,38 @@ export function createRivetKitWithClient<Registry extends AnyActorRegistry>(
       unsubscribe?: () => void;
     }>();
 
-    // Create core state with connection-change callback for event rebinding
-    const core = createActorCoreState(
-      actorOpts?.actionDefaults,
-      (_prevConn, newConn) => {
-        for (const listener of _eventListeners) {
-          if (listener.unsubscribe) listener.unsubscribe();
-          if (newConn) {
-            listener.unsubscribe = newConn.on(listener.event, listener.handler);
-          }
-        }
-      },
-    );
-
     // Strip actionDefaults before passing to framework-base
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { actionDefaults: _ad, ...baseOpts } = actorOpts ?? {};
     let frameworkMount: (() => () => void) | null = null;
     let unsubscribeDerived: (() => void) | null = null;
     const activeUnmounts = new Set<() => void>();
+    const inspectorOwnerId = inspector ? nextInspectorOwnerId() : "";
+
+    // Create core state with connection-change callback for event rebinding
+    const core = createActorCoreState(
+      actorOpts?.actionDefaults,
+      (_prevConn, newConn) => {
+        for (const listener of _eventListeners) {
+          if (listener.unsubscribe) listener.unsubscribe();
+          listener.unsubscribe = undefined;
+          if (newConn) {
+            listener.unsubscribe = newConn.on(listener.event, listener.handler);
+          }
+        }
+      },
+      inspector
+        ? {
+            inspector,
+            ownerId: inspectorOwnerId,
+            getIdentity: () => ({
+              name: String(actorOpts?.name ?? ""),
+              key: (actorOpts?.key ?? []) as string | string[],
+            }),
+            isActive: () => activeUnmounts.size > 0,
+          }
+        : null,
+    );
 
     function ensureFrameworkActor(): void {
       if (frameworkMount) return;
@@ -1254,8 +1719,14 @@ export function createRivetKitWithClient<Registry extends AnyActorRegistry>(
         called = true;
         activeUnmounts.delete(release);
         frameworkUnmount();
+        if (activeUnmounts.size === 0) {
+          inspector?.unregister(inspectorOwnerId);
+        }
       };
       activeUnmounts.add(release);
+      // First applyState runs inside ensureFrameworkActor before this
+      // handle is marked active. Sync now that the mount ref exists.
+      core.syncInspector();
       return release;
     };
 
@@ -1267,6 +1738,8 @@ export function createRivetKitWithClient<Registry extends AnyActorRegistry>(
       unsubscribeDerived = null;
       frameworkMount = null;
       core.cancelPendingConnections();
+      core.detach();
+      inspector?.unregister(inspectorOwnerId);
       for (const listener of _eventListeners) {
         if (listener.unsubscribe) listener.unsubscribe();
         listener.unsubscribe = undefined;
@@ -1286,10 +1759,11 @@ export function createRivetKitWithClient<Registry extends AnyActorRegistry>(
       // ignores `enabled`, so both calls target the SAME actor entry.
       //
       // Ordering: framework-base defers each opts change with `queueMicrotask`,
-      // and @tanstack/store flushes `setState` SYNCHRONOUSLY — so by the time the
-      // re-enable microtask runs, the disable has fully propagated (connection
-      // disposed, status "idle"). queueMicrotask FIFO — not timer ordering — is
-      // what guarantees the re-enable observes "idle" and triggers create().
+      // and its `commitState` flushes state writes SYNCHRONOUSLY to entry
+      // state + listeners — so by the time the re-enable microtask runs, the
+      // disable has fully propagated (connection disposed, status "idle").
+      // queueMicrotask FIFO — not timer ordering — is what guarantees the
+      // re-enable observes "idle" and triggers create().
       getOrCreateActor({ ...baseOpts, enabled: false });
       queueMicrotask(() => {
         // Skip if the handle was disposed while the disable was in flight.
@@ -1335,7 +1809,9 @@ export function createRivetKitWithClient<Registry extends AnyActorRegistry>(
     // call sites can `await handle.dispose()` unconditionally.
     if (!BROWSER) return { dispose: async () => {} };
 
-    const handle = createReactiveActor(actorOpts);
+    // `preConnect` is an explicit eager-connect request, so an inherited
+    // `enabled: false` must not turn it into a silent no-op.
+    const handle = createReactiveActor({ ...actorOpts, enabled: true });
     const unmount = handle.mount();
     let disposed = false;
 
@@ -1357,5 +1833,6 @@ export function createRivetKitWithClient<Registry extends AnyActorRegistry>(
     // Deprecated alias retained for back-compat with pre-rename call sites.
     preloadActor: warmUp,
     preConnect,
+    connectionInspector: inspector,
   } as any;
 }

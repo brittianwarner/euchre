@@ -69,7 +69,7 @@ const mockState = {
 
 const subscribers = new Set<(v: { currentVal: typeof mockState }) => void>();
 
-vi.mock("@rivetkit/framework-base", () => ({
+vi.mock("../internal/framework-base.js", () => ({
   createRivetKit: () => ({
     getOrCreateActor: () => ({
       mount: () => () => {},

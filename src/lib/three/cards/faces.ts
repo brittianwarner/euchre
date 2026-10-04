@@ -105,200 +105,6 @@ function mirrorLayout(half: readonly Pip[]): readonly (readonly [number, number,
  * image rotated a half turn. This draws that structure honestly rather than
  * attempting portraiture and landing on clip-art.
  */
-function drawCourt(
-	ctx: CanvasRenderingContext2D,
-	rank: 'J' | 'Q' | 'K',
-	suit: SuitId,
-	color: string,
-	x: number,
-	y: number,
-	w: number,
-	h: number
-): void {
-	const ink = '#23201c';
-	const gold = '#b8912f';
-
-	ctx.save();
-
-	// Panel with a double keyline, the way a real court card is framed.
-	roundRect(ctx, x, y, w, h, w * 0.05);
-	ctx.fillStyle = '#fbf6ea';
-	ctx.fill();
-	ctx.lineWidth = Math.max(2, w * 0.02);
-	ctx.strokeStyle = ink;
-	ctx.stroke();
-	roundRect(ctx, x + w * 0.035, y + h * 0.025, w * 0.93, h * 0.95, w * 0.035);
-	ctx.lineWidth = Math.max(1, w * 0.008);
-	ctx.strokeStyle = gold;
-	ctx.stroke();
-
-	roundRect(ctx, x, y, w, h, w * 0.05);
-	ctx.clip();
-
-	/** Half a court figure, occupying the top half of the panel. */
-	const figure = (flip: boolean) => {
-		ctx.save();
-		ctx.translate(x + w / 2, y + h / 2);
-		if (flip) ctx.rotate(Math.PI);
-		ctx.translate(-w / 2, -h / 2);
-
-		const cx = w / 2;
-
-		// ---- Robe: a broad shoulder mass, patterned so it reads as fabric ----
-		ctx.beginPath();
-		ctx.moveTo(w * 0.12, h * 0.5);
-		ctx.quadraticCurveTo(w * 0.16, h * 0.34, cx, h * 0.33);
-		ctx.quadraticCurveTo(w * 0.84, h * 0.34, w * 0.88, h * 0.5);
-		ctx.lineTo(w * 0.88, h * 0.52);
-		ctx.lineTo(w * 0.12, h * 0.52);
-		ctx.closePath();
-		ctx.fillStyle = color;
-		ctx.fill();
-		ctx.lineWidth = Math.max(1, w * 0.008);
-		ctx.strokeStyle = ink;
-		ctx.stroke();
-
-		// Robe trim
-		ctx.beginPath();
-		ctx.moveTo(w * 0.3, h * 0.52);
-		ctx.lineTo(w * 0.3, h * 0.38);
-		ctx.moveTo(w * 0.7, h * 0.52);
-		ctx.lineTo(w * 0.7, h * 0.38);
-		ctx.strokeStyle = gold;
-		ctx.lineWidth = Math.max(1, w * 0.012);
-		ctx.stroke();
-
-		// ---- Ruff collar ----
-		ctx.beginPath();
-		ctx.ellipse(cx, h * 0.335, w * 0.15, h * 0.035, 0, 0, Math.PI * 2);
-		ctx.fillStyle = '#fbf6ea';
-		ctx.fill();
-		ctx.lineWidth = Math.max(1, w * 0.008);
-		ctx.strokeStyle = ink;
-		ctx.stroke();
-
-		// ---- Face ----
-		ctx.beginPath();
-		ctx.ellipse(cx, h * 0.245, w * 0.105, h * 0.075, 0, 0, Math.PI * 2);
-		ctx.fillStyle = '#fbf6ea';
-		ctx.fill();
-		ctx.strokeStyle = ink;
-		ctx.lineWidth = Math.max(1, w * 0.008);
-		ctx.stroke();
-
-		// Eyes, brow and mouth: small marks, but they are the difference between
-		// a face and an oval.
-		ctx.fillStyle = ink;
-		const eye = Math.max(1.5, w * 0.014);
-		ctx.beginPath();
-		ctx.arc(cx - w * 0.042, h * 0.235, eye, 0, Math.PI * 2);
-		ctx.arc(cx + w * 0.042, h * 0.235, eye, 0, Math.PI * 2);
-		ctx.fill();
-		ctx.lineWidth = Math.max(1, w * 0.007);
-		ctx.strokeStyle = ink;
-		ctx.beginPath();
-		ctx.moveTo(cx - w * 0.065, h * 0.212);
-		ctx.quadraticCurveTo(cx - w * 0.042, h * 0.203, cx - w * 0.018, h * 0.212);
-		ctx.moveTo(cx + w * 0.018, h * 0.212);
-		ctx.quadraticCurveTo(cx + w * 0.042, h * 0.203, cx + w * 0.065, h * 0.212);
-		ctx.stroke();
-		ctx.beginPath();
-		ctx.moveTo(cx - w * 0.03, h * 0.283);
-		ctx.quadraticCurveTo(cx, h * 0.295, cx + w * 0.03, h * 0.283);
-		ctx.stroke();
-
-		// King gets a beard; the queen and jack do not. It is the fastest read.
-		if (rank === 'K') {
-			ctx.beginPath();
-			ctx.moveTo(cx - w * 0.1, h * 0.262);
-			ctx.quadraticCurveTo(cx, h * 0.36, cx + w * 0.1, h * 0.262);
-			ctx.fillStyle = '#d8d2c4';
-			ctx.fill();
-			ctx.strokeStyle = ink;
-			ctx.stroke();
-		}
-
-		// ---- Headwear, by rank ----
-		ctx.lineWidth = Math.max(1, w * 0.008);
-		if (rank === 'K') {
-			// Pointed crown with jewels.
-			ctx.beginPath();
-			ctx.moveTo(cx - w * 0.13, h * 0.185);
-			ctx.lineTo(cx - w * 0.13, h * 0.145);
-			ctx.lineTo(cx - w * 0.07, h * 0.175);
-			ctx.lineTo(cx, h * 0.125);
-			ctx.lineTo(cx + w * 0.07, h * 0.175);
-			ctx.lineTo(cx + w * 0.13, h * 0.145);
-			ctx.lineTo(cx + w * 0.13, h * 0.185);
-			ctx.closePath();
-			ctx.fillStyle = gold;
-			ctx.fill();
-			ctx.strokeStyle = ink;
-			ctx.stroke();
-			ctx.fillStyle = color;
-			for (const jx of [-0.07, 0, 0.07]) {
-				ctx.beginPath();
-				ctx.arc(cx + w * jx, h * 0.152, Math.max(1.5, w * 0.014), 0, Math.PI * 2);
-				ctx.fill();
-			}
-		} else if (rank === 'Q') {
-			// Rounded tiara.
-			ctx.beginPath();
-			ctx.moveTo(cx - w * 0.12, h * 0.19);
-			ctx.quadraticCurveTo(cx - w * 0.1, h * 0.135, cx - w * 0.045, h * 0.155);
-			ctx.quadraticCurveTo(cx, h * 0.115, cx + w * 0.045, h * 0.155);
-			ctx.quadraticCurveTo(cx + w * 0.1, h * 0.135, cx + w * 0.12, h * 0.19);
-			ctx.closePath();
-			ctx.fillStyle = gold;
-			ctx.fill();
-			ctx.strokeStyle = ink;
-			ctx.stroke();
-		} else {
-			// Jack: a soft cap with a feather.
-			ctx.beginPath();
-			ctx.moveTo(cx - w * 0.125, h * 0.192);
-			ctx.quadraticCurveTo(cx - w * 0.06, h * 0.128, cx + w * 0.1, h * 0.16);
-			ctx.quadraticCurveTo(cx + w * 0.13, h * 0.172, cx + w * 0.125, h * 0.192);
-			ctx.closePath();
-			ctx.fillStyle = color;
-			ctx.fill();
-			ctx.strokeStyle = ink;
-			ctx.stroke();
-			ctx.beginPath();
-			ctx.moveTo(cx + w * 0.09, h * 0.155);
-			ctx.quadraticCurveTo(cx + w * 0.17, h * 0.1, cx + w * 0.13, h * 0.052);
-			ctx.strokeStyle = gold;
-			ctx.lineWidth = Math.max(1.5, w * 0.016);
-			ctx.stroke();
-		}
-
-		ctx.restore();
-	};
-
-	figure(false);
-	figure(true);
-
-	// The dividing diagonal, drawn last so it sits over both figures — this is
-	// what makes the half-turn symmetry legible rather than merely present.
-	ctx.beginPath();
-	ctx.moveTo(x, y + h);
-	ctx.lineTo(x + w, y);
-	ctx.lineWidth = Math.max(1, w * 0.01);
-	ctx.strokeStyle = ink;
-	ctx.stroke();
-
-	// Suit pips in the free corners.
-	const pip = w * 0.17;
-	drawPip(ctx, suit, x + w * 0.15, y + h * 0.1, pip, color);
-	drawPip(ctx, suit, x + w - w * 0.15, y + h - h * 0.1, pip, color, true);
-
-	ctx.restore();
-}
-
-/* ========================================================================== */
-/* Face                                                                        */
-/* ========================================================================== */
-
 function roundRect(
 	ctx: CanvasRenderingContext2D,
 	x: number,
@@ -370,7 +176,7 @@ export function drawCardFace(
 	// bright key light.
 	ctx.clearRect(0, 0, W, H);
 	roundRect(ctx, 0, 0, W, H, W * 0.075);
-	ctx.fillStyle = '#fdfcf8';
+	ctx.fillStyle = '#f7f3e7';
 	ctx.fill();
 
 	// Hairline border, inset, as on a cut deck.
@@ -385,9 +191,26 @@ export function drawCardFace(
 	drawIndex(ctx, rank, suit, color, W - W * 0.125, H - H * 0.1, idxScale, true);
 
 	if (rank === 'J' || rank === 'Q' || rank === 'K') {
-		const pw = W * 0.6;
-		const ph = H * 0.62;
-		drawCourt(ctx, rank, suit, color, (W - pw) / 2, (H - ph) / 2, pw, ph);
+		// Bespoke typographic court: clean at small sizes, no external textures.
+		ctx.save();
+		ctx.translate(W / 2, H / 2);
+		ctx.strokeStyle = color;
+		ctx.globalAlpha = 0.16;
+		ctx.lineWidth = 2;
+		ctx.beginPath();
+		ctx.moveTo(0, -H * 0.3);
+		ctx.lineTo(W * 0.31, 0);
+		ctx.lineTo(0, H * 0.3);
+		ctx.lineTo(-W * 0.31, 0);
+		ctx.closePath();
+		ctx.stroke();
+		ctx.globalAlpha = 1;
+		drawPip(ctx, suit, 0, -H * 0.04, W * 0.27, color, false);
+		ctx.font = `italic ${W * 0.15}px Georgia`;
+		ctx.textAlign = 'center';
+		ctx.fillStyle = color;
+		ctx.fillText(rank === 'J' ? 'Jack' : rank === 'Q' ? 'Queen' : 'King', 0, H * 0.16);
+		ctx.restore();
 		return;
 	}
 
@@ -410,13 +233,13 @@ export function drawCardFace(
  * and so the fanned opponent hands read as a block of "cards" rather than as
  * blank rectangles.
  */
-export function drawCardBack(ctx: CanvasRenderingContext2D, hue = '#7d1d1d'): void {
+export function drawCardBack(ctx: CanvasRenderingContext2D, hue = '#173e32'): void {
 	const W = FACE_W;
 	const H = FACE_H;
 
 	ctx.clearRect(0, 0, W, H);
 	roundRect(ctx, 0, 0, W, H, W * 0.075);
-	ctx.fillStyle = '#fdfcf8';
+	ctx.fillStyle = '#f7f3e7';
 	ctx.fill();
 
 	roundRect(ctx, W * 0.04, H * 0.028, W * 0.92, H * 0.944, W * 0.05);
@@ -427,7 +250,7 @@ export function drawCardBack(ctx: CanvasRenderingContext2D, hue = '#7d1d1d'): vo
 	ctx.save();
 	roundRect(ctx, W * 0.04, H * 0.028, W * 0.92, H * 0.944, W * 0.05);
 	ctx.clip();
-	ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+	ctx.strokeStyle = 'rgba(212,238,134,0.15)';
 	ctx.lineWidth = Math.max(1, W * 0.005);
 	const step = W * 0.075;
 	for (let i = -H; i < W + H; i += step) {

@@ -5,7 +5,7 @@
  * until the `aiSeat` actor lands. Keep three seats (1 West, 2 North, 3 East).
  */
 
-import type { PersonaAssignment, PersonaConfig } from '$lib/protocol';
+import type { PersonaAssignment, PersonaConfig } from '#lib/protocol/index.ts';
 
 /** Shared stub prompts — never consulted by the M2 heuristic path. */
 function stubPersona(partial: Pick<PersonaConfig, 'id' | 'name' | 'blurb'>): PersonaConfig {

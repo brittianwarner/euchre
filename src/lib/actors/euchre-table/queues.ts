@@ -19,11 +19,10 @@
  *
  * ## `canPublish` is not the security boundary, and this file says so out loud
  *
- * `canPublish` runs on inbound publish. A browser using the **stateless HTTP
- * handle** has no `c.conn`, so `c.conn === undefined` is `true` for a forged
- * publish and {@link externalDenied} **fails open** for exactly the attacker it
- * looks like it stops. It blocks a WebSocket-connected browser and nothing else,
- * and it is kept only for that.
+ * Rivet 2.3 stateless HTTP publishes also have connection state. Internal
+ * callers authenticate with the per-match secret at connection setup; browser
+ * connections never receive the internal role. Message handlers independently
+ * verify the envelope token before reading or changing state.
  *
  * The real boundary on every actor→actor queue is the unguessable
  * `internalToken` minted in the table's `createState`, handed to each `aiSeat` as
@@ -35,7 +34,7 @@
  */
 
 import { event, queue } from 'rivetkit';
-import { HUMAN_SEAT } from '$lib/euchre';
+import { HUMAN_SEAT } from '#lib/euchre/index.ts';
 import type {
 	AIDecision,
 	ChatDeltaEvent,
@@ -49,7 +48,7 @@ import type {
 	TableConnState,
 	TableEventName,
 	ThinkingEvent
-} from '$lib/protocol';
+} from '#lib/protocol/index.ts';
 
 /* ========================================================================== */
 /* The guard context                                                          */
@@ -64,6 +63,7 @@ import type {
  * these hooks a typed `c.conn` at all.
  */
 export interface Guard {
+	readonly request?: Request;
 	readonly conn?: { readonly state: TableConnState };
 }
 
@@ -75,7 +75,7 @@ export interface Guard {
  * of it.
  */
 function externalDenied(c: Guard): boolean {
-	return c.conn === undefined;
+	return c.conn === undefined || c.conn.state.role === 'internal';
 }
 
 /** Only the human's own player connection may publish a move. */
@@ -105,7 +105,7 @@ function playersOnly(c: Guard): boolean {
  * graph for a 36-byte compare is a worse trade than eight lines of XOR.
  */
 export function tokenOk(expected: string, got: unknown): boolean {
-	if (typeof got !== 'string') return false;
+	if (!expected || typeof got !== 'string') return false;
 	if (got.length !== expected.length) return false;
 	let diff = 0;
 	for (let i = 0; i < expected.length; i++) {
@@ -141,13 +141,7 @@ export interface MoveMsg {
 
 /** Every reason a timer wakes the mutation loop. */
 export type TickKind =
-	| 'tempo'
-	| 'releaseAi'
-	| 'aiTimeout'
-	| 'nudge'
-	| 'abandon'
-	| 'flushProfile'
-	| 'reap';
+	'tempo' | 'releaseAi' | 'aiTimeout' | 'nudge' | 'abandon' | 'flushProfile' | 'reap';
 
 /**
  * A schedule firing, converted into a durable mutation.

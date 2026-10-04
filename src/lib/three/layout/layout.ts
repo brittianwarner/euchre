@@ -54,8 +54,8 @@
  *    per-card twist math.
  */
 
-import { CARD_ASPECT } from '$lib/three/cards/faces';
-import type { Seat } from '$lib/euchre';
+import { CARD_ASPECT } from '#lib/three/cards/faces.ts';
+import type { Seat } from '#lib/euchre/index.ts';
 
 export { CARD_ASPECT };
 

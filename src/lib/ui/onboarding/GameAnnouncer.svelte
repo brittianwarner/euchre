@@ -28,8 +28,8 @@
 		isGameOver,
 		isInTheBarn,
 		teamOf
-	} from '$lib/euchre';
-	import type { HandResult, PublicGameView, Seat, Step } from '$lib/protocol';
+	} from '#lib/euchre/index.ts';
+	import type { HandResult, PublicGameView, Seat, Step } from '#lib/protocol/index.ts';
 
 	interface Props {
 		/** Every step since the last sync this connection saw — see `SyncEvent.steps`. */

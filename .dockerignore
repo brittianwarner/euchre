@@ -1,0 +1,16 @@
+node_modules
+**/node_modules
+.git
+.env
+.env.*
+.claude
+.codex
+.agents
+.rivet
+.rivetkit
+.svelte-kit
+.vercel
+build
+assets
+*.db
+*.blend1

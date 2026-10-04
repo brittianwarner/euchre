@@ -1,13 +1,6 @@
-<!--
-  BidPanel — cut, order-up, pass, and round-2 suit calls from view.legal.
-
-  Rendered as a self-contained panel (own background/border) rather than
-  bare text-on-felt: the composing page docks this bottom-centre
-  (`+page.svelte`'s `.corner-bc`), which over the table's wood rim needs its
-  own legible backing rather than assuming a dark page background behind it.
--->
+<!-- Bidding controls use only server-provided legal moves. The solo toggle selects the corresponding legal variant without inventing a move. -->
 <script lang="ts">
-	import type { LegalMoveId, PublicGameView } from '$lib/protocol';
+	import type { LegalMoveId, PublicGameView } from '#lib/protocol/index.ts';
 
 	let {
 		view,
@@ -29,77 +22,140 @@
 
 	const aloneMoves = $derived(moves.filter((m) => m.id.includes('+alone')));
 	const plainMoves = $derived(moves.filter((m) => !m.id.includes('+alone')));
+	let soloChoice = $state<{ decision: string; enabled: boolean } | null>(null);
+	const decision = $derived(`${view.handNo}:${view.phase}`);
+	const goAlone = $derived(soloChoice?.decision === decision && soloChoice.enabled);
+	const visibleMoves = $derived(
+		plainMoves.map((move) =>
+			goAlone ? (aloneMoves.find((alone) => alone.id === `${move.id}+alone`) ?? move) : move
+		)
+	);
 </script>
 
 {#if moves.length > 0 && view.turnSeat === view.you}
 	<section class="bids" aria-label="Bidding">
-		<p class="hint">
-			{#if view.phase === 'cutting'}
-				Cut the deck?
-			{:else if view.phase === 'bid_round_1'}
-				Order it up?
-			{:else}
-				Call a suit
-			{/if}
-		</p>
-		<div class="row">
-			{#each plainMoves as move (move.id)}
-				<button type="button" {disabled} onclick={() => onPlay(move.id)}>
-					{move.label}
-				</button>
-			{/each}
+		<div class="bid-heading">
+			<p>
+				{view.phase === 'cutting'
+					? 'A fresh deck. Your call.'
+					: view.phase === 'bid_round_1'
+						? 'Make it trump, or pass?'
+						: 'Choose your trump suit.'}
+			</p>
+			{#if aloneMoves.length > 0}<label
+					><input
+						type="checkbox"
+						checked={goAlone}
+						{disabled}
+						onchange={(e) => (soloChoice = { decision, enabled: e.currentTarget.checked })}
+					/> Go alone</label
+				>{/if}
 		</div>
-		{#if aloneMoves.length > 0}
-			<div class="row alone">
-				{#each aloneMoves as move (move.id)}
-					<button type="button" class="alone-btn" {disabled} onclick={() => onPlay(move.id)}>
-						{move.label}
-					</button>
-				{/each}
-			</div>
-		{/if}
+		<div class="row">
+			{#each visibleMoves as move (move.id)}<button
+					type="button"
+					class:secondary={move.id === 'pass' || move.id === 'cut:no'}
+					{disabled}
+					onclick={() => onPlay(move.id)}>{move.label}</button
+				>{/each}
+		</div>
 	</section>
 {/if}
 
 <style>
 	.bids {
-		margin: 0;
-		padding: 0.75rem 0.85rem;
-		border: 1px solid rgba(232, 194, 122, 0.25);
-		border-radius: 0.65rem;
-		background: rgba(15, 20, 14, 0.85);
-		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+		width: 100%;
+		max-width: 570px;
+		margin: auto;
+		font-family: var(--font-sans);
 	}
-	.hint {
-		margin: 0 0 0.5rem;
-		color: #c9b89a;
-		text-align: center;
+	.bid-heading {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 20px;
+		margin-bottom: 12px;
+	}
+	.bid-heading p {
+		margin: 0;
+		font-size: 13px;
+		color: #52624c;
+	}
+	.bid-heading label {
+		display: flex;
+		gap: 7px;
+		align-items: center;
+		font-size: 11px;
+		color: #6a7763;
+		white-space: nowrap;
+		min-height: 24px;
+		cursor: pointer;
+	}
+	.bid-heading input {
+		width: 14px;
+		height: 14px;
+		border-radius: 3px;
+		accent-color: #274d3a;
 	}
 	.row {
 		display: flex;
-		flex-wrap: wrap;
 		justify-content: center;
-		gap: 0.5rem;
-	}
-	.alone {
-		margin-top: 0.45rem;
+		gap: 9px;
 	}
 	button {
 		min-height: 44px;
-		padding: 0.65rem 0.95rem;
-		border: 1px solid #6a5638;
-		border-radius: 0.4rem;
-		background: #3a2c1a;
-		color: #f2e8d5;
-		font: inherit;
+		min-width: 100px;
+		padding: 10px 22px;
+		border: 1px solid #cbdfa3;
+		border-radius: 7px;
+		background: #d4ed9b;
+		color: #203c2d;
+		font: 600 13px var(--font-sans);
 		cursor: pointer;
+		transition:
+			background 0.15s,
+			transform 0.15s;
 	}
-	.alone-btn {
-		background: #4a2818;
-		border-color: #a0653a;
+	button:hover:not(:disabled) {
+		background: #c5e285;
+		transform: translateY(-1px);
+	}
+	button.secondary {
+		background: #fffdf6;
+		border-color: #d5dbcc;
+		color: #62705b;
+	}
+	button.secondary:hover:not(:disabled) {
+		background: #e9eddf;
 	}
 	button:disabled {
 		opacity: 0.5;
 		cursor: default;
+	}
+	@media (max-width: 700px) {
+		.bid-heading {
+			gap: 14px;
+			margin-bottom: 9px;
+		}
+		.bid-heading p {
+			font-size: 12px;
+		}
+		.row {
+			gap: 6px;
+		}
+		button {
+			min-width: 0;
+			flex: 1;
+			padding: 10px 9px;
+			font-size: 11px;
+		}
+		.bids {
+			max-width: 460px;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		button {
+			transition: none;
+		}
 	}
 </style>

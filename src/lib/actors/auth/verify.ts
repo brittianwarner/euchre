@@ -2,11 +2,11 @@
  * Actor JWT verification for browser connections to `euchreTable`.
  *
  * In production this validates Better Auth JWTs against the issuer's JWKS.
- * For local M2 development (no `RIVET_ENDPOINT`), the magic token `"dev"` is
- * accepted so `/play` works before the full auth/token mint path lands.
+ * Anonymous play uses signed, audience-bound guest tokens.
  */
 
-import { createRemoteJWKSet, jwtVerify, type JWTPayload } from 'jose';
+import { verifyGuest } from './guest';
+import { createRemoteJWKSet, decodeProtectedHeader, jwtVerify, type JWTPayload } from 'jose';
 
 /** JWKS handle rebuilt on every actor wake via `createVars`. */
 export type Jwks = ReturnType<typeof createRemoteJWKSet>;
@@ -38,24 +38,19 @@ export function makeJwks(appUrl: string): Jwks {
 /**
  * Verify a connection token and return the player claims.
  *
- * Always accepts the magic {@link DEV_PLAYER_TOKEN} (local M2). That stays safe
- * because production tables are keyed by unguessable game ids and still check
- * `ownerUserId`. Real JWTs are verified when present.
- *
- * Note: RivetKit's local engine may set `RIVET_ENDPOINT` to `:6420`, so we cannot
- * use "endpoint unset" as the sole local-dev signal.
+ * Guest and account tokens both require a valid signature and expiry.
  */
 export async function verifyPlayer(
 	jwks: Jwks,
 	token: string,
 	appUrl: string
 ): Promise<PlayerClaims> {
-	if (token === DEV_PLAYER_TOKEN) {
-		return { userId: DEV_USER_ID, email: 'dev@localhost' };
+	if (typeof token !== 'string' || token.length === 0 || token === DEV_PLAYER_TOKEN) {
+		throw new Error('missing_or_invalid_token');
 	}
-
-	if (typeof token !== 'string' || token.length === 0) {
-		throw new Error('missing_token');
+	if (decodeProtectedHeader(token).alg === 'HS256') {
+		const userId = await verifyGuest(token, 'euchre-actors');
+		return { userId, email: '' };
 	}
 
 	const { payload } = await jwtVerify(token, jwks, {

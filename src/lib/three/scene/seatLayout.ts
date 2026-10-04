@@ -22,7 +22,7 @@
  * changes only the camera and the seat radius, never per-card maths."
  */
 
-import type { Seat } from '$lib/euchre';
+import type { Seat } from '#lib/euchre/index.ts';
 
 export type SeatLabel = 'south' | 'west' | 'north' | 'east';
 

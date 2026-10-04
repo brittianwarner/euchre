@@ -47,7 +47,7 @@ import {
 	type AIDecisionKind,
 	type PersonaConfig,
 	type Seat
-} from '$lib/protocol';
+} from '#lib/protocol/index.ts';
 import { isDeliberate } from './config';
 import { estimateTokens } from './notation';
 import type { AiLogFn } from './types';
@@ -534,7 +534,9 @@ export interface SystemLayerMessage {
 	readonly role: 'system';
 	readonly content: string;
 	readonly providerOptions?: {
-		readonly anthropic: { readonly cacheControl: { readonly type: 'ephemeral'; readonly ttl: '1h' } };
+		readonly anthropic: {
+			readonly cacheControl: { readonly type: 'ephemeral'; readonly ttl: '1h' };
+		};
 	};
 }
 
@@ -544,7 +546,9 @@ export function toInstructions(layers: PromptLayers): SystemLayerMessage[] {
 			? {
 					role: 'system' as const,
 					content: l.text,
-					providerOptions: { anthropic: { cacheControl: { type: 'ephemeral' as const, ttl: '1h' as const } } }
+					providerOptions: {
+						anthropic: { cacheControl: { type: 'ephemeral' as const, ttl: '1h' as const } }
+					}
 				}
 			: { role: 'system' as const, content: l.text }
 	);

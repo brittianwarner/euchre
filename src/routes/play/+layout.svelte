@@ -2,11 +2,11 @@
   Play layout — provides the shared Rivet kit for table pages.
 -->
 <script lang="ts">
-	import { getRivet, rivetContext } from '$lib/client/rivet';
+	import { page } from '$app/state';
 
 	let { children } = $props();
-
-	rivetContext.set(getRivet());
 </script>
 
-{@render children()}
+{#key page.params.gameId}
+	{@render children()}
+{/key}

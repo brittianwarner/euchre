@@ -20,7 +20,7 @@
   actually enforces.
 -->
 <script lang="ts">
-	import type { PublicGameView } from '$lib/protocol';
+	import type { PublicGameView } from '#lib/protocol/index.ts';
 
 	const SEEN_KEY = 'euchre:onboarding:v1:seen';
 
@@ -214,6 +214,7 @@
 
 <style>
 	.tour {
+		margin: auto;
 		border: none;
 		padding: 0;
 		background: transparent;
@@ -229,7 +230,7 @@
 		padding: 1.5rem 1.5rem 1.25rem;
 		border-radius: 0.9rem;
 		border: 1px solid rgba(232, 194, 122, 0.35);
-		background: #17130d;
+		background: #12362b;
 		box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
 	}
 	.eyebrow {
@@ -282,8 +283,8 @@
 	}
 	.primary {
 		border: 1px solid #e8c27a;
-		background: #4a3a1c;
-		color: #fff6e0;
+		background: #d4ee86;
+		color: #12362b;
 	}
 	.ghost {
 		border: 1px solid rgba(232, 194, 122, 0.35);

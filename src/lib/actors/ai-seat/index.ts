@@ -42,7 +42,7 @@
  */
 
 import { actor, queue } from 'rivetkit';
-import { teamOf } from '$lib/euchre';
+import { teamOf } from '#lib/euchre/index.ts';
 import {
 	MODEL_BID,
 	MODEL_PLAY,
@@ -52,7 +52,10 @@ import {
 	type PersonaConfig,
 	type PersonaView,
 	type Seat
-} from '$lib/protocol';
+} from '#lib/protocol/index.ts';
+import { callBanterWriter, resolveBanterWriter } from './llm-bridge';
+import { publicOnlyView } from './screen';
+import { situationLine } from './memory';
 import { runLadder, type LadderOutcome } from './decide';
 import { absorbPublicState, episodeFor, rememberHand, resetMemory } from './memory';
 import {
@@ -95,7 +98,7 @@ function profileInternalToken(): string | null {
 
 /** Constant-time compare against this match's own `internalToken`. */
 function internalTokenOk(expected: string, got: unknown): boolean {
-	if (typeof got !== 'string' || got.length !== expected.length) return false;
+	if (!expected || typeof got !== 'string' || got.length !== expected.length) return false;
 	let diff = 0;
 	for (let i = 0; i < expected.length; i++) diff |= expected.charCodeAt(i) ^ got.charCodeAt(i);
 	return diff === 0;
@@ -105,7 +108,9 @@ function internalTokenOk(expected: string, got: unknown): boolean {
 function seatFromKey(key: readonly string[]): Seat {
 	const raw = key[3];
 	if (raw === '1' || raw === '2' || raw === '3') return Number(raw) as Seat;
-	throw new Error(`aiSeat must be keyed ['table', gameId, 'seat', '1'|'2'|'3']; got ${JSON.stringify(key)}`);
+	throw new Error(
+		`aiSeat must be keyed ['table', gameId, 'seat', '1'|'2'|'3']; got ${JSON.stringify(key)}`
+	);
 }
 
 /** The placeholder persona for a seat woken with no `createWithInput`. Never decides. */
@@ -151,6 +156,7 @@ function pushSample(samples: number[], value: number): void {
 /* ========================================================================== */
 
 interface Guard {
+	readonly request?: Request;
 	readonly conn?: unknown;
 }
 
@@ -161,7 +167,7 @@ interface Guard {
  * {@link internalTokenOk}, never instead of it.
  */
 function externalDenied(c: Guard): boolean {
-	return c.conn === undefined;
+	return c.conn === undefined || c.request?.method === 'POST';
 }
 
 const aiSeatQueues = {
@@ -196,6 +202,7 @@ interface SeatCtx {
 	};
 	saveState(opts?: { immediate?: boolean }): Promise<void>;
 	client(): unknown;
+	waitUntil(promise: Promise<unknown>): void;
 }
 
 /** A handle on another actor, narrowed to the one verb this seat uses. */
@@ -209,7 +216,12 @@ interface ActorSendHandle {
  * `TableClient`.
  */
 interface SeatClient {
-	readonly euchreTable: { getOrCreate(key: readonly string[]): ActorSendHandle };
+	readonly euchreTable: {
+		getOrCreate(
+			key: readonly string[],
+			opts?: { params: { internalToken: string } }
+		): ActorSendHandle;
+	};
 	readonly playerProfile: { getOrCreate(key: readonly string[]): ActorSendHandle };
 }
 
@@ -257,7 +269,11 @@ function recordDecision(
 /** Fold model usage into the match budget and trip the circuit breaker if it is spent. */
 function applyUsage(
 	state: AiSeatState,
-	usage: { readonly inputTokens: number; readonly outputTokens: number; readonly cacheReadTokens: number }
+	usage: {
+		readonly inputTokens: number;
+		readonly outputTokens: number;
+		readonly cacheReadTokens: number;
+	}
 ): void {
 	state.budget.tokensIn += usage.inputTokens;
 	state.budget.tokensOut += usage.outputTokens;
@@ -325,7 +341,10 @@ async function onDecide(c: SeatCtx, body: AIDecideRequest): Promise<void> {
 	if (outcome === null) {
 		// The table asked a seat with nothing to decide. A dispatch bug, not a
 		// model failure — there is no legal move to answer with.
-		c.log.error('decide requested with an empty legal set', { seat: state.seat, turnId: body.turnId });
+		c.log.error('decide requested with an empty legal set', {
+			seat: state.seat,
+			turnId: body.turnId
+		});
 		return;
 	}
 
@@ -345,7 +364,52 @@ async function onDecide(c: SeatCtx, body: AIDecideRequest): Promise<void> {
 		rationale: outcome.rationale,
 		latencyMs
 	};
-	await seatClient(c).euchreTable.getOrCreate(['table', state.gameId]).send('aiDecision', decision);
+	await seatClient(c)
+		.euchreTable.getOrCreate(['table', state.gameId], {
+			params: { internalToken: state.internalToken }
+		})
+		.send('aiDecision', decision);
+	// Optional chatter starts only AFTER the decision is delivered. It cannot
+	// delay this turn or block the seat's next queued decision. One line per hand.
+	const writer = resolveBanterWriter();
+	if (
+		writer &&
+		!state.budget.degraded &&
+		state.persona.chattiness > 0 &&
+		state.banter.lastHandNo !== body.view.handNo &&
+		body.view.trump !== null
+	) {
+		state.banter.lastHandNo = body.view.handNo;
+		await c.saveState({ immediate: true });
+		const view = publicOnlyView(body.view);
+		const table = seatClient(c).euchreTable.getOrCreate(['table', state.gameId], {
+			params: { internalToken: state.internalToken }
+		});
+		c.waitUntil(
+			callBanterWriter(writer, {
+				seat: state.seat,
+				view,
+				situation: situationLine(view, state.seat),
+				persona: state.persona,
+				dossier: '',
+				nonce: state.fenceNonce,
+				budgetMs: 1800
+			})
+				.then(async (text) => {
+					if (!text) return;
+					await table.send('aiSay', {
+						internalToken: state.internalToken,
+						gameId: state.gameId,
+						seat: state.seat,
+						turnId: body.turnId,
+						msgId: `${body.turnId}:talk:${state.seat}`,
+						text,
+						final: true
+					});
+				})
+				.catch(() => c.log.warn('optional table talk could not be delivered'))
+		);
+	}
 }
 
 /* ========================================================================== */

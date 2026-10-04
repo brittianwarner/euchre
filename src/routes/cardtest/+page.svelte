@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Canvas, T } from '@threlte/core';
-	import Card from '$lib/three/cards/Card.svelte';
+	import Card from '#lib/three/cards/Card.svelte';
 	const hand = ['JS', 'AH', 'TD', 'QC', 'KS'] as const;
 </script>
 

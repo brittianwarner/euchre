@@ -1,6 +1,7 @@
 import "./runes-shim.js";
 import { afterEach, describe, expect, test, vi, beforeEach } from "vitest";
 import type { ActorConnStatus } from "rivetkit/client";
+import { rerunEffects, resetEffects } from "./runes-shim.js";
 
 // ---------------------------------------------------------------------------
 // Mock — identical shape to reactive-actor.test.ts, but with async actions
@@ -27,8 +28,12 @@ const frameworkMock = vi.hoisted(() => {
     error: Error | null;
     hash: string;
   };
+  type HashFunction = (opts: Record<string, unknown>) => string;
 
   const subscribers = new Set<Subscriber>();
+  const defaultHash: HashFunction = ({ name, key, params, noCreate }) =>
+    JSON.stringify({ name, key, params, noCreate });
+  let hashFunction: HashFunction = defaultHash;
 
   function createConnection(id: string): MockConnection {
     const listeners = new Map<string, Set<Listener>>();
@@ -67,18 +72,29 @@ const frameworkMock = vi.hoisted(() => {
 
   let currentState: MockActorState;
 
-  const getOrCreateActor = vi.fn(() => ({
-    mount: vi.fn(() => vi.fn()),
-    state: {
-      get state() {
-        return currentState;
+  const getOrCreateActor = vi.fn((actorOpts: Record<string, unknown>) => {
+    const normalizedOpts = {
+      ...actorOpts,
+      enabled: actorOpts.enabled ?? true,
+    };
+    return {
+      key: hashFunction(normalizedOpts),
+      mount: vi.fn(() => vi.fn()),
+      state: {
+        get state() {
+          return currentState;
+        },
+        subscribe(callback: Subscriber) {
+          subscribers.add(callback);
+          return () => subscribers.delete(callback);
+        },
       },
-      subscribe(callback: Subscriber) {
-        subscribers.add(callback);
-        return () => subscribers.delete(callback);
-      },
-    },
-  }));
+    };
+  });
+
+  function configure(opts?: { hashFunction?: HashFunction }): void {
+    hashFunction = opts?.hashFunction ?? defaultHash;
+  }
 
   function push(next: Partial<MockActorState>): void {
     currentState = { ...currentState, ...next };
@@ -89,6 +105,7 @@ const frameworkMock = vi.hoisted(() => {
 
   function reset(): void {
     subscribers.clear();
+    hashFunction = defaultHash;
     currentState = {
       connection: createConnection("one"),
       handle: { id: "handle-one" },
@@ -107,13 +124,15 @@ const frameworkMock = vi.hoisted(() => {
     push,
     reset,
     createConnection,
+    configure,
   };
 });
 
-vi.mock("@rivetkit/framework-base", () => ({
-  createRivetKit: vi.fn(() => ({
-    getOrCreateActor: frameworkMock.getOrCreateActor,
-  })),
+vi.mock("../internal/framework-base.js", () => ({
+  createRivetKit: vi.fn((_client, opts) => {
+    frameworkMock.configure(opts);
+    return { getOrCreateActor: frameworkMock.getOrCreateActor };
+  }),
 }));
 
 import { createRivetKitWithClient } from "../rivetkit.svelte.js";
@@ -124,11 +143,13 @@ import { createRivetKitWithClient } from "../rivetkit.svelte.js";
 
 describe("action middleware (createReactiveActor)", () => {
   beforeEach(() => {
+    resetEffects();
     frameworkMock.reset();
     vi.useFakeTimers();
   });
 
   afterEach(() => {
+    resetEffects();
     vi.useRealTimers();
   });
 
@@ -298,6 +319,137 @@ describe("action middleware (createReactiveActor)", () => {
     expect(actor.isMutating).toBe(false);
   });
 
+  test("synchronous disposal during non-abort-aware dispatch settles without waiting for timeout", async () => {
+    const rivet = createRivetKitWithClient({} as never);
+    const actor = rivet.createReactiveActor({
+      name: "chat" as never,
+      key: ["sync-dispose"],
+      actionDefaults: { timeout: 3_600_000 },
+    });
+    actor.mount();
+    frameworkMock.currentState().connection.slowAction = vi.fn(() => {
+      actor.dispose();
+      return new Promise<string>(() => {});
+    });
+    await expect(actor.slowAction()).resolves.toBeUndefined();
+    expect(actor.pendingActions).toBe(0);
+    expect(actor.isMutating).toBe(false);
+  });
+
+  test("per-action read deadline settles counters without lowering mutation timeout", async () => {
+    const rivet = createRivetKitWithClient({} as never);
+    const actor = rivet.createReactiveActor({
+      name: "chat" as never,
+      key: ["room-read-policy"],
+      actionDefaults: {
+        timeout: 3_600_000,
+        timeoutByAction: { slowAction: 15 },
+      },
+    });
+    actor.mount();
+    const read = actor.slowAction();
+    expect(actor.pendingActions).toBe(1);
+    await vi.advanceTimersByTimeAsync(20);
+    expect(actor.pendingActions).toBe(0);
+    expect(actor.isMutating).toBe(false);
+    await expect(read).resolves.toBeUndefined();
+    expect(actor.lastActionError?.message).toContain("15ms");
+  });
+
+  test("read deadline and disposal abort the raw SDK action with its correct receiver", async () => {
+    const rivet = createRivetKitWithClient({} as never);
+    const actor = rivet.createReactiveActor({
+      name: "chat" as never,
+      key: ["abort-read"],
+      actionDefaults: {
+        timeout: 3_600_000,
+        timeoutByAction: { slowAction: 15 },
+      },
+    });
+    actor.mount();
+    const conn = frameworkMock.currentState().connection;
+    const signals: AbortSignal[] = [];
+    Object.assign(conn, {
+      action(
+        this: unknown,
+        opts: { name: string; args: unknown[]; signal: AbortSignal },
+      ) {
+        expect(this).toBe(conn);
+        signals.push(opts.signal);
+        return new Promise((_, reject) =>
+          opts.signal.addEventListener(
+            "abort",
+            () => reject(new Error("SDK aborted")),
+            { once: true },
+          ),
+        );
+      },
+    });
+    const read = actor.slowAction();
+    await vi.advanceTimersByTimeAsync(20);
+    await expect(read).resolves.toBeUndefined();
+    expect(signals[0]!.aborted).toBe(true);
+    expect(actor.pendingActions).toBe(0);
+    const mutation = actor.increment(1);
+    await vi.advanceTimersByTimeAsync(20);
+    expect(actor.pendingActions).toBe(1);
+    expect(signals[1]!.aborted).toBe(false);
+    actor.dispose();
+    await expect(mutation).resolves.toBeUndefined();
+    expect(signals[1]!.aborted).toBe(true);
+    expect(actor.pendingActions).toBe(0);
+  });
+
+  test.each([0, -1, Number.NaN, Number.POSITIVE_INFINITY])(
+    "invalid named timeout %s falls back to default",
+    async (timeout) => {
+      const rivet = createRivetKitWithClient({} as never);
+      const actor = rivet.createReactiveActor({
+        name: "chat" as never,
+        key: ["invalid-timeout"],
+        actionDefaults: {
+          timeout: 20,
+          timeoutByAction: { slowAction: timeout },
+        },
+      });
+      actor.mount();
+      const read = actor.slowAction();
+      await vi.advanceTimersByTimeAsync(5);
+      expect(actor.pendingActions).toBe(1);
+      await vi.advanceTimersByTimeAsync(20);
+      await expect(read).resolves.toBeUndefined();
+      expect(actor.pendingActions).toBe(0);
+    },
+  );
+
+  test("uses one timeout deadline across connection wait and dispatch", async () => {
+    const rivet = createRivetKitWithClient({} as never);
+    const actor = rivet.createReactiveActor({
+      name: "chat" as never,
+      key: ["room-1"],
+      actionDefaults: { timeout: 1_000 },
+    });
+    actor.mount();
+
+    frameworkMock.push({ connStatus: "connecting" });
+    const pending = actor.slowAction();
+
+    await vi.advanceTimersByTimeAsync(600);
+    frameworkMock.push({ connStatus: "connected" });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(
+      frameworkMock.currentState().connection.slowAction,
+    ).toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(399);
+    expect(actor.isMutating).toBe(true);
+    await vi.advanceTimersByTimeAsync(1);
+
+    await expect(pending).resolves.toBeUndefined();
+    expect(actor.lastActionError?.message).toContain("timed out after 1000ms");
+    expect(actor.pendingActions).toBe(0);
+  });
+
   test("resetActionState clears error and lastAction", async () => {
     const rivet = createRivetKitWithClient({} as never);
     const actor = rivet.createReactiveActor({
@@ -347,6 +499,69 @@ describe("action middleware (createReactiveActor)", () => {
     ]);
   });
 
+  test("cleans up tracking when onActionStart throws", async () => {
+    const onSettled = vi.fn();
+    const rivet = createRivetKitWithClient({} as never);
+    const actor = rivet.createReactiveActor({
+      name: "chat" as never,
+      key: ["room-1"],
+      actionDefaults: {
+        onActionStart: () => {
+          throw new Error("start callback failed");
+        },
+        onActionSettled: onSettled,
+      },
+    });
+    actor.mount();
+
+    await expect(actor.increment(5)).rejects.toThrow("start callback failed");
+    expect(actor.pendingActions).toBe(0);
+    expect(actor.isMutating).toBe(false);
+    expect(onSettled).toHaveBeenCalledWith("increment");
+  });
+
+  test("cleans up tracking and settles when success callbacks throw", async () => {
+    const onSettled = vi.fn();
+    const rivet = createRivetKitWithClient({} as never);
+    const actor = rivet.createReactiveActor({
+      name: "chat" as never,
+      key: ["room-1"],
+      actionDefaults: {
+        onActionSuccess: () => {
+          throw new Error("success callback failed");
+        },
+        onActionSettled: onSettled,
+      },
+    });
+    actor.mount();
+
+    await expect(actor.increment(5)).rejects.toThrow("success callback failed");
+    expect(actor.pendingActions).toBe(0);
+    expect(actor.isMutating).toBe(false);
+    expect(onSettled).toHaveBeenCalledWith("increment");
+  });
+
+  test("cleans up tracking and settles when error callbacks throw", async () => {
+    const onSettled = vi.fn();
+    const rivet = createRivetKitWithClient({} as never);
+    const actor = rivet.createReactiveActor({
+      name: "chat" as never,
+      key: ["room-1"],
+      actionDefaults: {
+        onActionError: () => {
+          throw new Error("error callback failed");
+        },
+        onActionSettled: onSettled,
+      },
+    });
+    actor.mount();
+
+    await expect(actor.failAction()).rejects.toThrow("error callback failed");
+    expect(actor.pendingActions).toBe(0);
+    expect(actor.isMutating).toBe(false);
+    expect(onSettled).toHaveBeenCalledWith("failAction");
+  });
+
   test("connection guard rejects when disconnected", async () => {
     const rivet = createRivetKitWithClient({} as never);
     const actor = rivet.createReactiveActor({
@@ -367,7 +582,7 @@ describe("action middleware (createReactiveActor)", () => {
     expect(actor.lastActionError?.message).toContain("disconnected");
   });
 
-  test("connection guard checks status even when connection object exists", async () => {
+  test("connection guard waits for connecting then dispatches", async () => {
     const rivet = createRivetKitWithClient({} as never);
     const actor = rivet.createReactiveActor({
       name: "chat" as never,
@@ -377,13 +592,73 @@ describe("action middleware (createReactiveActor)", () => {
     actor.mount();
 
     frameworkMock.push({ connStatus: "connecting" });
+    const pending = actor.increment(5);
+    expect(actor.pendingActions).toBe(1);
+    expect(actor.isMutating).toBe(true);
+    frameworkMock.push({ connStatus: "connected" });
+    await vi.advanceTimersByTimeAsync(0);
+    const result = await pending;
+    expect(result).toBe(6);
+    expect(actor.lastActionError).toBeNull();
+    expect(actor.pendingActions).toBe(0);
+  });
 
-    const result = await actor.increment(5);
+  test("connection guard times out if the handshake never lands", async () => {
+    const rivet = createRivetKitWithClient({} as never);
+    const actor = rivet.createReactiveActor({
+      name: "chat" as never,
+      key: ["room-1"],
+      actionDefaults: { guardConnection: true, timeout: 1_000 },
+    });
+    actor.mount();
+
+    frameworkMock.push({ connStatus: "connecting" });
+    const pending = actor.increment(5);
+    await vi.advanceTimersByTimeAsync(1_000);
+    const result = await pending;
     expect(result).toBeUndefined();
     expect(actor.lastActionError?.message).toContain("not yet connected");
     expect((actor.lastActionError as { code?: string } | null)?.code).toBe(
       "ACTOR_NOT_YET_CONNECTED",
     );
+    expect(actor.pendingActions).toBe(0);
+    expect(actor.isMutating).toBe(false);
+  });
+
+  test("cleans up tracking when onActionSettled throws", async () => {
+    const rivet = createRivetKitWithClient({} as never);
+    const actor = rivet.createReactiveActor({
+      name: "chat" as never,
+      key: ["room-1"],
+      actionDefaults: {
+        onActionSettled: () => {
+          throw new Error("settled callback failed");
+        },
+      },
+    });
+    actor.mount();
+
+    await expect(actor.increment(5)).rejects.toThrow("settled callback failed");
+    expect(actor.pendingActions).toBe(0);
+    expect(actor.isMutating).toBe(false);
+  });
+
+  test("cleans up tracking when throwOnError predicate throws", async () => {
+    const rivet = createRivetKitWithClient({} as never);
+    const actor = rivet.createReactiveActor({
+      name: "chat" as never,
+      key: ["room-1"],
+      actionDefaults: {
+        throwOnError: () => {
+          throw new Error("predicate failed");
+        },
+      },
+    });
+    actor.mount();
+
+    await expect(actor.failAction()).rejects.toThrow("predicate failed");
+    expect(actor.pendingActions).toBe(0);
+    expect(actor.isMutating).toBe(false);
   });
 
   test("client-level actionDefaults cascade to actor-level", async () => {
@@ -454,5 +729,195 @@ describe("action middleware (createReactiveActor)", () => {
     await p2;
     expect(actor.pendingActions).toBe(0);
     expect(actor.isMutating).toBe(false);
+  });
+
+  test("older failure cannot overwrite a newer successful invocation", async () => {
+    const conn = frameworkMock.currentState().connection;
+    let rejectOlder: ((error: Error) => void) | undefined;
+    let resolveNewer: ((value: number) => void) | undefined;
+    conn.failAction = vi.fn(
+      () =>
+        new Promise<never>((_resolve, reject) => {
+          rejectOlder = reject;
+        }),
+    );
+    conn.increment = vi.fn(
+      () =>
+        new Promise<number>((resolve) => {
+          resolveNewer = resolve;
+        }),
+    );
+
+    const rivet = createRivetKitWithClient({} as never);
+    const actor = rivet.createReactiveActor({
+      name: "chat" as never,
+      key: ["room-1"],
+      actionDefaults: {},
+    });
+    actor.mount();
+
+    const older = actor.failAction();
+    const newer = actor.increment(1);
+    resolveNewer!(2);
+    await expect(newer).resolves.toBe(2);
+    expect(actor.lastActionError).toBeNull();
+
+    rejectOlder!(new Error("older failure"));
+    await expect(older).resolves.toBeUndefined();
+    expect(actor.lastActionError).toBeNull();
+    expect(actor.pendingActions).toBe(0);
+  });
+
+  test("older success cannot clear a newer failed invocation", async () => {
+    const conn = frameworkMock.currentState().connection;
+    let resolveOlder: ((value: number) => void) | undefined;
+    let rejectNewer: ((error: Error) => void) | undefined;
+    conn.increment = vi.fn(
+      () =>
+        new Promise<number>((resolve) => {
+          resolveOlder = resolve;
+        }),
+    );
+    conn.failAction = vi.fn(
+      () =>
+        new Promise<never>((_resolve, reject) => {
+          rejectNewer = reject;
+        }),
+    );
+
+    const rivet = createRivetKitWithClient({} as never);
+    const actor = rivet.createReactiveActor({
+      name: "chat" as never,
+      key: ["room-1"],
+      actionDefaults: {},
+    });
+    actor.mount();
+
+    const older = actor.increment(1);
+    const newer = actor.failAction();
+    rejectNewer!(new Error("newer failure"));
+    await expect(newer).resolves.toBeUndefined();
+    expect(actor.lastActionError?.message).toBe("newer failure");
+
+    resolveOlder!(2);
+    await expect(older).resolves.toBe(2);
+    expect(actor.lastActionError?.message).toBe("newer failure");
+    expect(actor.pendingActions).toBe(0);
+  });
+
+  test("late action completion cannot repopulate disposed state", async () => {
+    let resolveAction: ((value: number) => void) | undefined;
+    frameworkMock.currentState().connection.increment = vi.fn(
+      () =>
+        new Promise<number>((resolve) => {
+          resolveAction = resolve;
+        }),
+    );
+    const rivet = createRivetKitWithClient({} as never);
+    const actor = rivet.createReactiveActor({
+      name: "chat" as never,
+      key: ["room-1"],
+      actionDefaults: {},
+    });
+    actor.mount();
+
+    const pending = actor.increment(1);
+    expect(actor.pendingActions).toBe(1);
+    actor.dispose();
+    expect(actor.pendingActions).toBe(0);
+    expect(actor.lastAction).toBeNull();
+
+    resolveAction!(2);
+    await expect(pending).resolves.toBeUndefined();
+    expect(actor.pendingActions).toBe(0);
+    expect(actor.lastAction).toBeNull();
+    expect(actor.lastActionError).toBeNull();
+  });
+
+  test("dispose settles an initial action through throwOnError: false", async () => {
+    frameworkMock.push({ connStatus: "connecting" });
+    const onError = vi.fn();
+    const onSettled = vi.fn();
+    const rivet = createRivetKitWithClient({} as never);
+    const actor = rivet.createReactiveActor({
+      name: "chat" as never,
+      key: ["room-1"],
+      actionDefaults: {
+        onActionError: onError,
+        onActionSettled: onSettled,
+        throwOnError: false,
+      },
+    });
+    actor.mount();
+
+    const pending = actor.increment(1);
+    expect(actor.pendingActions).toBe(1);
+    actor.dispose();
+
+    await expect(pending).resolves.toBeUndefined();
+    expect(onError).toHaveBeenCalledWith(
+      expect.objectContaining({ code: "ACTOR_IDENTITY_CHANGED" }),
+      "increment",
+    );
+    expect(onSettled).toHaveBeenCalledWith("increment");
+    expect(actor.pendingActions).toBe(0);
+    expect(actor.lastActionError).toBeNull();
+  });
+
+  test("re-key settles an initial useActor action through throwOnError: false", async () => {
+    frameworkMock.push({ connStatus: "connecting" });
+    let roomId = "room-1";
+    const onError = vi.fn();
+    const rivet = createRivetKitWithClient({} as never);
+    const actor = rivet.useActor(() => ({
+      name: "chat" as never,
+      key: [roomId],
+      actionDefaults: { onActionError: onError, throwOnError: false },
+    }));
+
+    const pending = actor.increment(1);
+    expect(actor.pendingActions).toBe(1);
+    roomId = "room-2";
+    rerunEffects();
+
+    await expect(pending).resolves.toBeUndefined();
+    expect(onError).toHaveBeenCalledWith(
+      expect.objectContaining({ code: "ACTOR_IDENTITY_CHANGED" }),
+      "increment",
+    );
+    expect(actor.pendingActions).toBe(0);
+    expect(actor.lastActionError).toBeNull();
+    expect(frameworkMock.getOrCreateActor).toHaveBeenLastCalledWith(
+      expect.objectContaining({ key: ["room-2"] }),
+    );
+  });
+
+  test("same-hash reactive option refresh preserves an initial action waiter", async () => {
+    frameworkMock.push({ connStatus: "connecting" });
+    let token = "token-1";
+    const rivet = createRivetKitWithClient({} as never, {
+      hashFunction: (opts) =>
+        JSON.stringify({ name: opts.name, key: opts.key }),
+    });
+    const actor = rivet.useActor(() => ({
+      name: "chat" as never,
+      key: ["room-1"],
+      params: { token },
+      actionDefaults: {},
+    }));
+
+    const pending = actor.increment(1);
+    expect(actor.pendingActions).toBe(1);
+    token = "token-2";
+    rerunEffects();
+
+    expect(actor.pendingActions).toBe(1);
+    expect(actor.lastAction).toBe("increment");
+    frameworkMock.push({ connStatus: "connected" });
+    await vi.advanceTimersByTimeAsync(0);
+
+    await expect(pending).resolves.toBe(2);
+    expect(actor.pendingActions).toBe(0);
+    expect(actor.lastActionError).toBeNull();
   });
 });

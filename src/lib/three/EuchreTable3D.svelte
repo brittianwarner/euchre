@@ -24,27 +24,21 @@
 -->
 <script lang="ts">
 	import { Canvas } from '@threlte/core';
-	import { NeutralToneMapping, SRGBColorSpace } from 'three';
+	import { NeutralToneMapping, PCFShadowMap, SRGBColorSpace } from 'three';
 	import TableScene from './TableScene.svelte';
-	import type { CardId, PublicGameView } from '$lib/euchre';
+	import type { PublicGameView } from '#lib/euchre/index.ts';
 
 	interface Props {
 		view: PublicGameView;
 		/** Four-colour deck (accessibility default; see docs/04-FRONTEND-UX.md §13). */
 		fourColor?: boolean;
-		/** True while a move is in flight — cards stop responding, legality shading does not. */
-		disabled?: boolean;
-		/** Fires when a legal card in the human's own hand is tapped. */
-		onplay?: (cardId: CardId) => void;
-		/** Fires when an illegal card is tapped, so the caller can show the engine's `whyIllegal` copy. */
-		onillegal?: (cardId: CardId) => void;
 	}
 
 	// Classic two-colour is the default deck. The four-colour deck is an
 	// accessibility option a player opts into, not something to impose on
 	// everyone — a lifelong euchre player opening this should see the deck they
 	// have played with their whole life.
-	let { view, fourColor = false, disabled = false, onplay, onillegal }: Props = $props();
+	let { view, fourColor = false }: Props = $props();
 
 	// Clamped device pixel ratio: sharp on retina without paying for a 3x
 	// buffer on a phone that reports one. `window` is safe unconditionally —
@@ -57,28 +51,37 @@
 	`aria-hidden`: this canvas is the *visual* layer only. Every fact a
 	screen-reader user needs (score, trump, whose turn, playable cards) is
 	surfaced by the DOM siblings the composing page renders on top —
-	`HandA11y` is "a complete, playable card table on its own" per its own
-	doc comment. Exposing this as a second, separately-announced `role="img"`
+	`CardRack` supplies native buttons for every card. Exposing this as a second, separately-announced `role="img"`
 	summary would either duplicate that or drift from it; hiding it avoids
 	both.
 -->
 <div class="euchre-stage" aria-hidden="true">
 	<Canvas
 		{dpr}
-		shadows={false}
+		shadows={PCFShadowMap}
 		toneMapping={NeutralToneMapping}
 		colorSpace={SRGBColorSpace}
 		renderMode="on-demand"
 	>
-		<TableScene {view} {fourColor} {disabled} {onplay} {onillegal} />
+		<TableScene {view} {fourColor} />
 	</Canvas>
 </div>
 
 <style>
 	.euchre-stage {
 		position: absolute;
-		inset: 0;
-		background: radial-gradient(ellipse at 50% 35%, #1c1712 0%, #0b0906 70%, #060504 100%);
+		inset: 88px 0 140px;
+		background: transparent;
 		touch-action: none;
+	}
+	@media (max-width: 600px) {
+		.euchre-stage {
+			inset: 90px 0 150px;
+		}
+	}
+	@media (min-width: 701px) and (max-height: 780px) {
+		.euchre-stage {
+			bottom: 190px;
+		}
 	}
 </style>

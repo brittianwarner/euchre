@@ -1,49 +1,53 @@
-/**
- * Browser Rivet client — one shared transport for the whole app.
- *
- * Uses app-local `createRivetContext` (not the removed package-global helpers).
- * The endpoint is this origin's `/api/rivet` mount: metadata discovery, then the
- * browser opens its WebSocket to Rivet Cloud (or the local engine).
- *
- * @see docs/06-REVISED-ARCHITECTURE.md §6
- */
+/** One authenticated transport per mounted game, shared by its reactive actions. */
+import { dev } from '$app/env';
+import { createClient, createRivetKitWithClient } from '@rivetkit/svelte';
+import type { registry } from '#lib/actors/registry.ts';
 
-import { browser } from '$app/environment';
-import {
-	createClient,
-	createRivetContext,
-	createSharedRivetKit
-} from '@rivetkit/svelte';
-import type { registry } from '$lib/actors/registry';
+interface TableSession {
+	token: string;
+	gatewayToken?: string;
+	expiresAt: number;
+}
 
-/** Typed context key for the euchre Rivet kit. */
-export const rivetContext = createRivetContext<typeof registry>('EuchreRivet');
-
-/** Lazy singleton client — created only in the browser. */
-const getClient = (() => {
-	let client: ReturnType<typeof createClient<typeof registry>> | null = null;
-	return () => {
-		if (!browser) {
-			throw new Error('Rivet client is browser-only');
+export function createGameRivet(gameId: string) {
+	let session: TableSession | undefined;
+	let pending: Promise<TableSession> | undefined;
+	function credentials(forceRefresh = false): Promise<TableSession> {
+		if (!forceRefresh && session && Date.now() < session.expiresAt - 10_000) {
+			return Promise.resolve(session);
 		}
-		if (!client) {
-			client = createClient<typeof registry>({
-				endpoint: `${window.location.origin}/api/rivet`
-			});
-		}
-		return client;
-	};
-})();
-
-/**
- * Shared kit: `useActor` / `createReactiveActor` share one transport.
- * Action defaults live here — `ActorOptions` from framework-base does not
- * declare `actionDefaults`, so they are not set per-call.
- */
-export const getRivet = createSharedRivetKit<typeof registry>(getClient, {
-	actionDefaults: {
-		timeout: 12_000,
-		throwOnError: false,
-		guardConnection: true
+		return (pending ??= fetch(`/api/table-session/${encodeURIComponent(gameId)}`, {
+			method: 'POST',
+			credentials: 'same-origin',
+			headers: { 'Content-Type': 'application/json' }
+		})
+			.then(async (response) => {
+				if (!response.ok) throw new Error('Unable to authorize this table. Please reload.');
+				session = (await response.json()) as TableSession;
+				return session;
+			})
+			.finally(() => {
+				pending = undefined;
+			}));
 	}
-});
+	const client = createClient<typeof registry>({
+		endpoint: `${window.location.origin}/api/rivet`,
+		devtools: false,
+		gateway: { skipReadyWait: true },
+		...(dev
+			? {}
+			: {
+					getToken: async ({ forceRefresh }: { forceRefresh: boolean }) => {
+						const value = await credentials(forceRefresh);
+						if (!value.gatewayToken) throw new Error('Missing table gateway token');
+						return value.gatewayToken;
+					}
+				})
+	});
+	return {
+		rivet: createRivetKitWithClient<typeof registry>(client, {
+			actionDefaults: { timeout: 12_000, throwOnError: false, guardConnection: true }
+		}),
+		getParams: async () => ({ token: (await credentials()).token })
+	};
+}

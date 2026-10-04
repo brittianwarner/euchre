@@ -33,7 +33,7 @@ import type {
 	Suit,
 	Team,
 	TokenUsage
-} from '$lib/protocol';
+} from '#lib/protocol/index.ts';
 import {
 	EPISODE_SUMMARY_MAX_CHARS,
 	PERSONA_NAME_MAX_CHARS,
@@ -121,7 +121,10 @@ function parsePair(raw: unknown, field: string): [number, number] {
 	if (list.length !== 2) {
 		throw protocolError('internal_error', `${field} must be a pair`);
 	}
-	return [requireInt(list[0], `${field}[0]`, -1000, 1000), requireInt(list[1], `${field}[1]`, -1000, 1000)];
+	return [
+		requireInt(list[0], `${field}[0]`, -1000, 1000),
+		requireInt(list[1], `${field}[1]`, -1000, 1000)
+	];
 }
 
 function parsePairOrNull(raw: unknown, field: string): [number, number] | null {
@@ -213,9 +216,10 @@ export function parseMatchRecord(raw: unknown, owner: string, now: number): Matc
 	}
 
 	const startedAt = parseTimestamp(raw.startedAt, 'record.startedAt', now);
-	const endedAt = raw.endedAt === null || raw.endedAt === undefined
-		? null
-		: parseTimestamp(raw.endedAt, 'record.endedAt', now);
+	const endedAt =
+		raw.endedAt === null || raw.endedAt === undefined
+			? null
+			: parseTimestamp(raw.endedAt, 'record.endedAt', now);
 
 	const personas = asArray(raw.personas).slice(0, 3) as readonly PersonaAssignment[];
 
@@ -269,8 +273,9 @@ export function parseHands(raw: unknown, matchId: string): StoredHandRow[] {
 			handNo: requireInt(entry.handNo, `hands[${index}].handNo`, 0, 10_000),
 			seed: typeof entry.seed === 'string' ? entry.seed.slice(0, 256) : '',
 			dealerSeat: parseSeat(entry.dealerSeat ?? 0, `hands[${index}].dealerSeat`),
-			deckOrder: deckOrder.filter((card): card is string => typeof card === 'string') as
-				readonly StoredHandRow['deckOrder'][number][],
+			deckOrder: deckOrder.filter(
+				(card): card is string => typeof card === 'string'
+			) as readonly StoredHandRow['deckOrder'][number][],
 			moves: moves as readonly PlayerAction[],
 			trump:
 				entry.trump === null || entry.trump === undefined

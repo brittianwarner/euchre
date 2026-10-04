@@ -19,8 +19,8 @@
  * evaluate server modules with an empty environment.
  */
 
-import { building, dev } from '$app/environment';
-import { env } from '$env/dynamic/private';
+import { building, dev } from '$app/env';
+import * as env from '$app/env/private';
 
 /**
  * Development fallback for `BETTER_AUTH_SECRET`.

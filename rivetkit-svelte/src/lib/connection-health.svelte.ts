@@ -130,14 +130,18 @@ export function createConnectionHealth<K extends string>(
 
     for (const key of keys) {
       const src = sources[key];
-      const isConnected = src.connStatus === "connected";
+      // Snapshot each getter once so expensive ViewModel accessors are not
+      // repeated and every per-actor row represents one coherent read.
+      const sourceStatus = src.connStatus;
+      const sourceError = src.error;
+      const isConnected = sourceStatus === "connected";
       const isConnecting =
-        src.connStatus === "connecting" || src.connStatus === "reconnecting";
+        sourceStatus === "connecting" || sourceStatus === "reconnecting";
 
       actors[key] = {
         connected: isConnected,
-        status: src.connStatus,
-        error: src.error,
+        status: sourceStatus,
+        error: sourceError,
       };
 
       if (isConnected) {
@@ -164,7 +168,8 @@ export function createConnectionHealth<K extends string>(
     return { status, connected: connectedCount, total, actors, unhealthy };
   });
 
-  // Return an object with getters so destructuring preserves reactivity.
+  // Return property getters so direct property reads stay reactive. As with
+  // other Svelte reactive objects, destructuring snapshots the current values.
   return {
     get status() {
       return _health.status;

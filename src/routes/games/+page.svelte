@@ -4,9 +4,9 @@
   numbers up top so the whole history reads at a glance.
 -->
 <script lang="ts">
-	import type { MatchOutcome } from '$lib/protocol';
-	import IdentityGate from '$lib/ui/IdentityGate.svelte';
-	import PlayingAs from '$lib/ui/PlayingAs.svelte';
+	import type { MatchOutcome } from '#lib/protocol/index.ts';
+	import IdentityGate from '#lib/ui/IdentityGate.svelte';
+	import PlayingAs from '#lib/ui/PlayingAs.svelte';
 
 	let { data, form } = $props();
 
@@ -38,96 +38,102 @@
 </svelte:head>
 
 <main class="page">
-<div class="content">
-	{#if data.identity === null}
-		<IdentityGate
-			heading="Whose scrapbook is this?"
-			lede="Tell us an email and we'll start keeping score — every match you play from here on will show up on this page."
-			errorMessage={form?.error ?? null}
-		/>
-	{:else}
-		<header class="page-head">
-			<p class="brand">Euchre</p>
-			<h1>Your games</h1>
-			<PlayingAs email={data.identity.email} />
-		</header>
-
-		{#if data.loadError}
-			<p class="banner error">Couldn't open your scrapbook just now. Try refreshing the page.</p>
-		{:else if data.stats && data.stats.matches > 0}
-			<section class="stats" aria-label="Lifetime stats">
-				<div class="stat">
-					<span class="value">{data.stats.matches}</span>
-					<span class="label">Matches played</span>
-				</div>
-				<div class="stat">
-					<span class="value">{winRatePct(data.stats.winRate)}</span>
-					<span class="label">Win rate</span>
-				</div>
-				<div class="stat">
-					<span class="value">{data.stats.won}–{data.stats.lost}</span>
-					<span class="label">Record{data.stats.abandoned > 0 ? ` (+${data.stats.abandoned} left unfinished)` : ''}</span>
-				</div>
-				<div class="stat">
-					<span class="value">{data.stats.euchresFor}–{data.stats.euchresAgainst}</span>
-					<span class="label">Euchres sent–taken</span>
-				</div>
-				<div class="stat">
-					<span class="value">{data.stats.lonersMade}/{data.stats.lonersAttempted}</span>
-					<span class="label">Loners made</span>
-				</div>
-				<div class="stat">
-					<span class="value">{data.stats.handsPlayed}</span>
-					<span class="label">Hands played</span>
-				</div>
-			</section>
-
-			{#if data.page && data.page.rows.length > 0}
-				<ul class="games">
-					{#each data.page.rows as row (row.matchId)}
-						<li>
-							<a class="game-card" href={`/games/${row.matchId}`}>
-								<div class="card-top">
-									<span class="date">{formatDate(row.playedAt)}</span>
-									<span class="outcome outcome-{row.outcome}">{OUTCOME_LABEL[row.outcome]}</span>
-								</div>
-								<div class="card-mid">
-									<span class="score">You {row.score[0]} – {row.score[1]} them</span>
-									<span class="hands">{row.handsPlayed} hand{row.handsPlayed === 1 ? '' : 's'}</span>
-								</div>
-								{#if row.opponents.length > 0}
-									<p class="table">At the table: {row.opponents.join(' · ')}</p>
-								{/if}
-							</a>
-						</li>
-					{/each}
-				</ul>
-
-				<nav class="pager" aria-label="Older and newer games">
-					{#if data.newerHref}
-						<a href={data.newerHref}>← Newer games</a>
-					{:else}
-						<span></span>
-					{/if}
-					{#if data.olderHref}
-						<a href={data.olderHref}>Older games →</a>
-					{/if}
-				</nav>
-			{:else}
-				<p class="banner">No more games on this page.</p>
-			{/if}
+	<div class="content">
+		{#if data.identity === null}
+			<IdentityGate
+				heading="Whose scrapbook is this?"
+				lede="Tell us an email and we'll start keeping score — every match you play from here on will show up on this page."
+				errorMessage={form?.error ?? null}
+			/>
 		{:else}
-			<section class="empty">
-				<h2>Nothing here yet</h2>
-				<p>
-					Play your first hand and it'll land right here — the date, the final score, whether you
-					sent them home early, all of it. Think of this as the scrapbook on top of the fridge.
-				</p>
-				<a class="cta" href="/play">Deal a hand</a>
-			</section>
+			<header class="page-head">
+				<p class="brand">Euchre</p>
+				<h1>Your games</h1>
+				<PlayingAs email={data.identity.email} />
+			</header>
+
+			{#if data.loadError}
+				<p class="banner error">Couldn't open your scrapbook just now. Try refreshing the page.</p>
+			{:else if data.stats && data.stats.matches > 0}
+				<section class="stats" aria-label="Lifetime stats">
+					<div class="stat">
+						<span class="value">{data.stats.matches}</span>
+						<span class="label">Matches played</span>
+					</div>
+					<div class="stat">
+						<span class="value">{winRatePct(data.stats.winRate)}</span>
+						<span class="label">Win rate</span>
+					</div>
+					<div class="stat">
+						<span class="value">{data.stats.won}–{data.stats.lost}</span>
+						<span class="label"
+							>Record{data.stats.abandoned > 0
+								? ` (+${data.stats.abandoned} left unfinished)`
+								: ''}</span
+						>
+					</div>
+					<div class="stat">
+						<span class="value">{data.stats.euchresFor}–{data.stats.euchresAgainst}</span>
+						<span class="label">Euchres sent–taken</span>
+					</div>
+					<div class="stat">
+						<span class="value">{data.stats.lonersMade}/{data.stats.lonersAttempted}</span>
+						<span class="label">Loners made</span>
+					</div>
+					<div class="stat">
+						<span class="value">{data.stats.handsPlayed}</span>
+						<span class="label">Hands played</span>
+					</div>
+				</section>
+
+				{#if data.page && data.page.rows.length > 0}
+					<ul class="games">
+						{#each data.page.rows as row (row.matchId)}
+							<li>
+								<a class="game-card" href={`/games/${row.matchId}`}>
+									<div class="card-top">
+										<span class="date">{formatDate(row.playedAt)}</span>
+										<span class="outcome outcome-{row.outcome}">{OUTCOME_LABEL[row.outcome]}</span>
+									</div>
+									<div class="card-mid">
+										<span class="score">You {row.score[0]} – {row.score[1]} them</span>
+										<span class="hands"
+											>{row.handsPlayed} hand{row.handsPlayed === 1 ? '' : 's'}</span
+										>
+									</div>
+									{#if row.opponents.length > 0}
+										<p class="table">At the table: {row.opponents.join(' · ')}</p>
+									{/if}
+								</a>
+							</li>
+						{/each}
+					</ul>
+
+					<nav class="pager" aria-label="Older and newer games">
+						{#if data.newerHref}
+							<a href={data.newerHref}>← Newer games</a>
+						{:else}
+							<span></span>
+						{/if}
+						{#if data.olderHref}
+							<a href={data.olderHref}>Older games →</a>
+						{/if}
+					</nav>
+				{:else}
+					<p class="banner">No more games on this page.</p>
+				{/if}
+			{:else}
+				<section class="empty">
+					<h2>Nothing here yet</h2>
+					<p>
+						Play your first hand and it'll land right here — the date, the final score, whether you
+						sent them home early, all of it. Think of this as the scrapbook on top of the fridge.
+					</p>
+					<a class="cta" href="/play">Deal a hand</a>
+				</section>
+			{/if}
 		{/if}
-	{/if}
-</div>
+	</div>
 </main>
 
 <style>
@@ -211,7 +217,9 @@
 		border: 1px solid rgba(232, 194, 122, 0.18);
 		color: inherit;
 		text-decoration: none;
-		transition: border-color 160ms ease, background 160ms ease;
+		transition:
+			border-color 160ms ease,
+			background 160ms ease;
 	}
 	.game-card:hover,
 	.game-card:focus-visible {

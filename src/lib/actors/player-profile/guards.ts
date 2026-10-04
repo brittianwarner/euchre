@@ -20,7 +20,7 @@
  */
 
 import { UserError } from 'rivetkit';
-import type { ProtocolErrorCode } from '$lib/protocol';
+import type { ProtocolErrorCode } from '#lib/protocol/index.ts';
 
 /* ========================================================================== */
 /* Errors                                                                     */

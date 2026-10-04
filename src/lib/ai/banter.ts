@@ -24,7 +24,7 @@
  */
 
 import { streamText } from 'ai';
-import type { PublicGameView } from '$lib/protocol';
+import type { PublicGameView } from '#lib/protocol/index.ts';
 import { resolveBudget } from './config';
 import { modelParams } from './model';
 import { publicStateOnly } from './notation';
@@ -126,10 +126,10 @@ export async function generateBanter(deps: DecideDeps, req: BanterRequest): Prom
 			maxRetries: 0,
 			abortSignal: signal,
 			...modelParams(
-			deps.factory?.slugFor(modelId) ?? modelId,
-			deps.persona.temperature,
-			deps.factory?.provider
-		),
+				deps.factory?.slugFor(modelId) ?? modelId,
+				deps.persona.temperature,
+				deps.factory?.provider
+			),
 			onError: ({ error }) => log('banter_error', { e: String(error) })
 		});
 

@@ -45,7 +45,7 @@
  * ~520 characters, ≈150 tokens.
  */
 
-import type { CardId, LegalMove, PublicGameView, RankedMove, Trick } from '$lib/protocol';
+import type { CardId, LegalMove, PublicGameView, RankedMove, Trick } from '#lib/protocol/index.ts';
 
 /** `NOTES=` lines are model-authored text re-entering a prompt. Cap them hard. */
 const MAX_NOTE_LINES = 6;
@@ -111,9 +111,7 @@ export function encodeForLlm(
 		);
 	}
 
-	L.push(
-		`TRICKS=${view.tricksWon[0]}-${view.tricksWon[1]} COUNTS=${view.handCounts.join(',')}`
-	);
+	L.push(`TRICKS=${view.tricksWon[0]}-${view.tricksWon[1]} COUNTS=${view.handCounts.join(',')}`);
 	if (view.bids.length > 0) {
 		L.push(`BIDS=${view.bids.map((b) => `${b.seat}:${b.say}`).join(' ')}`);
 	}
@@ -157,7 +155,9 @@ export function publicStateOnly(view: PublicGameView): string {
 
 	const { current, past } = splitTricks(view);
 	if (current !== null && current.plays.length > 0) {
-		L.push(`TRICK=${current.index + 1} ON=${current.plays.map((p) => `${p.seat}:${p.card}`).join(',')}`);
+		L.push(
+			`TRICK=${current.index + 1} ON=${current.plays.map((p) => `${p.seat}:${p.card}`).join(',')}`
+		);
 	}
 	if (past.length > 0) {
 		L.push(`PAST=${past.map((t) => `${t.winnerSeat ?? '?'}`).join(',')}`);

@@ -32,7 +32,7 @@ import type {
 	Seat,
 	Suit,
 	Team
-} from '$lib/protocol';
+} from '#lib/protocol/index.ts';
 
 /* ========================================================================== */
 /* Caps — every durable collection has one                                     */
@@ -216,7 +216,7 @@ export interface AiSeatMeter {
 	llmWins: number;
 	fallbacks: number;
 	forced: number;
-	/** Times the model named an id outside the candidate set. Should be zero. */
+	/** Rejected attempts: timeout, malformed response, refusal, or out-of-set move. */
 	illegalAttempts: number;
 	/** Times even the heuristic produced nothing and the first legal move was taken. */
 	firstLegalRescues: number;
@@ -322,6 +322,6 @@ export interface AiStatus {
 /** The answer to the `decide` action: an acknowledgement, never a move. */
 export interface DecideAck {
 	readonly accepted: boolean;
-	/** Present when `accepted` is `false`. A {@link import('$lib/protocol').ProtocolErrorCode}. */
+	/** Present when `accepted` is `false`. A {@link import('#lib/protocol/index.ts').ProtocolErrorCode}. */
 	readonly code?: string;
 }

@@ -47,15 +47,16 @@
   correct before this file had any notion of motion.
 -->
 <script lang="ts">
-	import { T } from '@threlte/core';
+	import { T, useThrelte } from '@threlte/core';
+	import { onDestroy } from 'svelte';
 	import { Tween } from 'svelte/motion';
 	import { cubicOut } from 'svelte/easing';
-	import Card from '$lib/three/cards/Card.svelte';
+	import Card from '#lib/three/cards/Card.svelte';
 	import { trickCardPose, type CardPose, type TrickOptions } from './layout';
 	import { lerpPose, playOrigin } from './cardMotion';
 	import { TEMPO, flightMs } from './tempo';
-	import { playPlace, playTrickTake, vibrate } from '$lib/ui/sound';
-	import type { CardId, Seat } from '$lib/euchre';
+	import { playPlace, playTrickTake, vibrate } from '#lib/ui/sound/index.ts';
+	import type { CardId, Seat } from '#lib/euchre/index.ts';
 
 	interface Props {
 		/** The current trick's plays in order, e.g. `view.trick.plays`. 0-4 entries (0-3 under a loner). */
@@ -80,13 +81,16 @@
 		plays,
 		winnerSeat = null,
 		fourColor = false,
-		cardHeight = 0.1,
-		radius = 0.055,
+		cardHeight: cardHeightProp,
+		radius = 0.12,
 		position = [0, 0, 0],
 		trickIndex,
 		handNo,
 		reducedMotion = false
 	}: Props = $props();
+
+	const { size } = useThrelte();
+	const cardHeight = $derived(cardHeightProp ?? ($size.width < 600 ? 0.19 : 0.16));
 
 	const trickOptions = $derived<Partial<TrickOptions>>({ radius });
 
@@ -142,6 +146,7 @@
 
 	let sweeping = $state.raw<readonly SweepCard[]>([]);
 	let sweepTimer: ReturnType<typeof setTimeout> | undefined;
+	onDestroy(() => clearTimeout(sweepTimer));
 
 	/** Further out than the trick's own radius — "toward the winner's actual seat", not just their trick slot. */
 	const SWEEP_RADIUS_PAD = 0.16;
@@ -185,7 +190,10 @@
 	let prevTrickIndex: number | undefined;
 	let prevHandNo: number | undefined;
 
-	function samePrefix(a: readonly { seat: Seat; card: CardId }[], b: readonly { seat: Seat; card: CardId }[]): boolean {
+	function samePrefix(
+		a: readonly { seat: Seat; card: CardId }[],
+		b: readonly { seat: Seat; card: CardId }[]
+	): boolean {
 		return a.every((p, i) => b[i] !== undefined && b[i].seat === p.seat && b[i].card === p.card);
 	}
 
@@ -205,7 +213,8 @@
 			return;
 		}
 
-		const sameHand = prevHandNo === undefined || currentHandNo === undefined || prevHandNo === currentHandNo;
+		const sameHand =
+			prevHandNo === undefined || currentHandNo === undefined || prevHandNo === currentHandNo;
 
 		if (
 			sameHand &&
@@ -258,6 +267,13 @@
 	<!-- The just-resolved trick, still finishing its slide to the winner's pile. Not `plays` any more — see the module doc. Still face up: these cards were already public the moment they were played. -->
 	{#each sweeping as sc (sc.key)}
 		{@const pose = sweepPose(sc)}
-		<Card id={sc.card} faceUp position={pose.position} rotation={pose.rotation} height={cardHeight} {fourColor} />
+		<Card
+			id={sc.card}
+			faceUp
+			position={pose.position}
+			rotation={pose.rotation}
+			height={cardHeight}
+			{fourColor}
+		/>
 	{/each}
 </T.Group>

@@ -9,7 +9,7 @@
  * file can never change what a live persona actually is.
  */
 
-import type { Difficulty } from '$lib/protocol';
+import type { Difficulty } from '#lib/protocol/index.ts';
 
 export interface PersonaPreset {
 	readonly id: string;

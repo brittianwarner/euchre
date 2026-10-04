@@ -31,8 +31,11 @@ import { test } from "vitest";
  * });
  * ```
  */
-export function testWithEffect(name: string, fn: () => void | Promise<void>): void {
-	test(name, () => effectRootScope(fn));
+export function testWithEffect(
+  name: string,
+  fn: () => void | Promise<void>,
+): void {
+  test(name, () => effectRootScope(fn));
 }
 
 /**
@@ -44,13 +47,17 @@ export function testWithEffect(name: string, fn: () => void | Promise<void>): vo
  * @param fn - Function to execute. May be async.
  * @returns `void` or a `Promise<void>` that resolves when the function completes.
  */
-export function effectRootScope(fn: () => void | Promise<void>): void | Promise<void> {
-	let promise!: void | Promise<void>;
-	const cleanup = $effect.root(() => {
-		promise = fn();
-	});
-	if (promise instanceof Promise) {
-		return promise.finally(cleanup);
-	}
-	cleanup();
+export function effectRootScope(
+  fn: () => void | Promise<void>,
+): void | Promise<void> {
+  let promise!: void | Promise<void>;
+  const cleanup = $effect.root(() => {
+    promise = fn();
+  });
+  if (promise) {
+    // Promise.resolve also supports cross-realm Promises and compatible
+    // thenables, unlike an `instanceof Promise` check.
+    return Promise.resolve(promise).finally(cleanup);
+  }
+  cleanup();
 }

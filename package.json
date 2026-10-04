@@ -17,45 +17,59 @@
 		"db:push": "drizzle-kit push",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
-		"db:studio": "drizzle-kit studio"
+		"db:studio": "drizzle-kit studio",
+		"start": "bun server/index.ts",
+		"test:gateway": "bun test server"
 	},
 	"devDependencies": {
-		"@sveltejs/adapter-vercel": "^6.1.1",
-		"@sveltejs/kit": "^2.48.5",
-		"@sveltejs/vite-plugin-svelte": "^6.2.1",
+		"@sveltejs/adapter-node": "6.0.0",
+		"@sveltejs/kit": "3.0.0",
+		"@sveltejs/vite-plugin-svelte": "7.3.1",
 		"@tailwindcss/forms": "^0.5.10",
 		"@tailwindcss/typography": "^0.5.19",
 		"@tailwindcss/vite": "^4.1.17",
 		"@types/better-sqlite3": "^7.6.13",
+		"@types/bun": "^1.4.2",
 		"@types/node": "^24",
 		"@types/three": "0.185.1",
-		"@vitest/browser-playwright": "^4.0.10",
+		"@vitest/browser-playwright": "5.0.3",
 		"drizzle-kit": "^0.31.7",
 		"drizzle-orm": "^0.44.7",
 		"playwright": "^1.56.1",
 		"prettier": "^3.6.2",
 		"prettier-plugin-svelte": "^3.4.0",
-		"svelte": "^5.43.8",
-		"svelte-check": "^4.3.4",
+		"railway": "3.12.0",
+		"svelte": "5.57.1",
+		"svelte-check": "4.7.6",
 		"tailwindcss": "^4.1.17",
-		"typescript": "^5.9.3",
-		"vite": "^7.2.2",
+		"typescript": "6.0.3",
+		"vite": "8.3.2",
 		"vite-plugin-devtools-json": "^1.0.0",
-		"vitest": "^4.0.10",
-		"vitest-browser-svelte": "^2.0.1"
+		"vitest": "5.0.3",
+		"vitest-browser-svelte": "3.1.0"
 	},
 	"dependencies": {
 		"@ai-sdk/anthropic": "4.0.21",
 		"@openrouter/ai-sdk-provider": "3.0.0",
-		"@rivetkit/svelte": "file:./rivetkit-svelte",
-		"@threlte/core": "8.5.16",
-		"@threlte/extras": "9.21.0",
+		"@rivetkit/svelte": "workspace:*",
+		"@threlte/core": "8.6.1",
+		"@threlte/extras": "9.22.0",
 		"ai": "7.0.37",
 		"better-auth": "1.6.25",
 		"better-sqlite3": "^12.4.1",
+		"jose": "^6.2.12",
 		"resend": "6.18.0",
-		"rivetkit": "2.3.9",
+		"rivetkit": "2.3.23",
 		"three": "0.185.1",
 		"zod": "4.4.3"
-	}
+	},
+	"overrides": {
+		"rivetkit": "2.3.23"
+	},
+	"imports": {
+		"#lib/*": "./src/lib/*"
+	},
+	"workspaces": [
+		"rivetkit-svelte"
+	]
 }

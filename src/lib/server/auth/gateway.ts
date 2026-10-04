@@ -23,7 +23,7 @@
  */
 
 import type { ActorHandle } from 'rivetkit/client';
-import { getRivetClient } from '$lib/server/rivet';
+import { getRivetClient } from '#lib/server/rivet.ts';
 import type { authStore } from './auth-store.actor';
 import { AUTH_BASE_PATH, getAppUrl } from './env';
 import { getAuthStoreInternalToken } from './internal-token';
@@ -44,10 +44,7 @@ async function getAuthStoreHandle(): Promise<ActorHandle<typeof authStore>> {
 	// while `/api/auth` remains unwired; runtime use still requires registry entry.
 	const client = getRivetClient() as unknown as {
 		authStore: {
-			getOrCreate(
-				key: string[],
-				opts?: { params?: unknown }
-			): ActorHandle<typeof authStore>;
+			getOrCreate(key: string[], opts?: { params?: unknown }): ActorHandle<typeof authStore>;
 		};
 	};
 	return client.authStore.getOrCreate(AUTH_STORE_KEY, {

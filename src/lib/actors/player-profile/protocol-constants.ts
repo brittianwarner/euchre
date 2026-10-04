@@ -4,9 +4,6 @@
  * stays free of deep `$lib/euchre/*` paths.
  */
 
-export {
-	EPISODE_SUMMARY_MAX_CHARS,
-	PERSONA_NAME_MAX_CHARS
-} from '$lib/protocol';
+export { EPISODE_SUMMARY_MAX_CHARS, PERSONA_NAME_MAX_CHARS } from '#lib/protocol/index.ts';
 
-export { DEFAULT_ENGINE_CONFIG } from '$lib/euchre';
+export { DEFAULT_ENGINE_CONFIG } from '#lib/euchre/index.ts';

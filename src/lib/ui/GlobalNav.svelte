@@ -1,98 +1,160 @@
-<!--
-  GlobalNav — the only way in or out of /games and /settings right now, so it
-  has to work from every screen that has room for it: the landing page, the
-  pre-game /play load, /games and /settings themselves.
-
-  It deliberately does NOT render on the live table (`/play/[gameId]`): that
-  page's own HUD already occupies all four corners plus top-centre by design
-  (`+page.svelte`'s own doc comment maps ScoreBoard/status to top-left, the
-  trick view to top-right, the rules "?" to top-centre, table talk to
-  bottom-left and the action panel to bottom-right) — verified against
-  screenshots at both 1440×900 and 390×844. A fifth floating corner would
-  either collide with one of those or force re-verifying all of them, and
-  this component owns none of that layout. The table's own "Deal a new game"
-  link is the way out of a live hand; this nav picks up from there.
-
-  Fixed, corner-docked, zero layout footprint elsewhere: it must never nudge
-  the Threlte canvas or change its measured size, so this renders as a
-  floating overlay, not a document-flow header. `pointer-events` is scoped to
-  the pill itself so nothing under the transparent corner around it is ever
-  blocked.
--->
 <script lang="ts">
 	import { page } from '$app/state';
 
 	const links = [
-		{ href: '/play', label: 'Table', title: 'Deal a new hand' },
-		{ href: '/games', label: 'Games', title: 'Your past games' },
+		{ href: '/play', label: 'Play', title: 'Deal a new hand' },
+		{ href: '/games', label: 'Your games', title: 'Your past games' },
 		{ href: '/settings', label: 'Settings', title: 'Edit the opponents' }
 	] as const;
-
 	const here = $derived(page.url.pathname);
-	/** The live table owns every corner of its own HUD — see the doc comment above. */
 	const onLiveTable = $derived(page.route.id === '/play/[gameId]');
+	const onHome = $derived(here === '/');
 </script>
 
 {#if !onLiveTable}
-	<nav class="global-nav" aria-label="Euchre">
-		{#each links as link (link.href)}
-			{@const active = here === link.href || (link.href !== '/play' && here.startsWith(link.href))}
-			<a href={link.href} title={link.title} aria-current={active ? 'page' : undefined}>
-				{link.label}
-			</a>
-		{/each}
-	</nav>
+	<header class:home={onHome}>
+		{#if onHome}<a class="brand" href="/" aria-label="Euchre home"
+				>euchre<span aria-hidden="true">♣</span><small>THE CARD CLUB</small></a
+			>{/if}
+		<nav aria-label="Main navigation">
+			{#if !onHome}<a href="/" aria-label="Euchre home" class="home-link">♣</a>{/if}
+			{#each links as link (link.href)}
+				{@const active =
+					here === link.href || (link.href !== '/play' && here.startsWith(link.href))}
+				<a href={link.href} title={link.title} aria-current={active ? 'page' : undefined}
+					>{link.label}</a
+				>
+			{/each}
+		</nav>
+	</header>
 {/if}
 
 <style>
-	.global-nav {
+	header {
 		position: fixed;
 		top: max(0.6rem, env(safe-area-inset-top));
 		right: max(0.6rem, env(safe-area-inset-right));
 		z-index: 200;
-		display: flex;
-		gap: 0.3rem;
-		padding: 0.3rem;
-		border-radius: 999px;
-		background: rgba(15, 20, 14, 0.78);
-		border: 1px solid rgba(232, 194, 122, 0.3);
-		box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
-		backdrop-filter: blur(6px);
-		font-family: 'Source Serif 4', 'Iowan Old Style', Georgia, serif;
+		font-family: var(--font-sans);
 	}
-	a {
+	nav {
 		display: flex;
 		align-items: center;
+		gap: 3px;
+		padding: 5px;
+		border-radius: 999px;
+		background: #15352eee;
+		border: 1px solid #aec29338;
+		backdrop-filter: blur(10px);
+	}
+	nav a {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
 		min-height: 44px;
 		min-width: 44px;
-		justify-content: center;
-		padding: 0 0.75rem;
+		padding: 0 17px;
 		border-radius: 999px;
-		color: #c9b89a;
+		color: #d9e3d4;
+		font-size: 12px;
+		font-weight: 550;
 		text-decoration: none;
-		font-size: 0.82rem;
-		font-weight: 600;
-		letter-spacing: 0.01em;
-		transition: background 160ms ease, color 160ms ease;
+		transition:
+			background 160ms,
+			color 160ms;
 	}
-	a:hover,
-	a:focus-visible {
-		background: rgba(232, 194, 122, 0.14);
-		color: #f4ecd8;
+	nav a:hover {
+		background: #d4ed9b1a;
+		color: #f5f5e9;
 	}
-	a[aria-current='page'] {
-		background: #3d6b38;
-		color: #f4f7e8;
+	nav a[aria-current='page'] {
+		background: #d4ed9b;
+		color: #153f36;
 	}
-	@media (prefers-reduced-motion: reduce) {
-		a {
-			transition: none;
+	.home-link {
+		font-size: 20px;
+	}
+	header.home {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 104px;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		max-width: 1460px;
+		margin: 0 auto;
+		padding: 0 50px;
+	}
+	.brand {
+		display: flex;
+		align-items: center;
+		text-decoration: none;
+		color: #233e32;
+		font: 600 40px/1 var(--font-serif);
+		letter-spacing: -0.07em;
+	}
+	.brand > span {
+		font-size: 25px;
+		margin-left: 5px;
+	}
+	.brand small {
+		font: 600 8px/1.4 var(--font-sans);
+		letter-spacing: 0.18em;
+		max-width: 48px;
+		margin-left: 19px;
+		border-left: 1px solid #a8b2a0;
+		padding-left: 15px;
+	}
+	.home nav {
+		background: transparent;
+		border: 0;
+		backdrop-filter: none;
+		padding: 0;
+		gap: 10px;
+	}
+	.home nav a {
+		color: #42523e;
+		border-radius: 6px;
+	}
+	.home nav a:hover {
+		background: #e5e9d8;
+		color: #153f36;
+	}
+	@media (max-width: 760px) {
+		header.home {
+			height: 86px;
+			padding: 0 27px;
+		}
+		.brand {
+			font-size: 32px;
+		}
+		.brand > span {
+			font-size: 20px;
+		}
+		.brand small {
+			display: none;
+		}
+		.home nav {
+			gap: 0;
+		}
+		nav a {
+			padding: 0 11px;
+			font-size: 11px;
 		}
 	}
-	@media (max-width: 420px) {
-		a {
-			padding: 0 0.55rem;
-			font-size: 0.76rem;
+	@media (max-width: 380px) {
+		header.home {
+			padding: 0 22px;
+		}
+		.home nav a {
+			padding: 0 8px;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		nav a {
+			transition: none;
 		}
 	}
 </style>

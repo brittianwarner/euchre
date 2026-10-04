@@ -1,7 +1,7 @@
 import "./runes-shim.js";
 import { describe, expect, test, vi } from "vitest";
 
-vi.mock("@rivetkit/framework-base", () => ({
+vi.mock("../internal/framework-base.js", () => ({
   createRivetKit: vi.fn(() => ({
     getOrCreateActor: vi.fn(),
   })),
@@ -85,14 +85,28 @@ describe("warmUp", () => {
     expect(resolve).toHaveBeenCalledTimes(1);
   });
 
-  test("deduplicates successful warm-ups by actor identity", () => {
-    const { client, resolve } = createClient();
+  test("deduplicates concurrent warm-ups by actor identity", () => {
+    const { client, resolve } = createClient(
+      () => new Promise<string>(() => undefined),
+    );
     const rivet = createRivetKitWithClient(client as never);
 
     rivet.warmUp({ name: "document" as never, key: ["doc-1"] });
     rivet.warmUp({ name: "document" as never, key: ["doc-1"] });
 
     expect(resolve).toHaveBeenCalledTimes(1);
+  });
+
+  test("allows a later warm-up after the previous resolve completes", async () => {
+    const { client, resolve } = createClient();
+    const rivet = createRivetKitWithClient(client as never);
+
+    rivet.warmUp({ name: "document" as never, key: ["doc-1"] });
+    // Let the resolved promise's completion handler clear the in-flight key.
+    await Promise.resolve();
+    rivet.warmUp({ name: "document" as never, key: ["doc-1"] });
+
+    expect(resolve).toHaveBeenCalledTimes(2);
   });
 
   test("allows retry after resolve failure", async () => {
@@ -109,10 +123,56 @@ describe("warmUp", () => {
     expect(resolve).toHaveBeenCalledTimes(1);
 
     rejectResolve!(new Error("resolve failed"));
-    await vi.waitFor(() => {
-      rivet.warmUp({ name: "document" as never, key: ["doc-1"] });
-      expect(resolve).toHaveBeenCalledTimes(2);
+    await Promise.resolve();
+    rivet.warmUp({ name: "document" as never, key: ["doc-1"] });
+    expect(resolve).toHaveBeenCalledTimes(2);
+  });
+
+  test("supports cyclic warm-up input without leaking hashing failures", () => {
+    const { client, resolve } = createClient();
+    const rivet = createRivetKitWithClient(client as never);
+    const circular: { self?: unknown } = {};
+    circular.self = circular;
+
+    expect(() =>
+      rivet.warmUp({
+        name: "document" as never,
+        key: ["doc-1"],
+        createWithInput: circular,
+      }),
+    ).not.toThrow();
+    expect(resolve).toHaveBeenCalledTimes(1);
+  });
+
+  test("supports BigInt warm-up input", () => {
+    const { client, resolve } = createClient();
+    const rivet = createRivetKitWithClient(client as never);
+
+    expect(() =>
+      rivet.warmUp({
+        name: "document" as never,
+        key: ["doc-1"],
+        createWithInput: { cursor: 1n },
+      }),
+    ).not.toThrow();
+    expect(resolve).toHaveBeenCalledTimes(1);
+  });
+
+  test("contains synchronous resolve failures and permits retry", () => {
+    let shouldThrow = true;
+    const { client, resolve } = createClient(() => {
+      if (shouldThrow) throw new Error("sync resolve failed");
+      return Promise.resolve("actor-id");
     });
+    const rivet = createRivetKitWithClient(client as never);
+
+    expect(() =>
+      rivet.warmUp({ name: "document" as never, key: ["doc-1"] }),
+    ).not.toThrow();
+    shouldThrow = false;
+    rivet.warmUp({ name: "document" as never, key: ["doc-1"] });
+
+    expect(resolve).toHaveBeenCalledTimes(2);
   });
 
   test("deprecated preloadActor alias still resolves the actor", () => {

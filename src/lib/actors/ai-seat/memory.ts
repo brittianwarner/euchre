@@ -28,9 +28,9 @@
  * Normative source: `docs/03-AI-AGENTS.md` §10.
  */
 
-import { effectiveSuit, partnerOf, teamOf } from '$lib/euchre';
-import { voidReads } from '$lib/ai/heuristic';
-import type { CardId, EpisodeKind, PublicGameView, Seat, Suit, Team } from '$lib/protocol';
+import { effectiveSuit, partnerOf, teamOf } from '#lib/euchre/index.ts';
+import { voidReads } from '#lib/ai/heuristic.ts';
+import type { CardId, EpisodeKind, PublicGameView, Seat, Suit, Team } from '#lib/protocol/index.ts';
 import {
 	MEM_BID_CAP,
 	MEM_LEAD_CAP,
@@ -166,7 +166,8 @@ export function deriveHandNote(snapshot: HandSnapshot | null, seat: Seat): strin
 	const defTricks = snapshot.tricksWon[defenderTeam] ?? 0;
 	const alone = snapshot.aloneSeat;
 	const mine: Team = teamOf(seat);
-	const who = (s: Seat): string => (s === seat ? 'I' : s === partnerOf(seat) ? 'my partner' : `seat ${s}`);
+	const who = (s: Seat): string =>
+		s === seat ? 'I' : s === partnerOf(seat) ? 'my partner' : `seat ${s}`;
 	const hand = `h${snapshot.handNo}`;
 
 	if (alone !== null) {
@@ -180,8 +181,10 @@ export function deriveHandNote(snapshot: HandSnapshot | null, seat: Seat): strin
 		const verb = makerTeam === mine ? 'we got euchred' : 'we euchred them';
 		return clampNote(`${hand}: ${who(snapshot.makerSeat)} called it and ${verb}`);
 	}
-	if (makerTricks === 5) return clampNote(`${hand}: ${who(snapshot.makerSeat)} called it and marched`);
-	if (makerTricks >= 3) return clampNote(`${hand}: ${who(snapshot.makerSeat)} called it and made the point`);
+	if (makerTricks === 5)
+		return clampNote(`${hand}: ${who(snapshot.makerSeat)} called it and marched`);
+	if (makerTricks >= 3)
+		return clampNote(`${hand}: ${who(snapshot.makerSeat)} called it and made the point`);
 	return null;
 }
 
@@ -279,7 +282,11 @@ export function momentSalience(view: PublicGameView, gameTo: number): number {
  * only — it is built from the same view the model is given.
  */
 export function situationLine(view: PublicGameView, seat: Seat): string {
-	const parts: string[] = [`seat ${seat}`, `hand ${view.handNo}`, `score ${view.score[0]}-${view.score[1]}`];
+	const parts: string[] = [
+		`seat ${seat}`,
+		`hand ${view.handNo}`,
+		`score ${view.score[0]}-${view.score[1]}`
+	];
 	if (view.trump !== null) parts.push(`trump ${view.trump}`);
 	if (view.makerSeat !== null) parts.push(`maker seat ${view.makerSeat}`);
 	if (view.aloneSeat !== null) parts.push(`seat ${view.aloneSeat} is alone`);

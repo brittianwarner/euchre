@@ -32,8 +32,8 @@
  * identically and a replay is reproducible (V20).
  */
 
-import { fnv1a } from '$lib/euchre';
-import type { AIDecisionKind } from '$lib/protocol';
+import { fnv1a } from '#lib/euchre/index.ts';
+import type { AIDecisionKind } from '#lib/protocol/index.ts';
 
 /**
  * Fast tempo compresses every pause so a full match is testable in minutes. It is
@@ -51,11 +51,11 @@ const LOCAL_FAST = process.env.EUCHRE_FAST_TEMPO === '1';
 /** The table's whole timing policy. Frozen so a caller cannot drift one seat. */
 export const TEMPO = Object.freeze({
 	/** Server-held read pause after a trick completes. */
-	trickResolveMs: LOCAL_FAST ? 120 : 900,
+	trickResolveMs: LOCAL_FAST ? 120 : 1700,
 	/** Longer hold when the trick just made a euchre certain — the moment deserves it. */
-	trickResolveSealsEuchreMs: LOCAL_FAST ? 180 : 1100,
+	trickResolveSealsEuchreMs: LOCAL_FAST ? 180 : 2200,
 	/** Server-held pause on the hand recap before the next deal. */
-	handScoreMs: LOCAL_FAST ? 250 : 1800,
+	handScoreMs: LOCAL_FAST ? 250 : 2500,
 
 	/**
 	 * Minimum time a seat appears to deliberate, by decision kind. A 380 ms
@@ -65,7 +65,7 @@ export const TEMPO = Object.freeze({
 	thinkFloorMs: Object.freeze(
 		LOCAL_FAST
 			? { cut: 80, bid1: 120, bid2: 120, discard: 120, play: 100 }
-			: { cut: 500, bid1: 900, bid2: 900, discard: 900, play: 700 }
+			: { cut: 700, bid1: 1100, bid2: 1100, discard: 1100, play: 1000 }
 	) satisfies Record<AIDecisionKind, number>,
 
 	/** Width of the deterministic jitter added on top of the floor. */

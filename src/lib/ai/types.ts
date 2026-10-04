@@ -27,7 +27,7 @@ import type {
 	AnthropicModelId,
 	LegalMoveId,
 	PersonaConfig
-} from '$lib/protocol';
+} from '#lib/protocol/index.ts';
 
 /* ========================================================================== */
 /* Model plumbing                                                             */
@@ -41,9 +41,8 @@ import type {
  * decision is a defect: that seam is precisely what lets `MockLanguageModelV4`
  * from `ai/test` swap in wholesale without touching an environment variable.
  *
- * Three named tiers rather than one `model(id)` so the call sites read as intent
- * (`factory.bid(...)`) and so a future per-tier middleware (telemetry, rate limit)
- * has somewhere to live.
+ * Decisions and conversation expose different capabilities. A text model cannot
+ * be substituted into the decision path.
  */
 export interface ModelFactory {
 	/**
@@ -53,6 +52,13 @@ export interface ModelFactory {
 	 * them (or 400s, depending on the upstream).
 	 */
 	readonly provider: ProviderName;
+	/** Jev-only structured decisions. Text-only providers deliberately omit this. */
+	readonly decision?: (input: {
+		state: string;
+		criteria: Readonly<Record<string, string>>;
+		signal: AbortSignal;
+	}) => Promise<{ choice: string; confidence: number; usage: DecideUsage }>;
+
 	/**
 	 * The real upstream model id a canonical tier id resolves to.
 	 *
@@ -61,11 +67,7 @@ export interface ModelFactory {
 	 * OpenRouter in front, only the factory knows which one is really being called.
 	 */
 	slugFor(modelId: AnthropicModelId): string;
-	/** Fast tier: card plays. */
-	play(modelId: AnthropicModelId): LanguageModel;
-	/** Deliberate tier: the cut, bidding, the dealer discard, going alone. */
-	bid(modelId: AnthropicModelId): LanguageModel;
-	/** Fast tier: table talk. Separate from `play` so it can be throttled alone. */
+	/** Conventional language models generate conversation only. */
 	talk(modelId: AnthropicModelId): LanguageModel;
 }
 
@@ -115,7 +117,10 @@ export type ProviderOptionsShape = {
 		readonly effort?: 'low' | 'medium' | 'high';
 	};
 	readonly openrouter?: {
-		readonly reasoning?: { readonly enabled?: boolean; readonly effort?: 'low' | 'medium' | 'high' };
+		readonly reasoning?: {
+			readonly enabled?: boolean;
+			readonly effort?: 'low' | 'medium' | 'high';
+		};
 	};
 };
 
@@ -187,7 +192,7 @@ export interface DecideOutcome {
 	readonly confidence: number;
 	readonly usage: DecideUsage;
 	/** `null` when no API call was made (`forced`, degraded, or no provider). */
-	readonly modelId: AnthropicModelId | null;
+	readonly modelId: string | null;
 	/** How many model calls were actually issued. `0` on the no-network rungs. */
 	readonly attempts: number;
 }

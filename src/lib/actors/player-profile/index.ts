@@ -44,7 +44,7 @@
 
 import { actor, queue } from 'rivetkit';
 import { db } from 'rivetkit/db';
-import { PROTOCOL_VERSION } from '$lib/protocol';
+import { PROTOCOL_VERSION } from '#lib/protocol/index.ts';
 import { assertInternalToken, ownerOf, verifyProfileToken } from './auth';
 import { protocolError, requireId } from './guards';
 import {
@@ -91,7 +91,7 @@ import type {
 	SetActiveGameMessage,
 	StoredEpisode
 } from './types';
-import type { MatchListPage, PersonaView } from '$lib/protocol';
+import type { MatchListPage, PersonaView } from '#lib/protocol/index.ts';
 
 /* ========================================================================== */
 /* Small pure helpers                                                        */
@@ -163,6 +163,7 @@ function requireAuthenticated(state: ProfileConnState): void {
 
 /** The shape a `canPublish` hook receives. Declared structurally; see `queues.ts` in `euchre-table`. */
 interface Guard {
+	readonly request?: Request;
 	readonly conn?: { readonly state: ProfileConnState };
 }
 
@@ -175,7 +176,7 @@ interface Guard {
  * `euchre-table/queues.ts`'s identical `externalDenied` for the full rationale.
  */
 function externalDenied(c: Guard): boolean {
-	return c.conn === undefined;
+	return c.conn === undefined || c.request?.method === 'POST';
 }
 
 const profileQueues = {
@@ -281,9 +282,21 @@ async function onRecordTokens(c: ProfileCtx, body: RecordTokensMessage): Promise
 type ProfileMessage =
 	| { readonly name: 'recordGame'; readonly body: RecordGameMessage; complete(): Promise<void> }
 	| { readonly name: 'recordHands'; readonly body: RecordHandsMessage; complete(): Promise<void> }
-	| { readonly name: 'recordEpisodes'; readonly body: RecordEpisodesMessage; complete(): Promise<void> }
-	| { readonly name: 'setActiveGame'; readonly body: SetActiveGameMessage; complete(): Promise<void> }
-	| { readonly name: 'recordTokens'; readonly body: RecordTokensMessage; complete(): Promise<void> };
+	| {
+			readonly name: 'recordEpisodes';
+			readonly body: RecordEpisodesMessage;
+			complete(): Promise<void>;
+	  }
+	| {
+			readonly name: 'setActiveGame';
+			readonly body: SetActiveGameMessage;
+			complete(): Promise<void>;
+	  }
+	| {
+			readonly name: 'recordTokens';
+			readonly body: RecordTokensMessage;
+			complete(): Promise<void>;
+	  };
 
 /* ========================================================================== */
 /* The actor                                                                  */

@@ -9,41 +9,48 @@
   the only thing that ever actually changes the game.
 -->
 <script lang="ts">
-	import { untrack } from 'svelte';
-	import { withActorParams } from '@rivetkit/svelte';
-	import { rivetContext } from '$lib/client/rivet';
-	import { TableStore, type TableActorHandle } from '$lib/game/table.svelte';
-	import { applyOptimistic, whyIllegal } from '$lib/euchre';
-	import EuchreTable3D from '$lib/three/EuchreTable3D.svelte';
-	import BidPanel from '$lib/ui/BidPanel.svelte';
-	import DiscardPanel from '$lib/ui/DiscardPanel.svelte';
-	import HandA11y from '$lib/ui/HandA11y.svelte';
-	import Hint from '$lib/ui/Hint.svelte';
-	import RulesPanel from '$lib/ui/RulesPanel.svelte';
-	import GameAnnouncer from '$lib/ui/onboarding/GameAnnouncer.svelte';
-	import Walkthrough from '$lib/ui/onboarding/Walkthrough.svelte';
-	import ScoreBoard from '$lib/ui/ScoreBoard.svelte';
-	import TrickView from '$lib/ui/TrickView.svelte';
-	import TableStatusBar from '$lib/ui/TableStatusBar.svelte';
+	import { onDestroy, untrack } from 'svelte';
+	import { createGameRivet } from '#lib/client/rivet.ts';
+	import { TableStore, type TableActorHandle } from '#lib/game/table.svelte.ts';
+	import { applyOptimistic, whyIllegal } from '#lib/euchre/index.ts';
+	import EuchreTable3D from '#lib/three/EuchreTable3D.svelte';
+	import BidPanel from '#lib/ui/BidPanel.svelte';
+	import CardRack from '#lib/ui/CardRack.svelte';
+	import Hint from '#lib/ui/Hint.svelte';
+	import RulesPanel from '#lib/ui/RulesPanel.svelte';
+	import GameAnnouncer from '#lib/ui/onboarding/GameAnnouncer.svelte';
+	import Walkthrough from '#lib/ui/onboarding/Walkthrough.svelte';
+	import ScoreBoard from '#lib/ui/ScoreBoard.svelte';
+	import SoundToggle from '#lib/ui/sound/SoundToggle.svelte';
+	import TrickView from '#lib/ui/TrickView.svelte';
+	import TableStatusBar from '#lib/ui/TableStatusBar.svelte';
 
 	/** Compass names for the spoken log. Seat 0 is the player. */
 	const SEAT_NAME = ['You', 'West', 'North', 'East'] as const;
-	import type { CardId, LegalMoveId, PublicGameView, Step, SyncEvent } from '$lib/protocol';
+	import type {
+		CardId,
+		LegalMoveId,
+		PublicGameView,
+		Step,
+		SyncEvent
+	} from '#lib/protocol/index.ts';
 
 	let { data } = $props();
 
-	const { useActor } = rivetContext.get();
+	// The parent keys this page by game ID, so tokens never cross between tables.
+	const {
+		rivet: { useActor },
+		getParams
+	} = createGameRivet(untrack(() => data.gameId));
 	const store = new TableStore();
 
-	const table = useActor(
-		withActorParams(
-			() => ({
-				name: 'euchreTable' as const,
-				key: ['table', data.gameId]
-			}),
-			() => ({ token: data.token })
-		)
-	);
+	const table = useActor(() => ({
+		name: 'euchreTable' as const,
+		noCreate: true,
+		actorId: data.actorId,
+		key: ['table', data.gameId],
+		getParams
+	}));
 
 	// onEvent must be registered during component init — not inside $effect.
 	// The table speaks: engine-authored calls plus screened banter. Registered
@@ -83,7 +90,9 @@
 	 * means a stale or wrong optimistic view can never survive past the next
 	 * server truth, with no explicit "clear" needed on the happy path.
 	 * ---------------------------------------------------------------------- */
-	let optimistic = $state<{ readonly forV: number; readonly view: PublicGameView } | null>(null);
+	let optimistic = $state.raw<{ readonly forV: number; readonly view: PublicGameView } | null>(
+		null
+	);
 
 	/**
 	 * The last view we ever had, never revoked.
@@ -124,31 +133,16 @@
 	/** Reopens the first-run tour from `RulesPanel`'s "take the tour again" link. */
 	let tourOpen = $state(false);
 
-	/** Submits any legal move id, previewing its effect locally first. Used by every input surface — 3D card taps, the DOM bid/discard panels, and the keyboard/screen-reader hand — so the whole table gets the same instant feedback from one place. */
+	/** Submits any legal move id, previewing its effect locally first. Used by the bid panel, card rack, and confirm button — so the whole table gets the same instant feedback from one place. */
 	async function submitMove(moveId: LegalMoveId): Promise<void> {
 		const view = displayView;
-		if (!view) return;
+		if (!view || store.submitting || !table.isConnected) return;
 		const entry = view.legal.find((m) => m.id === moveId);
 		if (!entry) return; // Every caller here already filtered against this same `legal` set.
 		lastDecision = { view, moveId };
 		optimistic = { forV: view.v, view: applyOptimistic(view, entry.move) };
 		const ok = await store.play(moveId);
 		if (!ok) optimistic = null; // Rejected — store already resynced; show its truth, not our guess.
-	}
-
-	function findCardMoveId(view: PublicGameView, card: CardId): LegalMoveId | null {
-		for (const m of view.legal) {
-			if ((m.move.t === 'play' || m.move.t === 'discard') && m.move.card === card) return m.id;
-		}
-		return null;
-	}
-
-	async function handleCardPlay(card: CardId): Promise<void> {
-		const view = displayView;
-		if (!view) return;
-		const moveId = findCardMoveId(view, card);
-		if (!moveId) return; // Hand.svelte only calls onplay for ids it found in this same `view.legal`.
-		await submitMove(moveId);
 	}
 
 	/**
@@ -172,6 +166,28 @@
 		);
 	}
 
+	let cardSelection = $state<{ handNo: number; card: CardId } | null>(null);
+	const selectedCard = $derived(
+		cardSelection &&
+			displayView &&
+			cardSelection.handNo === displayView.handNo &&
+			displayView.hand.includes(cardSelection.card)
+			? cardSelection.card
+			: null
+	);
+	const selectedMove = $derived(
+		displayView?.legal.find(
+			(entry) =>
+				(entry.move.t === 'play' || entry.move.t === 'discard') && entry.move.card === selectedCard
+		)
+	);
+	function selectCard(card: CardId): void {
+		if (displayView) cardSelection = { handNo: displayView.handNo, card };
+	}
+	function cardLabel(card: CardId): string {
+		return `${card.slice(0, -1).replace('T', '10')}${({ S: '♠', H: '♥', D: '♦', C: '♣' } as Record<string, string>)[card.slice(-1)]}`;
+	}
+
 	let illegalMessage = $state<string | null>(null);
 	let illegalTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -184,6 +200,7 @@
 			illegalMessage = null;
 		}, 3200);
 	}
+	onDestroy(() => clearTimeout(illegalTimer));
 </script>
 
 <svelte:head>
@@ -191,125 +208,128 @@
 </svelte:head>
 
 <main class="table-page">
-	<!--
-		Onboarding-layer overlays: neither is part of the felt's corner grid.
-		`Walkthrough` is a modal `<dialog>` (its own ::backdrop covers the
-		viewport regardless of where it sits in the DOM) that only auto-opens
-		once `displayView` shows a real, dealt hand — it derives that itself
-		from the `view` passed straight through here, so it never appears over
-		the "Connecting…" state *or* the cutting screen (a `view` exists,
-		non-null, during `cutting` too — see `Walkthrough`'s own doc comment).
-		`GameAnnouncer` is a visually hidden aria-live region; it renders
-		nothing on screen.
-	-->
 	<Walkthrough view={displayView} bind:open={tourOpen} />
 	<GameAnnouncer steps={lastSteps} view={displayView} />
-
-	{#if !store.view}
-		<p class="loading">
-			{table.isConnected ? 'Dealing…' : 'Connecting to the table…'}
-		</p>
-		{#if table.lastError}
-			<p class="err">{String(table.lastError)}</p>
-		{/if}
-	{:else if displayView}
-		<EuchreTable3D
-			view={displayView}
-			disabled={store.submitting}
-			onplay={handleCardPlay}
-			onillegal={handleCardIllegal}
-		/>
-
-		<!--
-			All chrome lives at the screen edges, so nothing ever sits over a
-			seat's cards or nameplate (the felt itself is the only thing allowed
-			in the middle of the screen):
-
-			  top-left      score, hand number, trump, whose turn (ScoreBoard +
-			                TableStatusBar's turn chip/illegal toast)
-			  top-right     the current trick + tricks won, kept small (TrickView)
-			  bottom-centre the bid/discard action panel — the one place action
-			                ever happens. Centred, not a corner: both seat 0's own
-			                "You" nameplate (an HTML overlay from
-			                `TableScene.svelte`) and North's sit dead-centre, but
-			                well *above* this panel's vertical band (verified
-			                against a screenshot at 390×844, the tightest
-			                breakpoint) — a corner placement narrow enough to
-			                dodge that nameplate sideways left too little width
-			                for its three buttons to avoid wrapping tall enough
-			                to reach the human's own hand instead.
-
-			The low-priority "deal a new game" link lives at the bottom of the
-			top-left column rather than its own bottom-left spot: the
-			bottom-centre action panel above is wide enough at every breakpoint
-			(up to 92vw) that a separate bottom-left corner would sit right
-			under its edge — top-left is the one corner nothing else ever grows
-			tall enough to reach.
-
-			`.hud` itself is one full-bleed, non-interactive layer (per the
-			project's existing pattern); each corner opts back into
-			`pointer-events` only where it actually has controls.
-		-->
-		<div class="hud">
-			<div class="corner corner-tl">
-				<ScoreBoard view={displayView} />
-				<TableStatusBar view={displayView} {illegalMessage} />
-				<Hint view={displayView} {lastDecision} />
-				<!--
-					The persistent "?" (docs/04-FRONTEND-UX.md §15) lives in this column,
-					not its own top-centre spot: `GlobalNav.svelte` is fixed top-RIGHT
-					but, being width-to-content, reaches well past horizontal centre on
-					a narrow phone — a separate centred corner collided with it there.
-					top-left's column is the one place nothing else ever grows into.
-					`.help-row` overrides the column's `align-items: stretch` so this
-					stays a small round button instead of stretching into a pill.
-				-->
-				<div class="help-row">
-					<RulesPanel view={displayView} onReplayTour={() => (tourOpen = true)} />
-				</div>
-				<p class="footer">
-					<a href="/play">Deal a new game</a>
-					· game {data.gameId.slice(0, 8)}
-				</p>
-			</div>
-
-			<div class="corner corner-tr">
-				<TrickView view={displayView} />
-			</div>
-
-			<!--
-				What the table says out loud. Bottom-LEFT, opposite the action panel,
-				so the two never collide and neither sits over the fan.
-			-->
-			{#if store.chat.length > 0}
-				<div class="corner corner-bl" aria-live="polite" aria-label="Table talk">
-					{#each store.chat as line (line.msgId)}
-						<p class="said" class:banter={line.kind === 'banter'}>
-							<span class="who">{SEAT_NAME[line.seat] ?? 'Table'}</span>
-							{line.text}
-						</p>
-					{/each}
-				</div>
-			{/if}
-
-			<div class="corner corner-bc">
-				{#if store.error}
-					<p class="err" role="alert">{store.error}</p>
-				{/if}
-				<BidPanel view={displayView} disabled={store.submitting} onPlay={submitMove} />
-				<DiscardPanel view={displayView} disabled={store.submitting} onPlay={submitMove} />
-			</div>
-
-			<!--
-				Visually hidden but focusable: the 3D table is the visual layer,
-				this is the permanent keyboard/screen-reader path
-				(docs/04-FRONTEND-UX.md §13). `:focus-within` restores it to the
-				flow so a keyboard user always sees where focus landed.
-			-->
-			<div class="a11y-hand">
-				<HandA11y view={displayView} disabled={store.submitting} onPlay={submitMove} />
-			</div>
+	{#if !displayView}
+		<div class="loading" role="status">
+			<span aria-hidden="true">♣</span>
+			<h1>{table.isConnected ? 'Your hand is on its way.' : 'A seat at the table.'}</h1>
+			<p>{table.isConnected ? 'Dealing your cards…' : 'Connecting to your game…'}</p>
+			<a href="/">Back to the club</a>{#if table.lastError}<p class="err">
+					{String(table.lastError)}
+				</p>{/if}
 		</div>
+	{:else}
+		<EuchreTable3D view={displayView} />
+		<header class="game-header">
+			<ScoreBoard view={displayView} />
+			<div class="table-tools">
+				<SoundToggle />
+				<RulesPanel view={displayView} onReplayTour={() => (tourOpen = true)} />
+				<details class="table-menu">
+					<summary aria-label="Table options">⋯</summary>
+					<div class="menu-panel">
+						<p class="menu-title">AT YOUR TABLE</p>
+						<Hint view={displayView} {lastDecision} /><a href="/play"
+							>Deal a new game <span aria-hidden="true">↗</span></a
+						><a href="/">Back to the club</a>
+						<details class="conversation">
+							<summary>Table talk <span>{store.chat.length}</span></summary>
+							<div class="conversation-lines">
+								{#each store.chat as line (line.msgId)}<p>
+										<strong>{SEAT_NAME[line.seat] ?? 'Table'}</strong>
+										{line.text}
+									</p>{:else}<p>The conversation starts with the first call.</p>{/each}
+							</div>
+						</details>
+					</div>
+				</details>
+			</div>
+		</header>
+		{#if !table.isConnected}<p class="reconnecting" role="status">
+				Reconnecting · your table is saved
+			</p>{/if}
+		<div class="seat-marker partner" class:current={displayView.turnSeat === 2}>
+			<span class="seat-dot"></span>Partner <small>NORTH</small>
+		</div>
+		<div class="seat-marker west" class:current={displayView.turnSeat === 1}>
+			<span class="seat-dot"></span>West
+		</div>
+		<div class="seat-marker east" class:current={displayView.turnSeat === 3}>
+			<span class="seat-dot"></span>East
+		</div>
+		{#if displayView.hand.length > 0}
+			<div class="hand-rack">
+				<CardRack
+					view={displayView}
+					disabled={store.submitting || !table.isConnected}
+					selected={selectedCard}
+					onSelect={selectCard}
+					onPlay={submitMove}
+					onIllegal={handleCardIllegal}
+				/>
+			</div>
+		{/if}
+
+		<footer class="action-dock">
+			<div class="dock-inner">
+				<div class="dock-status">
+					<TableStatusBar view={displayView} {illegalMessage} /><TrickView view={displayView} />
+				</div>
+				{#if store.error}<p class="err" role="alert">{store.error}</p>{/if}
+				<BidPanel
+					view={displayView}
+					disabled={store.submitting || !table.isConnected}
+					onPlay={submitMove}
+				/>
+				{#if displayView.status === 'complete'}<div class="quiet-action">
+						<p>
+							{displayView.winnerTeam === 0
+								? 'A hand well played. A match well won.'
+								: 'There’s always another good hand.'}
+						</p>
+						<a href="/play">Play again <span aria-hidden="true">↗</span></a>
+					</div>
+				{:else if store.submitting}
+					<div class="waiting">
+						<p>Making your move…</p>
+						<span>One moment at the table.</span>
+					</div>
+				{:else if displayView.turnSeat !== displayView.you || displayView.phase === 'hand_score' || displayView.phase === 'trick_resolve'}<div
+						class="waiting"
+					>
+						<p>
+							{displayView.phase === 'hand_score'
+								? 'Counting the hand…'
+								: displayView.phase === 'trick_resolve'
+									? 'The next trick is coming.'
+									: `${displayView.turnSeat === null ? 'The table' : SEAT_NAME[displayView.turnSeat]} is making a move.`}
+						</p>
+						<span>Settle in. Your turn is coming.</span>
+					</div>
+				{:else if displayView.phase === 'trick_play' || displayView.phase === 'dealer_discard'}
+					<div class="card-action">
+						<p>
+							{selectedCard
+								? `${cardLabel(selectedCard)} selected`
+								: displayView.phase === 'dealer_discard'
+									? 'Select a card to discard.'
+									: 'Select a card from your hand.'}
+						</p>
+						<button
+							type="button"
+							class="confirm-card"
+							disabled={!selectedMove || store.submitting || !table.isConnected}
+							onclick={() => selectedMove && submitMove(selectedMove.id)}
+						>
+							{displayView.phase === 'dealer_discard' ? 'Discard' : 'Play'}{selectedCard
+								? ` ${cardLabel(selectedCard)}`
+								: ' card'} <span aria-hidden="true">↗</span>
+						</button>
+					</div>
+				{/if}
+			</div>
+		</footer>
 	{/if}
 </main>
 
@@ -317,184 +337,409 @@
 	.table-page {
 		position: relative;
 		min-height: 100dvh;
-		color: #f2e8d5;
-		font-family: 'Source Serif 4', 'Iowan Old Style', Georgia, serif;
-		background: #0b0906;
+		overflow: hidden;
+		background: radial-gradient(ellipse at 50% 46%, #264336 0%, #172f25 58%, #10241d 100%);
+		color: #233e32;
+		font-family: var(--font-sans);
 	}
-	.loading {
-		padding: 1.25rem;
+	.game-header {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		z-index: 5;
+		height: 88px;
+		display: flex;
+		align-items: center;
+		gap: 34px;
+		padding: 0 36px;
+		background: #f4f3e9;
+		border-bottom: 1px solid #dce1d4;
+	}
+	.table-tools {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		flex-shrink: 0;
+	}
+	.table-tools :global(.sound-toggle),
+	.table-tools :global(.trigger),
+	.table-menu > summary {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 36px;
+		min-height: 36px;
+		width: 36px;
+		height: 36px;
+		background: transparent;
+		border: 1px solid #dce1d4;
+		border-radius: 50%;
+		box-shadow: none;
+		color: #53694a;
+		font: 500 16px var(--font-sans);
+		cursor: pointer;
+	}
+	.table-tools :global(.sound-toggle:hover),
+	.table-tools :global(.trigger:hover),
+	.table-menu > summary:hover {
+		background: #e5e9dc;
+	}
+	.table-tools :global(svg) {
+		width: 16px;
+		height: 16px;
+	}
+	summary {
+		list-style: none;
+	}
+	summary::-webkit-details-marker {
+		display: none;
+	}
+	.table-menu {
+		position: relative;
+	}
+	.table-menu > summary {
+		font-size: 24px;
+		padding-bottom: 8px;
+	}
+	.menu-panel {
+		position: absolute;
+		right: 0;
+		top: 48px;
+		width: 270px;
+		padding: 20px;
+		border: 1px solid #d8dfcb;
+		border-radius: 12px;
+		background: #fbfaf3;
+		box-shadow: 0 18px 50px #09271920;
+		max-height: calc(100dvh - 120px);
+		overflow: auto;
+	}
+	.menu-title {
+		font-size: 12px;
+		letter-spacing: 0.13em;
+		color: #7a866d;
+		margin: 0 0 10px;
+	}
+	.menu-panel > a {
+		display: flex;
+		justify-content: space-between;
+		font-size: 12px;
+		padding: 12px 0;
+		border-top: 1px solid #e3e7da;
+		text-decoration: none;
+		color: #324a29;
+	}
+	.menu-panel :global(.toggle) {
+		color: #52624c;
+		font-size: 12px;
+		padding: 0;
+	}
+	.menu-panel :global(.suggestion) {
+		color: #52624c;
+		background: #edf0e3;
+		border-color: #d5ddc5;
+		font-size: 12px;
+		margin-bottom: 12px;
+	}
+	.menu-panel :global(.suggestion strong) {
+		color: #2c4d26;
+	}
+	.conversation > summary {
+		display: flex;
+		justify-content: space-between;
+		padding-top: 12px;
+		border-top: 1px solid #e3e7da;
+		font-size: 12px;
+		cursor: pointer;
+	}
+	.conversation > summary span {
+		color: #8b947e;
+	}
+	.conversation-lines {
+		max-height: 220px;
+		overflow: auto;
+	}
+	.conversation-lines p {
+		font-size: 13px;
+		line-height: 1.6;
+		color: #78816f;
+	}
+	.conversation-lines strong {
+		color: #3f5635;
+		font-weight: 550;
+	}
+	.seat-marker {
+		position: absolute;
+		z-index: 2;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 7px;
+		font: 550 14px var(--font-sans);
+		color: #d5e0d1;
+		pointer-events: none;
+		letter-spacing: 0.01em;
+	}
+	.seat-marker small {
+		font-size: 13px;
+		letter-spacing: 0.11em;
+		color: #8da28b;
+		margin-left: 4px;
+	}
+	.seat-dot {
+		width: 5px;
+		height: 5px;
+		border-radius: 50%;
+		background: #8da28b;
+	}
+	.seat-marker.current {
+		color: #f1f5e7;
+	}
+	.current .seat-dot {
+		background: #d4ed9b;
+		box-shadow: 0 0 0 3px #d4ed9b15;
+	}
+	.partner {
+		top: 107px;
+		left: 50%;
+		transform: translateX(-50%);
+	}
+	.west {
+		top: calc(50% - 26px);
+		left: max(24px, calc(50% - (100dvh - 228px) * 0.56 - 36px));
+	}
+	.east {
+		top: calc(50% - 26px);
+		right: max(24px, calc(50% - (100dvh - 228px) * 0.56 - 36px));
+	}
+	.action-dock {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		min-height: 140px;
+		z-index: 3;
+		background: #f4f3e9;
+		border-top: 1px solid #dce1d4;
+		padding: 12px 32px 15px;
+	}
+	.dock-inner {
+		width: min(100%, 680px);
+		margin: auto;
+	}
+	.dock-status {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 13px;
+	}
+	.waiting {
+		text-align: center;
+		padding-top: 4px;
+	}
+	.waiting p,
+	.quiet-action p {
 		margin: 0;
+		color: #384f30;
+		font: 500 19px var(--font-serif);
+	}
+	.waiting > span {
+		display: block;
+		font-size: 13px;
+		color: #829075;
+		margin-top: 7px;
+	}
+	.quiet-action {
+		display: flex;
+		justify-content: center;
+		gap: 25px;
+		align-items: center;
+	}
+	.quiet-action a {
+		display: flex;
+		align-items: center;
+		gap: 24px;
+		text-decoration: none;
+		font-size: 12px;
+		font-weight: 600;
+		background: #d4ed9b;
+		border: 1px solid #ccdfa9;
+		border-radius: 7px;
+		padding: 13px 18px;
 	}
 	.err {
+		text-align: center;
+		color: #a24d37;
+		font-size: 12px;
+		margin: 0 0 8px;
+	}
+	.reconnecting {
+		position: absolute;
+		top: 98px;
+		left: 50%;
+		transform: translateX(-50%);
+		z-index: 6;
+		background: #f5ecd7;
+		border: 1px solid #ddc798;
+		border-radius: 8px;
+		padding: 10px 16px;
+		font-size: 13px;
+		white-space: nowrap;
+	}
+	.loading {
+		min-height: 100dvh;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-direction: column;
+		gap: 16px;
+		background: #f4f3e9;
+	}
+	.loading > span {
+		font-size: 46px;
+	}
+	.loading h1 {
+		font: 500 32px var(--font-serif);
+		letter-spacing: -0.04em;
 		margin: 0;
-		color: #e8a090;
 	}
-	.footer {
-		margin: 0.4rem 0 0;
-		color: #8a7a62;
-		font-size: 0.8rem;
+	.loading p {
+		font-size: 13px;
+		color: #76816b;
+		margin: 0;
 	}
-	.footer a {
-		color: #d4b57a;
+	.loading a {
+		font-size: 12px;
+		color: #46653b;
+		text-underline-offset: 4px;
 	}
-	/*
-	 * North's nameplate is an `<HTML center>` billboard anchored to a fixed 3D
-	 * point, not a DOM sibling this column can push against: its own font/tags
-	 * add roughly no height, but its projected screen Y is a near-constant
-	 * *fraction* of the canvas height (CameraRig's portrait fov/dist are
-	 * constants, so the vertical projection fraction of any fixed depth is
-	 * independent of the canvas's actual width or height) — confirmed by
-	 * measurement at 390 CSS px wide: its badge sits at ~28% of viewport
-	 * height at every height from 667 to 1500px.
-	 *
-	 * `.footer`, by contrast, sits at a content-driven, essentially
-	 * viewport-height-*independent* pixel offset from the top (this column's
-	 * own text never changes size with a taller window). Those two facts
-	 * combine badly for a portrait window that is merely narrow rather than
-	 * phone-shaped — e.g. a desktop browser resized narrow at full monitor
-	 * height, not just an actual handset: past roughly 960 CSS px of height
-	 * North's ~28%-of-height badge catches up to and passes this link's fixed
-	 * position, overlapping it (verified by a width/height sweep — no overlap
-	 * below ~960px or above ~1150px, real overlap in between, at every
-	 * portrait width tried from 320 to 760).
-	 *
-	 * The fix moves the chrome: give the link a floor that *also* grows with
-	 * viewport height, at a steeper 32%-of-height rate than North's ~28–31%,
-	 * so above the crossover this margin out-paces North's badge and the gap
-	 * only widens from there — while `max()` keeps it a no-op (falls back to
-	 * the plain 0.4rem above) at every normal phone height, where the vh term
-	 * is negative. Scoped to portrait only (`isPortrait`'s own 0.8 threshold,
-	 * `$lib/three/scene/breakpoints.ts`) since landscape's nameplate sits at a
-	 * different, unrelated fraction.
-	 */
-	@media (max-aspect-ratio: 4/5) {
-		.footer {
-			margin-top: max(0.4rem, calc(32vh - 18.5rem));
+	@media (max-width: 700px) {
+		.game-header {
+			height: 90px;
+			padding: 17px 16px;
+			align-items: flex-start;
+			gap: 10px;
+		}
+		.table-tools {
+			margin-left: auto;
+			gap: 4px;
+		}
+		.table-tools :global(.sound-toggle),
+		.table-tools :global(.trigger),
+		.table-menu > summary {
+			width: 30px;
+			height: 30px;
+			min-width: 30px;
+			min-height: 30px;
+		}
+		.table-tools :global(svg) {
+			width: 14px;
+			height: 14px;
+		}
+		.partner {
+			top: calc(50% - 26px - 46vw);
+			font-size: 12px;
+		}
+		.partner small {
+			display: none;
+		}
+		.west {
+			left: 13px;
+			font-size: 12px;
+		}
+		.east {
+			right: 13px;
+			font-size: 12px;
+		}
+		.action-dock {
+			min-height: 150px;
+			padding: 13px 18px 20px;
+		}
+		.dock-status {
+			margin-bottom: 15px;
+		}
+		.quiet-action {
+			gap: 12px;
+		}
+		.quiet-action p {
+			font-size: 15px;
+		}
+		.waiting p {
+			font-size: 18px;
+		}
+		.waiting > span {
+			font-size: 12px;
 		}
 	}
-
-	.hud {
-		position: absolute;
-		inset: 0;
-		z-index: 1;
-		pointer-events: none;
+	@media (min-width: 701px) and (max-height: 780px) {
+		.west,
+		.east {
+			top: calc(50% - 51px);
+		}
 	}
-	.hud > :global(*) {
-		pointer-events: auto;
-	}
-
-	.corner {
-		position: absolute;
-	}
-	.corner-tl {
-		top: max(0.25rem, env(safe-area-inset-top));
-		left: max(0.25rem, env(safe-area-inset-left));
-		max-width: min(62vw, 24rem);
-		display: flex;
-		flex-direction: column;
-		gap: 0.6rem;
-	}
-	.corner-tr {
-		top: max(0.75rem, env(safe-area-inset-top));
-		right: max(0.75rem, env(safe-area-inset-right));
-		max-width: min(46vw, 15rem);
-	}
-	.help-row {
-		align-self: flex-start;
-	}
-	/*
-	 * The action panel lives bottom-RIGHT, not bottom-centre.
-	 *
-	 * Centred, it sat directly on top of the player's fan — you could not read the
-	 * cards you were being asked to bid on. The hand occupies the centre column,
-	 * so the chrome gets the corner.
-	 */
-	.corner-bl {
-		bottom: max(0.75rem, env(safe-area-inset-bottom));
-		left: max(0.75rem, env(safe-area-inset-left));
-		max-width: min(22rem, 32vw);
-		display: flex;
-		flex-direction: column;
-		gap: 0.15rem;
-	}
-
-	.said {
-		margin: 0;
-		font-size: 0.95rem;
-		line-height: 1.35;
-		color: #e8e2d2;
-		text-shadow: 0 1px 3px rgb(0 0 0 / 0.8);
-	}
-
-	/* Persona chatter reads quieter than a real call, so a trump call never gets
-	   lost in banter. */
-	.said.banter {
-		opacity: 0.72;
-		font-style: italic;
-	}
-
-	.said .who {
-		font-weight: 700;
-		color: #d8b464;
-		margin-right: 0.3rem;
-	}
-
-	.corner-bc {
-		bottom: max(0.75rem, env(safe-area-inset-bottom));
-		right: max(0.75rem, env(safe-area-inset-right));
-		/*
-		 * Wide enough that "Pass" / "Order it up" / "Order it up, alone" wrap to
-		 * two rows, not three — three rows in a narrower column pushed this
-		 * panel's top edge up into the human's own hand at 390×844 (verified
-		 * against a screenshot, not guessed). Centred keeps it clear of the
-		 * felt's only other bottom-band occupant, seat 0's own nameplate, which
-		 * sits well above this panel's band at every breakpoint.
-		 */
-		max-width: min(92vw, 26rem);
-		width: min(92vw, 26rem);
-		display: flex;
-		flex-direction: column;
-		/*
-		 * `stretch`, not `center`: a shrink-to-fit flex item containing its own
-		 * wrapping row (the bid buttons) sizes to that row's *min-content* —
-		 * one button wide — which then wraps every button onto its own line
-		 * and (again) pushes this panel's top edge up into the seat 0 nameplate
-		 * band above it. Stretching the panel to the container's actual width
-		 * lets "Pass"/"Order it up" share a row as intended.
-		 */
-		align-items: stretch;
-		gap: 0.5rem;
-	}
-	.corner-bc .err {
-		margin: 0;
-		text-align: center;
-	}
-
-	.a11y-hand {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		padding: 0;
-		margin: -1px;
-		overflow: hidden;
-		clip: rect(0, 0, 0, 0);
-		white-space: nowrap;
-		border: 0;
-	}
-	.a11y-hand:focus-within {
-		position: static;
-		width: auto;
-		height: auto;
-		margin: 0;
-		overflow: visible;
-		clip: auto;
-		white-space: normal;
-	}
-
 	@media (prefers-reduced-motion: reduce) {
 		.table-page :global(*) {
 			animation-duration: 0.001ms !important;
 			transition-duration: 0.001ms !important;
+		}
+	}
+	.hand-rack {
+		position: absolute;
+		z-index: 2;
+		left: 50%;
+		bottom: 160px;
+		transform: translateX(-50%);
+		width: min(948px, calc(100% - 20px));
+	}
+	.card-action {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 24px;
+		padding-top: 9px;
+	}
+	.card-action p {
+		font-size: 15px;
+		margin: 0;
+		color: #52624c;
+	}
+	.confirm-card {
+		min-height: 48px;
+		min-width: 142px;
+		padding: 12px 20px;
+		background: #d4ed9b;
+		border: 1px solid #c2d993;
+		border-radius: 8px;
+		font: 600 15px var(--font-sans);
+		color: #203e2c;
+		cursor: pointer;
+	}
+	.confirm-card span {
+		margin-left: 12px;
+	}
+	.confirm-card:disabled {
+		opacity: 0.45;
+		cursor: default;
+	}
+	.confirm-card:focus-visible {
+		outline: 3px solid #456833;
+		outline-offset: 3px;
+	}
+	@media (max-width: 700px) {
+		.hand-rack {
+			bottom: 172px;
+		}
+		.card-action {
+			gap: 12px;
+		}
+		.card-action p {
+			font-size: 13px;
+		}
+		.confirm-card {
+			min-width: 126px;
+			font-size: 14px;
+			padding: 10px 14px;
 		}
 	}
 </style>

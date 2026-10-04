@@ -27,7 +27,7 @@
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter, type DB } from 'better-auth/adapters/drizzle';
 import { bearer, magicLink } from 'better-auth/plugins';
-import { dev } from '$app/environment';
+import { dev } from '$app/env';
 import { sendMagicLinkEmail } from './email';
 import {
 	AUTH_BASE_PATH,

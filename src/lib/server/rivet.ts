@@ -13,9 +13,9 @@
  * into client code — `RIVET_ENDPOINT` carries a secret (`sk_`) token.
  */
 
-import { env } from '$env/dynamic/private';
+import * as env from '$app/env/private';
 import { createClient, type Client } from 'rivetkit/client';
-import type { Registry } from '$lib/actors/registry';
+import type { Registry } from '#lib/actors/registry.ts';
 
 /**
  * Local dev default. When `RIVET_ENDPOINT` is unset, RivetKit runs an engine on
@@ -23,7 +23,7 @@ import type { Registry } from '$lib/actors/registry';
  * on Vercel (read-only filesystem), which is why the env var is required in
  * every deployed environment.
  */
-const LOCAL_ENDPOINT = 'http://localhost:6420';
+const LOCAL_ENDPOINT = 'http://127.0.0.1:6420';
 
 let client: Client<Registry> | undefined;
 
@@ -31,20 +31,22 @@ let client: Client<Registry> | undefined;
  * Memoized client. Built lazily rather than at module scope so that importing
  * this file during build/prerender does not require the env var to be present.
  *
- * `RIVET_ENDPOINT` uses URL auth: `https://<namespace>:<sk_token>@api.rivet.dev`.
+ * Private endpoint, namespace and credential are configured separately.
  */
 export function getRivetClient(): Client<Registry> {
 	if (!client) {
-		client = createClient<Registry>(env.RIVET_ENDPOINT || LOCAL_ENDPOINT);
+		client = createClient<Registry>({
+			endpoint: env.RIVET_ENDPOINT || LOCAL_ENDPOINT,
+			namespace: env.RIVET_NAMESPACE || 'default',
+			token: env.RIVET_TOKEN,
+			devtools: false,
+			headers: { Origin: process.env.APP_URL || 'http://localhost:5173' }
+		});
 	}
 	return client;
 }
 
-/**
- * The publishable endpoint handed to browsers (`pk_` token — safe to expose,
- * this is the same value `/api/rivet/metadata` already serves publicly).
- * `undefined` in local dev, where the client just talks to the local engine.
- */
+/** Public same-origin relay URL, never an engine credential. */
 export function getRivetPublicEndpoint(): string | undefined {
 	return env.RIVET_PUBLIC_ENDPOINT || undefined;
 }

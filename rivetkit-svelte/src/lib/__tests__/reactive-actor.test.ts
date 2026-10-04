@@ -8,6 +8,7 @@ const frameworkMock = vi.hoisted(() => {
   type MockConnection = {
     id: string;
     ping: () => string;
+    admin: { ping: () => string };
     on: (eventName: string, handler: Listener) => () => void;
     emit: (eventName: string, ...args: unknown[]) => void;
   };
@@ -27,6 +28,7 @@ const frameworkMock = vi.hoisted(() => {
     return {
       id,
       ping: () => `pong:${id}`,
+      admin: { ping: () => `admin-pong:${id}` },
       on(eventName: string, handler: Listener) {
         let eventListeners = listeners.get(eventName);
         if (!eventListeners) {
@@ -106,7 +108,7 @@ const frameworkMock = vi.hoisted(() => {
   };
 });
 
-vi.mock("@rivetkit/framework-base", () => ({
+vi.mock("../internal/framework-base.js", () => ({
   createRivetKit: vi.fn(() => ({
     getOrCreateActor: frameworkMock.getOrCreateActor,
   })),
@@ -143,7 +145,7 @@ describe("createReactiveActor", () => {
     unmount();
   });
 
-  test("caches proxied actor methods until the connection changes", () => {
+  test("keeps proxied actor methods stable across connection changes", () => {
     const rivet = createRivetKitWithClient({} as never);
     const actor = rivet.createReactiveActor({
       name: "chat" as never,
@@ -160,8 +162,61 @@ describe("createReactiveActor", () => {
     frameworkMock.replaceConnection("two");
 
     const thirdPing = actor.ping;
-    expect(thirdPing).not.toBe(firstPing);
+    expect(thirdPing).toBe(firstPing);
+    expect(firstPing()).toBe("pong:two");
     expect(thirdPing()).toBe("pong:two");
+  });
+
+  test("supports handlers captured before mount and nested Rivet actions", () => {
+    const rivet = createRivetKitWithClient({} as never);
+    const actor = rivet.createReactiveActor({
+      name: "chat" as never,
+      key: ["room-1"],
+    });
+    const ping = actor.ping;
+    // This runtime-only test intentionally uses an erased registry. Describe
+    // the nested fake action locally now that the public factory no longer
+    // leaks `any` into consumers.
+    const adminPing = (actor as unknown as { admin: { ping: () => string } })
+      .admin.ping;
+
+    actor.mount();
+
+    expect(ping()).toBe("pong:one");
+    expect(adminPing()).toBe("admin-pong:one");
+
+    frameworkMock.replaceConnection("two");
+    expect(adminPing()).toBe("admin-pong:two");
+  });
+
+  test("is not Promise-like", async () => {
+    const rivet = createRivetKitWithClient({} as never);
+    const actor = rivet.createReactiveActor({
+      name: "chat" as never,
+      key: ["room-1"],
+    });
+    actor.mount();
+
+    await expect(Promise.resolve(actor)).resolves.toBe(actor);
+  });
+
+  test("detaches captured handlers from the connection on dispose", async () => {
+    const rivet = createRivetKitWithClient({} as never);
+    const actor = rivet.createReactiveActor({
+      name: "chat" as never,
+      key: ["room-1"],
+    });
+    actor.mount();
+    const ping = actor.ping;
+
+    actor.dispose();
+
+    expect(actor.connection).toBeNull();
+    expect(actor.connStatus).toBe("idle");
+    await expect(ping()).rejects.toMatchObject({
+      code: "ACTOR_NOT_YET_CONNECTED",
+      connStatus: "idle",
+    });
   });
 
   test("preserves lastError and tracks hasEverConnected", () => {
@@ -361,5 +416,20 @@ describe("preConnect", () => {
     await handle.dispose();
 
     expect(frameworkMock.lastUnmount()).toHaveBeenCalledTimes(1);
+  });
+
+  test("forces enabled for an explicit eager connection", async () => {
+    const rivet = createRivetKitWithClient({} as never);
+
+    const handle = rivet.preConnect({
+      name: "chat" as never,
+      key: ["room-1"],
+      enabled: false,
+    });
+
+    expect(frameworkMock.getOrCreateActor).toHaveBeenCalledWith(
+      expect.objectContaining({ enabled: true }),
+    );
+    await handle.dispose();
   });
 });

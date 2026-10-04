@@ -34,7 +34,7 @@ import {
 	type PersonaConfig,
 	type PersonaView,
 	type Seat
-} from '$lib/protocol';
+} from '#lib/protocol/index.ts';
 import {
 	clampNumber,
 	isRecord,
@@ -53,7 +53,10 @@ import { AI_SEATS, type AiSeat, type ProfileSettings, type TablePrefs } from './
 type MutablePersona = { -readonly [K in keyof PersonaConfig]: PersonaConfig[K] };
 
 /** The two model ids this application uses, as a runtime set. */
-export const ANTHROPIC_MODEL_IDS = [MODEL_PLAY, MODEL_BID] as const satisfies readonly AnthropicModelId[];
+export const ANTHROPIC_MODEL_IDS = [
+	MODEL_PLAY,
+	MODEL_BID
+] as const satisfies readonly AnthropicModelId[];
 
 /** Pacing options, as a runtime set. */
 const PACES = ['brisk', 'normal', 'relaxed'] as const satisfies readonly TablePrefs['pace'][];

@@ -25,8 +25,8 @@
  * Normative source: `docs/03-AI-AGENTS.md` §5, §6.
  */
 
-import { BANTER_MAX_CHARS, RATIONALE_MAX_CHARS } from '$lib/protocol';
-import type { CardId, PublicGameView, Rank, Suit } from '$lib/protocol';
+import { BANTER_MAX_CHARS, RATIONALE_MAX_CHARS } from '#lib/protocol/index.ts';
+import type { CardId, PublicGameView, Rank, Suit } from '#lib/protocol/index.ts';
 
 /** C0/C1 control characters — the classic prompt-smuggling channel. */
 const CTRL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g;
@@ -62,7 +62,8 @@ const SUIT_GLYPH: Readonly<Record<string, Suit>> = Object.freeze({
 });
 
 /** `ace of spades`, `nine of hearts`, `jack diamonds`. */
-const WORD_CARD = /\b(nine|ten|jack|queen|king|ace)\s+(?:of\s+)?(spades?|hearts?|diamonds?|clubs?)\b/gi;
+const WORD_CARD =
+	/\b(nine|ten|jack|queen|king|ace)\s+(?:of\s+)?(spades?|hearts?|diamonds?|clubs?)\b/gi;
 
 /** `A♠`, `ace ♥`, `9 ♦`. */
 const GLYPH_CARD = /\b(nine|ten|jack|queen|king|ace|[9TJQKA])\s?([♠♥♦♣])/gi;
@@ -84,7 +85,12 @@ export function cardsNamedIn(text: string): Set<CardId> {
 		const lower = t.toLowerCase();
 		if (lower in RANK_WORD) return RANK_WORD[lower];
 		const upper = t.toUpperCase();
-		return upper === '9' || upper === 'T' || upper === 'J' || upper === 'Q' || upper === 'K' || upper === 'A'
+		return upper === '9' ||
+			upper === 'T' ||
+			upper === 'J' ||
+			upper === 'Q' ||
+			upper === 'K' ||
+			upper === 'A'
 			? (upper as Rank)
 			: undefined;
 	};

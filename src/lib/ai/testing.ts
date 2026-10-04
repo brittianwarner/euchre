@@ -86,7 +86,10 @@ export interface MockModelHandle {
  * Running past the end of the script repeats the last entry, so a test that only
  * cares about the first two calls does not have to pad.
  */
-export function scriptedModel(results: readonly ScriptedResult[], modelId = 'mock'): MockModelHandle {
+export function scriptedModel(
+	results: readonly ScriptedResult[],
+	modelId = 'mock'
+): MockModelHandle {
 	if (results.length === 0) throw new Error('scriptedModel needs at least one result');
 	let i = 0;
 	const next = (): ScriptedResult => results[Math.min(i++, results.length - 1)];
@@ -148,9 +151,7 @@ export function tieredFactory(fast: MockModelHandle, deliberate: MockModelHandle
 		// ProviderName; 'openrouter' keeps tests on the shipped code path.
 		provider: 'openrouter',
 		slugFor: (m) => m,
-		play: () => fast.model as unknown as LanguageModel,
-		talk: () => fast.model as unknown as LanguageModel,
-		bid: () => deliberate.model as unknown as LanguageModel
+		talk: () => fast.model as unknown as LanguageModel
 	};
 }
 

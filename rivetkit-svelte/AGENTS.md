@@ -2,7 +2,7 @@
 
 **Parent:** [Root](../../AGENTS.md)
 
-Official Svelte 5 adapter for RivetKit actors. Thin adapter over `@rivetkit/framework-base`, with Svelte-first ergonomics for app-owned typed context, shared clients, and reactive actor handles.
+Official Svelte 5 adapter for RivetKit actors. It ships a small ref-counted framework bridge, with Svelte-first ergonomics for app-owned typed context, shared clients, and reactive actor handles.
 
 ---
 
@@ -12,10 +12,28 @@ Official Svelte 5 adapter for RivetKit actors. Thin adapter over `@rivetkit/fram
 | ----------- | -------------------------------------------------------------------- |
 | Package     | `@rivetkit/svelte`                                                   |
 | Scripts     | `build`, `check-types`, `test`                                       |
-| Depends on  | `@rivetkit/framework-base`, `rivetkit`, `esm-env`                    |
-| Peer deps   | `svelte` ^5.0.0                                                      |
+| Depends on  | `fast-deep-equal`, `esm-env`                      |
+| Peer deps   | `rivetkit` ^2.3.23, `svelte` ^5.57.0                        |
 | Dev deps    | `vitest`, `jsdom`, `@sveltejs/package`, `svelte-check`, `typescript` |
-| Consumed by | `apps/web`, `apps/connectivity-source`, and external SvelteKit apps  |
+| Consumed by | `apps/web` and external SvelteKit apps                               |
+
+The package-local framework bridge is derived from Apache-2.0
+`@rivetkit/framework-base` and forwards `getParams` through `get()` and
+`getOrCreate()`. Standalone installs do not depend on Layerr root patches.
+
+The bridge's reactivity core is a minimal **imperative observable** (a
+`Map` of per-actor entries with per-entry listener sets), replacing the
+upstream `@tanstack/store` `Store`/`Derived`/`Effect` trio — this package is
+Svelte-only, so the framework-agnostic store machinery bought nothing here.
+Svelte's own reactive collections (`SvelteMap`, `createSubscriber`) are
+deliberately *not* used for the registry: their reads register the
+surrounding effect and their writes re-run it, but a framework push must
+reach `applyState` → `$state` slots WITHOUT re-running the `useActor()` effect
+(see "Never wrap effect contents..." and the closure-based rune state note
+below). Plain objects are invisible to Svelte's dependency tracking, which is
+exactly the contract the adapter needs. `createSubscriber` is used where a
+reactive read is genuinely wanted: the connection inspector's `revision` /
+`snapshot()`.
 
 ## Architecture
 
@@ -34,20 +52,20 @@ Shared-client pattern:
     → shared wrapper reused by ViewModels and provider setup
 ```
 
-Reactive actor state is still powered by framework-base subscriptions bridged into Svelte runes:
+Reactive actor state is powered by package-local ref-counted subscriptions bridged into Svelte runes:
 
 ```text
 useActor(opts | () => opts)
   → extract(MaybeGetter)
-  → framework-base getOrCreateActor()
+  → internal framework bridge getOrCreateActor()
   → $effect subscription
-  → getter-backed object + Proxy-forwarded actor methods
+  → getter-backed object + stable recursive action proxies
 
 createReactiveActor(opts)
   → construct proxy-only handle (no subscription yet)
-  → mount() calls framework-base getOrCreateActor()
+  → mount() calls the internal framework bridge
   → manual subscription lifecycle; dispose() also releases active mounts
-  → getter-backed object + Proxy-forwarded actor methods
+  → getter-backed object + stable recursive action proxies
 
 warmUp(opts)
   → BROWSER guard (no-op during SSR)
@@ -68,20 +86,25 @@ preConnect(opts)
 
 ```text
 packages/rivetkit-svelte/
+├── LICENSE
 ├── package.json
 ├── tsconfig.json
 ├── AGENTS.md
 ├── README.md
 └── src/
     ├── check-types/
-    │   └── noop.svelte                # Keeps svelte-check happy for the package workspace
+    │   ├── noop.svelte                # Keeps svelte-check happy for the package workspace
+    │   └── public-options.ts          # Compile-time public option/context contracts
     └── lib/
         ├── index.ts                   # Main barrel exports
         ├── rivetkit.svelte.ts         # createRivetKit, createReactiveActor, useActor, ActionDefaults
         ├── shared.svelte.ts           # createSharedRivetKit, withActorParams, createReactiveConnection
         ├── context.ts                 # createRivetContext
         ├── connection-health.svelte.ts # createConnectionHealth aggregate health
+        ├── connection-inspector.svelte.ts # opt-in live registry of package-managed sockets
+        ├── errors.ts                  # ActorError guards (isActorError, actorErrorCode/Message, getActionError)
         ├── internal/
+        │   ├── framework-base.ts       # ref-counted store + getParams forwarding
         │   ├── types.ts               # Getter, MaybeGetter
         │   └── extract.ts             # extract(MaybeGetter)
         ├── testing/
@@ -92,8 +115,9 @@ packages/rivetkit-svelte/
             ├── context.test.ts
             ├── warm-up.test.ts
             ├── reactive-actor.test.ts
-            ├── reconnect.test.ts         # reconnect() zombie-socket swap (real framework-base + fake zombie client)
-            ├── framework-base-getparams-patch.test.ts # fails loudly if the framework-base getParams patch stops applying
+            ├── reconnect.test.ts         # reconnect() zombie-socket swap (real framework core + fake zombie client)
+            ├── framework-base-getparams.test.ts # runtime getParams forwarding contract
+            ├── rivetkit-real-runes.test.ts # compiled Svelte dependency/teardown semantics
             ├── shared.test.ts
             ├── helpers.ts
             └── runes-shim.ts
@@ -106,8 +130,9 @@ packages/rivetkit-svelte/
 - `createRivetKit<Registry>(endpoint?, opts?)`
 - `createRivetKitWithClient<Registry>(client, opts?)`
 
-Both return `{ useActor, createReactiveActor, warmUp, preloadActor, preConnect }`
-(`preloadActor` is a deprecated alias of `warmUp`).
+Both return `{ useActor, createReactiveActor, warmUp, preloadActor, preConnect, connectionInspector }`
+(`preloadActor` is a deprecated alias of `warmUp`; `connectionInspector` is
+`null` unless `SvelteRivetKitOptions.connectionInspector` is `true`).
 
 ### Context Helper
 
@@ -122,12 +147,27 @@ Apps are expected to create and own their own context instance. The package no l
 - `createReactiveConnection(source)` — bridge raw connection handling into reactive `connStatus` / `error` state
 
 `createReactiveConnection` accepts raw `handle.connect()` sources. Keep its
-connection binding typed to the broad `ActorConn<AnyActorDefinition>` surface and
-cast only the `conn.on(event, handler)` subscription return if Rivet's generic
-inference treats `on` as an actor action. The runtime behavior is event
-subscription; do not route actor event subscriptions through action calls.
+connection binding typed to the broad `ActorConn<AnyActorDefinition>` surface.
+Rivet's generic inference types `on` as an actor action (`never`), so cast
+`conn.on` itself to an event-subscribe function before calling — a return-only
+cast does not compile. The runtime behavior is event subscription; do not
+route actor event subscriptions through action calls.
+`disconnect()` retains event registrations for a later reconnect. Preserve the
+published compatibility contract that `dispose()` is its reusable alias; do not
+make it terminal without a semver-breaking release. Both settle waiters and
+detach reactive state before awaiting transport teardown, and concurrent calls
+share the current close promise so a slow or rejected close never leaves a stale
+connection reusable.
 
 ### Action Middleware (`actionDefaults`)
+
+`timeoutByAction` optionally supplies finite positive named-action deadlines;
+invalid entries fall back to `timeout`. Deadlines settle the adapter's own
+pending counters. Middleware forwards an AbortSignal through the raw SDK
+`connection.action({ name, args, signal })`; timeout/disposal abort local
+transport waiters, not server execution. Disposal now settles already-dispatched
+actions through the configured error policy. Custom connections without raw
+`action` retain method forwarding but only local cancellation is guaranteed.
 
 Both `useActor` and `createReactiveActor` accept an `actionDefaults` option (also configurable at the client level via `SvelteRivetKitOptions`). When provided, every proxied action call is wrapped with built-in middleware:
 
@@ -139,10 +179,20 @@ Both `useActor` and `createReactiveActor` accept an `actionDefaults` option (als
 
 The guard checks both the current connection object and `connStatus`. A stale
 connection object with `connStatus !== "connected"` is treated as unavailable.
-Guard errors carry `code: "ACTOR_NOT_YET_CONNECTED"` while the connection is
-still idle/connecting and `code: "ACTOR_DISCONNECTED"` after disconnect-like
-states, so app ViewModels can distinguish retryable startup from a lost
-connection without parsing the message.
+Idle/connecting waits for `whenConnected` (capped at 30s) then dispatches —
+first-paint actions after a token mint must not die on `ACTOR_NOT_YET_CONNECTED`.
+A lost socket still fails immediately with `ACTOR_DISCONNECTED`. Guard errors
+carry those codes so app ViewModels can distinguish retryable startup from a
+lost connection without parsing the message.
+Waiting through idle/connecting counts as an in-flight mutation. One timeout
+deadline covers readiness plus action dispatch; local timeout does not cancel
+actor-side work. Callback failures always settle counters and reject the
+returned promise, regardless of `throwOnError`. Concurrent settlements update
+latest-action error state only when they own the newest invocation.
+Disposal or a true reactive `useActor()` identity change cancels a pending initial-connection
+wait through the same failure policy: error/settled callbacks run,
+`throwOnError: false` resolves `undefined`, and `throwOnError: true` rejects.
+Same-hash option/token refresh retains the current state and waiter.
 
 ```typescript
 const actor = rivet.createReactiveActor({
@@ -168,7 +218,7 @@ actor.resetActionState(); // clear error state
 
 **Cascade:** Client-level `actionDefaults` are shallow-merged with actor-level overrides. Actor-level wins.
 
-**Types:** `ActionDefaults`, `SvelteRivetKitOptions` exported from `@rivetkit/svelte`.
+**Types:** `ActionDefaults`, `SvelteActorOptions`, and `SvelteRivetKitOptions` are exported from `@rivetkit/svelte`; context `setup` methods accept the full Svelte options type.
 
 ### Reactive Actor Primitives
 
@@ -182,10 +232,10 @@ actor.resetActionState(); // clear error state
 - `createReactiveActor<ActorName>(opts)`
   - safe in modules and `.svelte.ts` classes; construction is side-effect-light and does not subscribe until `mount()`
   - manual lifecycle via `mount()` and `dispose()`
-  - `dispose()` releases any active `mount()` refs, unsubscribes package state, cancels pending `whenConnected()` promises, and clears event listeners
-  - `reconnect()` forces a brand-new connection, disposing the current one even when it is a half-open "zombie" still reporting `connected` (NAT/LB idle cull); drives framework-base's `enabled` toggle (disable → dispose + `idle` → re-enable → create), re-runs `getParams` for a fresh token, and rebinds `onEvent()` listeners. No-op if never mounted. A plain `dispose()` + `mount()` cannot replace a zombie — framework-base only creates from `idle`.
+  - `dispose()` releases active refs, unsubscribes, cancels waiters, clears listeners, detaches the last connection/handle, and resets identity-scoped connection/action state
+  - `reconnect()` forces a brand-new connection, disposing the current one even when it is a half-open "zombie" still reporting `connected` (NAT/LB idle cull); drives the framework core's `enabled` toggle (disable → dispose + `idle` → re-enable → create), re-runs `getParams` for a fresh token, and rebinds `onEvent()` listeners. Custom hashes receive options with lifecycle-only `enabled` removed. No-op if never mounted. A plain `dispose()` + `mount()` cannot replace a zombie — the core only creates from `idle`.
   - `onEvent()` rebinds listeners when the underlying connection changes
-  - proxied actor methods are cached per connection instance for stable repeated reads
+  - proxied actor methods are recursively cached per consumer, stay referentially stable across reconnects, resolve the current socket at invocation, support nested Rivet paths, and return `undefined` for `then` to prevent Promise assimilation
   - when `actionDefaults` provided: also exposes `isMutating`, `pendingActions`, `lastActionError`, `lastAction`, `resetActionState()`
 
 ### Actor Warm-up (two tiers)
@@ -199,7 +249,7 @@ SvelteKit route preloading (`preloadCode`/`preloadData`), a different concern.
   - forwards `createWithInput` (including `null`) and `createInRegion` to `getOrCreate`; `createInRegion` is Rivet datacenter selection for newly created actors only and does not move existing actors
   - supports `noCreate: true` via raw client `get(key).resolve()` when callers only want to resolve an existing actor
   - analogous to SvelteKit's `data-sveltekit-preload-data` for routes
-  - deduplicates: same actor (name + key + `noCreate` + `createInRegion` + optional create input) is only resolved once per RivetKit lifetime; the dedup key uses a length-prefixed string format so compound keys containing separators do not collide without paying `JSON.stringify()` on the common no-input path
+  - deduplicates concurrent resolves for the same actor (name + key + `noCreate` + `createInRegion` + optional create input), then clears the in-flight key after success or failure so a later hover can wake an actor that slept again; the key uses a length-prefixed string format so compound keys containing separators do not collide without paying `JSON.stringify()` on the common no-input path, with a non-throwing reference fallback for cyclic/BigInt input
   - fire-and-forget: errors are silently caught; failed attempts removed from dedup set for retry
   - SSR-safe: no-ops when `BROWSER` is false (via `esm-env`)
   - intended for hover-based warming to eliminate cold-start latency
@@ -220,14 +270,40 @@ const handle = rivet.preConnect({ name: "document", key: ["doc", docId] });
 await handle.dispose();
 ```
 
+### Error Utilities
+
+- `isActorError(err)` — RivetKit structural guard for modern `RivetError`, legacy `ActorError`, and serialized cross-realm shapes
+- `actorErrorCode(err)` — machine-readable `.code`, only present for `ActorError`
+- `actorErrorMessage(err)` — human-readable message for any `Error`
+- `getActionError(handle)` — `{ message, code, isActorError } | null` extracted from a handle's `lastActionError`, for use where `BaseActorViewModel.actorErrorMessage` isn't available (e.g. lazy/secondary actor handles)
+- `ActionErrorInfo` type
+
+These let ViewModels branch on a failed action's error code without importing `rivetkit/client` directly. See `.claude/rules/error-handling.md` for the full ViewModel-side pattern.
+
+### Connection Inspector (opt-in)
+
+- `createConnectionInspector()` — live registry of distinct sockets opened by
+  `useActor` / `createReactiveActor` / `preConnect`. `warmUp` (HTTP only) and
+  `createReactiveConnection` (raw path) are not listed.
+- Enable with `SvelteRivetKitOptions.connectionInspector: true`. Off by default
+  so applyState stays a no-op in production.
+- Snapshot fields: `name`, `key`, `hash`, `connStatus`, `hasConnection`. Never
+  records `params`, `getParams`, tokens, or payloads.
+- Distinct sockets are keyed by framework hash. Multiple consumers of the same
+  hash share one row; unregistering one owner cannot drop another owner's row.
+- `revision` is reactive — overlays re-read `snapshot()` inside `$derived`.
+
 ### Other Exports
 
 - `createConnectionHealth<K>(getSources)`
+- `createConnectionInspector()`
+- `ConnectionInspector` / `ConnectionInspectorSample` / `ConnectionInspectorReport` types
 - `extract()`
 - `Getter<T>` / `MaybeGetter<T>`
 - `WarmUpActorOptions` type (+ deprecated `PreloadActorOptions` alias)
 - `PreConnectHandle` type
 - `ActionDefaults` type
+- `SvelteActorOptions` type
 - `SvelteRivetKitOptions` type
 - `createClient` re-export from `rivetkit/client`
 - `ActorConnStatus`, `ActorOptions`, `AnyActorRegistry` types
@@ -256,7 +332,9 @@ Auth stays outside the package. `withActorParams()` exists to make token/org/ses
 ### Familiar Svelte Conventions
 
 - `Getter` / `MaybeGetter` follow the same ergonomic direction teams will recognize from Runed and Bits UI
-- provider/shared-client setup maps well to the mental model teams already have from TanStack Query
+- provider/shared-client setup and stable action dispatch map to TanStack Query's stable mutation/current-observer pattern
+- stable action functions plus subscription-owned snapshots map to XState Svelte's `send`/snapshot split
+- the adapter keeps its framework-neutral core small and package-local, matching urql's thin binding posture
 - composable primitives are preferred over monolithic app-framework wrappers
 
 ### Closure-Based Rune State
@@ -265,18 +343,21 @@ Auth stays outside the package. `withActorParams()` exists to make token/org/ses
 
 ### Action Middleware Architecture
 
-The action interceptor is built from `ActionDefaults` and passed to `proxyWithConnection()`. Every proxied method call flows through the interceptor, which:
+The action interceptor is built from `ActionDefaults` and used by the stable recursive action proxy. Every proxied method call flows through the interceptor, which:
 
-1. Checks connection guard (fail-fast if disconnected)
-2. Increments `pendingActions` / sets `isMutating`
+1. Increments `pendingActions` / sets `isMutating`, including initial connection wait
+2. Checks connection guard (fail-fast if disconnected)
 3. Races the action against timeout (if configured)
 4. On success: clears `lastActionError`, fires `onActionSuccess`
 5. On failure: captures error to `lastActionError`, fires `onActionError`. With `throwOnError: false` (default), resolves to `undefined` instead of rejecting.
-6. Decrements `pendingActions` / clears `isMutating` when all actions complete
+6. Decrements `pendingActions` / clears `isMutating` before observer callbacks; callback exceptions cannot strand state
 
 The interceptor is a closure that captures `$state` variables directly — same pattern as the existing connection state tracking. No class fields, no double-proxy.
 
 Hot-path action dispatch also maintains non-reactive mirrors for connection status and pending action count. Proxied method calls can therefore run inside Svelte effects without subscribing that effect to mutation tracking state, and without paying a per-call `untrack()` wrapper.
+Connection hash and `hasEverConnected` control flow also use nonreactive mirrors,
+so framework subscription pushes cannot become accidental `useActor()` effect
+dependencies.
 
 ### SSR Safety
 
@@ -293,7 +374,8 @@ That composition point owns:
 
 - `getRivetClient()` — shared raw client, cached per `page.data.rivetPublicEndpoint`
 - `getRivet()` — shared wrapper via `createSharedRivetKit()`
-- `actorIdentityHash()` — framework-base hash function that excludes volatile `authToken` params so token refreshes do not fragment a single actor instance into duplicate WebSockets
+- `actorIdentityHash()` — framework hash function that excludes volatile `authToken` params so token refreshes do not fragment a single actor instance into duplicate WebSockets
+- `connectionInspector: import.meta.env.DEV` — local-dev overlay only; `AppTopBar` mounts `ActorConnectionIndicator` behind `{#if dev}`
 
 `BaseActorViewModel` consumes `getRivet()` and `withActorParams(...)`, so primary reactive actors and any lazy actor handles continue sharing one endpoint-scoped transport while Layerr-specific token refresh remains in app code. The web VM base also guards in-flight async token resolution with a connect generation so fast mount/unmount cycles cannot leave unowned WebSockets.
 
@@ -312,6 +394,20 @@ When changing this package, verify at minimum:
 - `bun run --filter @rivetkit/svelte build` when public exports or generated declarations changed
 - consumer typecheck for `apps/web` and any other in-repo Svelte consumer if package surface or inferred types changed
 
+The test command must include `rivetkit-real-runes.test.ts`; the fast rune shim
+does not model automatic dependency tracking or teardown scheduling.
+
 ## Related
 
 [README.md](./README.md) | [Root AGENTS.md](../../AGENTS.md) | [Web App](../../apps/web/AGENTS.md) | [Real-Time Architecture](../../docs/architecture/Real-Time%20Architecture.md)
+
+## Euchre vendoring
+
+Synced from `/Users/brittianwarner/goods/layerr/packages/rivetkit-svelte` at
+Layerr revision `186866bc9055dadf7b4f89b5d0783a8f386da843` (clean source directory).
+The source and tests are preserved. A local Vitest configuration isolates adapter
+tests from the consuming app and retains upstream Vitest 4 benchmark support.
+This standalone copy exports generated
+`dist` files and declares the Euchre runtime peer `rivetkit ^2.3.23`; no Layerr
+workspace packages or package-manager patches are needed. Run package checks
+from this directory with `npm run check-types`, `npm test`, and `npm run build`.

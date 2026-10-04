@@ -38,7 +38,7 @@ import type {
 	Suit,
 	Team,
 	TokenUsage
-} from '$lib/protocol';
+} from '#lib/protocol/index.ts';
 
 /* ========================================================================== */
 /* Seats                                                                      */
@@ -199,8 +199,9 @@ export interface ProfileActorState {
  * contract's `PlayerProfileState`. If someone renames a field, this breaks here
  * rather than at the `/games` page.
  */
-export type _AssertStateMatchesProtocol =
-	ProfileActorState extends PlayerProfileState ? true : never;
+export type _AssertStateMatchesProtocol = ProfileActorState extends PlayerProfileState
+	? true
+	: never;
 const _assertStateMatchesProtocol: _AssertStateMatchesProtocol = true;
 void _assertStateMatchesProtocol;
 
@@ -307,8 +308,8 @@ export interface ClientMatchReplay {
  * and `project()` each frame before anything is sent anywhere.
  */
 export interface ServerMatchReplay {
-	readonly match: import('$lib/protocol').MatchRecord;
-	readonly hands: readonly import('$lib/protocol').HandJournalEntry[];
+	readonly match: import('#lib/protocol/index.ts').MatchRecord;
+	readonly hands: readonly import('#lib/protocol/index.ts').HandJournalEntry[];
 }
 
 /* ========================================================================== */

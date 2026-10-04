@@ -33,7 +33,7 @@
  * Normative source: `docs/03-AI-AGENTS.md` §7.
  */
 
-import { rankMoves } from '$lib/ai/heuristic';
+import { rankMoves } from '#lib/ai/heuristic.ts';
 import type {
 	AIDecideRequest,
 	AIDecisionSource,
@@ -41,14 +41,9 @@ import type {
 	LegalMoveId,
 	PersonaConfig,
 	RankedMove
-} from '$lib/protocol';
+} from '#lib/protocol/index.ts';
 import { narrowByDifficulty, turnRng } from './difficulty';
-import {
-	callDecider,
-	resolveDecider,
-	type LlmDecideInput,
-	type LlmUsage
-} from './llm-bridge';
+import { callDecider, resolveDecider, type LlmDecideInput, type LlmUsage } from './llm-bridge';
 import { cleanRationale, publiclyNamedCards } from './screen';
 import {
 	DEADLINE_RESERVE_MS,

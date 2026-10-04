@@ -20,7 +20,12 @@
  * quip. A false negative is an opponent telling the human what it holds.
  */
 
-import { BANTER_MAX_CHARS, RATIONALE_MAX_CHARS, type CardId, type PublicGameView } from '$lib/protocol';
+import {
+	BANTER_MAX_CHARS,
+	RATIONALE_MAX_CHARS,
+	type CardId,
+	type PublicGameView
+} from '#lib/protocol/index.ts';
 import { publicCards } from './notation';
 
 /* ========================================================================== */
@@ -58,7 +63,8 @@ const SUIT_GLYPHS: Readonly<Record<string, string>> = {
 const CODE_RE = /\b([9TJQKA])([SHDC])\b/g;
 
 /** "ace of spades", "nine of clubs", and the lazy "jack diamonds". */
-const WORDS_RE = /\b(nine|ten|jack|queen|king|ace)s?\b(?:\s+of)?\s+\b(spades?|hearts?|diamonds?|clubs?)\b/gi;
+const WORDS_RE =
+	/\b(nine|ten|jack|queen|king|ace)s?\b(?:\s+of)?\s+\b(spades?|hearts?|diamonds?|clubs?)\b/gi;
 
 /** "A♠", "ace ♥", "J of ♦". */
 const GLYPH_RE = /\b(nine|ten|jack|queen|king|ace|[9TJQKA])\b\s*(?:of\s*)?([♠♥♦♣])/gi;
@@ -87,7 +93,10 @@ const BLACK: Readonly<Record<string, string>> = { S: 'C', C: 'S', H: 'D', D: 'H'
  * to `null`, which is treated as "unresolvable card reference" and rejected — a
  * seat talking about bowers before trump exists is either confused or fishing.
  */
-export function cardsNamedIn(text: string, trump: string | null): {
+export function cardsNamedIn(
+	text: string,
+	trump: string | null
+): {
 	readonly cards: readonly CardId[];
 	readonly unresolvedBower: boolean;
 } {
@@ -127,11 +136,7 @@ export function cardsNamedIn(text: string, trump: string | null): {
 /* ========================================================================== */
 
 export type ScreenReject =
-	| 'private_card'
-	| 'unresolved_bower'
-	| 'markup'
-	| 'empty'
-	| 'too_long_after_clamp';
+	'private_card' | 'unresolved_bower' | 'markup' | 'empty' | 'too_long_after_clamp';
 
 export type ScreenResult =
 	| { readonly ok: true; readonly text: string }

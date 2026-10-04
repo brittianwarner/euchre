@@ -10,8 +10,8 @@
  */
 
 import { fail, redirect } from '@sveltejs/kit';
-import type { MatchListPage } from '$lib/protocol';
-import type { ProfileStats } from '$lib/actors/player-profile/types';
+import type { MatchListPage } from '#lib/protocol/index.ts';
+import type { ProfileStats } from '#lib/actors/player-profile/types.ts';
 import {
 	clearIdentityCookie,
 	connectProfile,

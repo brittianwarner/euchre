@@ -30,7 +30,7 @@
  */
 
 import { z } from 'zod';
-import type { AIDecisionKind, LegalMove, LegalMoveId } from '$lib/protocol';
+import type { AIDecisionKind, LegalMove, LegalMoveId } from '#lib/protocol/index.ts';
 
 /** `why` caps, per path. Bids get a little more room because they are journalled. */
 const WHY_MAX_BID = 110;
@@ -132,4 +132,5 @@ export function schemaNameFor(kind: AIDecisionKind): string {
 	return kind === 'play' ? 'EuchrePlay' : 'EuchreBid';
 }
 
-export const SCHEMA_DESCRIPTION = 'The single legal move id this player chooses, copied verbatim from LEGAL:.';
+export const SCHEMA_DESCRIPTION =
+	'The single legal move id this player chooses, copied verbatim from LEGAL:.';

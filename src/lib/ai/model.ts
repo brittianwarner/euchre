@@ -17,6 +17,7 @@
  *    non-throwing state that the ladder degrades through to the heuristic.
  */
 
+import { createJevDecisionClient } from './jev';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import type { LanguageModel } from 'ai';
@@ -27,7 +28,7 @@ import {
 	MODEL_PLAY,
 	NO_SAMPLING_MODELS,
 	type AnthropicModelId
-} from '$lib/protocol';
+} from '#lib/protocol/index.ts';
 import type {
 	ModelFactory,
 	ModelParams,
@@ -202,7 +203,7 @@ export function createAnthropicModelFactory(opts: AnthropicFactoryOptions): Mode
 	});
 
 	const make = (modelId: AnthropicModelId): LanguageModel => provider(modelId);
-	return { provider: 'anthropic', slugFor: (m) => m, play: make, bid: make, talk: make };
+	return { provider: 'anthropic', slugFor: (m) => m, talk: make };
 }
 
 /* -------------------------------------------------------------------------- */
@@ -219,16 +220,7 @@ export function createAnthropicModelFactory(opts: AnthropicFactoryOptions): Mode
  * which upstream is in play. Slugs verified against the live
  * `https://openrouter.ai/api/v1/models` catalogue.
  */
-/**
- * The single model behind every AI decision.
- *
- * One model for both tiers is deliberate: a euchre decision is small and highly
- * constrained (the legal set is pre-computed and enforced by a `z.enum`), so the
- * win is tempo and cost, not raw reasoning depth. Verified on the live OpenRouter
- * catalogue: 1M context, $1.50/M in, $7.50/M out.
- *
- * Overridable per tier via `OPENROUTER_MODEL_PLAY` / `OPENROUTER_MODEL_BID`.
- */
+/** Default for conversation only. Jev decisions are pinned in jev.ts. */
 export const DEFAULT_OPENROUTER_MODEL = 'google/gemini-3.6-flash';
 
 const OPENROUTER_SLUGS: Readonly<Record<AnthropicModelId, string>> = {
@@ -240,7 +232,7 @@ export interface OpenRouterFactoryOptions {
 	/** Absent or empty means no provider: the caller degrades to the heuristic. */
 	readonly apiKey?: string | undefined;
 	readonly baseURL?: string | undefined;
-	/** Optional per-slug overrides, e.g. to pin a cheaper play model. */
+	/** Optional conversational model overrides. */
 	readonly slugs?: Partial<Record<AnthropicModelId, string>> | undefined;
 }
 
@@ -259,7 +251,12 @@ export function createOpenRouterModelFactory(opts: OpenRouterFactoryOptions): Mo
 		slugs[modelId] ?? OPENROUTER_SLUGS[modelId];
 	const make = (modelId: AnthropicModelId): LanguageModel => openrouter.chat(slugFor(modelId));
 
-	return { provider: 'openrouter', slugFor, play: make, bid: make, talk: make };
+	return {
+		provider: 'openrouter',
+		slugFor,
+		talk: make,
+		decision: createJevDecisionClient({ apiKey, baseURL: opts.baseURL })
+	};
 }
 
 /**
@@ -281,12 +278,12 @@ export function modelFactoryFromEnv(
 		apiKey: env.OPENROUTER_API_KEY,
 		baseURL: env.OPENROUTER_BASE_URL,
 		slugs: {
-			...(env.OPENROUTER_MODEL_PLAY === undefined
+			...(env.OPENROUTER_MODEL_TALK === undefined
 				? {}
-				: { 'claude-haiku-4-5': env.OPENROUTER_MODEL_PLAY }),
-			...(env.OPENROUTER_MODEL_BID === undefined
+				: { 'claude-haiku-4-5': env.OPENROUTER_MODEL_TALK }),
+			...(env.OPENROUTER_MODEL_TALK === undefined
 				? {}
-				: { 'claude-opus-5': env.OPENROUTER_MODEL_BID })
+				: { 'claude-opus-5': env.OPENROUTER_MODEL_TALK })
 		}
 	});
 	if (viaOpenRouter !== null) return viaOpenRouter;
@@ -314,7 +311,7 @@ export function createStaticModelFactory(
 	provider: ProviderName = 'openrouter'
 ): ModelFactory {
 	const make = (): LanguageModel => model;
-	return { provider, slugFor: (m) => m, play: make, bid: make, talk: make };
+	return { provider, slugFor: (m) => m, talk: make };
 }
 
 /** Convenience: the shipped tier defaults, for a persona that does not override. */

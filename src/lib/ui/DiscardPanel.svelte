@@ -1,13 +1,6 @@
-<!--
-  DiscardPanel — dealer chooses which of six cards to bury after ordering up.
-
-  Self-contained panel (own background/border), same reasoning as
-  `BidPanel.svelte`'s doc comment — this docks bottom-centre (same as that
-  panel) and needs to read over the table's wood rim, not a dark page
-  background.
--->
+<!-- Compact, keyboard-accessible discard choices in the action dock. Card names remain available to assistive technology. -->
 <script lang="ts">
-	import type { LegalMoveId, PublicGameView } from '$lib/protocol';
+	import type { LegalMoveId, PublicGameView } from '#lib/protocol/index.ts';
 
 	let {
 		view,
@@ -24,48 +17,60 @@
 
 {#if view.phase === 'dealer_discard' && discards.length > 0 && view.turnSeat === view.you}
 	<section class="discard" aria-label="Discard">
-		<p class="hint">Discard one card face down</p>
+		<p>Choose one card to tuck away.</p>
 		<div class="row">
-			{#each discards as move (move.id)}
-				<button type="button" {disabled} onclick={() => onPlay(move.id)}>
-					{move.label}
-				</button>
-			{/each}
+			{#each discards as move (move.id)}<button
+					type="button"
+					{disabled}
+					aria-label={move.label}
+					onclick={() => onPlay(move.id)}
+					>{#if move.move.t === 'discard'}{move.move.card.slice(0, -1).replace('T', '10')}<span
+							class:red={['H', 'D'].includes(move.move.card.slice(-1))}
+							>{{ S: '♠', H: '♥', D: '♦', C: '♣' }[
+								move.move.card.slice(-1) as 'S' | 'H' | 'D' | 'C'
+							]}</span
+						>{/if}</button
+				>{/each}
 		</div>
 	</section>
 {/if}
 
 <style>
 	.discard {
-		margin: 0;
-		padding: 0.75rem 0.85rem;
-		border: 1px solid rgba(232, 194, 122, 0.25);
-		border-radius: 0.65rem;
-		background: rgba(15, 20, 14, 0.85);
-		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
-	}
-	.hint {
-		margin: 0 0 0.5rem;
-		color: #c9b89a;
+		font-family: var(--font-sans);
 		text-align: center;
+	}
+	.discard p {
+		font-size: 13px;
+		color: #52624c;
+		margin: 0 0 12px;
 	}
 	.row {
 		display: flex;
-		flex-wrap: wrap;
 		justify-content: center;
-		gap: 0.5rem;
+		gap: 8px;
 	}
 	button {
-		min-width: 3.2rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 4px;
+		min-width: 46px;
 		min-height: 44px;
-		padding: 0.7rem 0.65rem;
-		border: 1px solid #6a5638;
-		border-radius: 0.4rem;
-		background: #3a2c1a;
-		color: #f2e8d5;
-		font: inherit;
-		font-weight: 600;
+		padding: 8px;
+		border: 1px solid #d5dbcc;
+		border-radius: 7px;
+		background: #fffdf6;
+		color: #203c2d;
+		font: 600 16px var(--font-serif);
 		cursor: pointer;
+	}
+	button:hover:not(:disabled) {
+		background: #e6eecf;
+		border-color: #94a96d;
+	}
+	.red {
+		color: #b64e3c;
 	}
 	button:disabled {
 		opacity: 0.5;

@@ -1,5 +1,7 @@
 # Euchre
 
+[Play at euchre.sh](https://euchre.sh)
+
 Single-player euchre against three AI opponents, playable in the browser. One
 SvelteKit app — no separate backend to stand up.
 
@@ -10,29 +12,32 @@ bun install
 bun run dev
 ```
 
-Open **http://localhost:5173** → *Deal a hand*.
+Open **http://localhost:5173** → _Deal a hand_.
 
 With no `.env` at all you still get a full game:
 
 - `RIVET_ENDPOINT` unset → RivetKit starts its own local engine on `:6420` and
-  every match actor runs in-process against that.
+  every match actor runs in-process against that. Local state is isolated in `.rivetkit/`.
 - `OPENROUTER_API_KEY` unset → the three AI seats fall back to a heuristic
   player instead of calling an LLM. Add the key (see `.env.example`) to get
-  real model-driven opponents.
+  real Jev-driven opponents.
 
 Copy `.env.example` to `.env` and fill in only what you need; every variable
 in it documents what it does and whether it's required.
 
+Your hand uses separate, full-card buttons: click or tap a card, then **Play**
+(or **Discard**). Double-click plays directly. Arrow keys move focus; Enter or
+Space selects. On phones, larger rank-and-suit labels sit beneath each card.
+The table animates a deal only when a new hand starts.
+
 ## How the pieces fit
 
-One SvelteKit app, one Vercel deployment, no second process:
+One Railway app service and one private Rivet engine:
 
 - **Frontend** — SvelteKit (Svelte 5 runes) for routing/UI, [Threlte](https://threlte.xyz)
   (Three.js) for the 3D table, camera and card layout.
-- **Realtime state** — [Rivet](https://rivet.dev) actors, mounted *inside this
-  same deployment* at `/api/rivet/*` (`src/routes/api/rivet/[...all]/+server.ts`).
-  There is no independent backend to deploy or scale — Rivet Cloud calls back
-  into this one Vercel function.
+- **Realtime state** — Rivet actors run in the persistent app process. The private
+  engine stores state on its volume. Browsers use the authenticated app gateway.
   - `euchreTable` — the authoritative match: rules, turn order, scoring.
   - `aiSeat` — **one actor per AI opponent** (three per match), each with its
     own persona, memory and failure domain. A hung model call stalls one
@@ -41,7 +46,8 @@ One SvelteKit app, one Vercel deployment, no second process:
     type in (see "What's not built" below — this is deliberately not an
     account system).
 - **AI decisions** — [OpenRouter](https://openrouter.ai), model
-  `google/gemini-3.6-flash` by default, one call per bid/play decision.
+  `typesafe/jev-1.13` exclusively for bid/play decisions, through the Decisions API.
+  Conventional LLMs handle only optional table talk (`OPENROUTER_MODEL_TALK`).
   Falls back to a heuristic player with zero external calls when no API key
   is configured, so the game is always playable offline.
 - **Rules engine** — `src/lib/euchre/**`, a pure, actor-agnostic reducer with
@@ -78,38 +84,14 @@ then look at the PNGs. `/cardtest` (`http://localhost:5199/cardtest`) renders
 `Card.svelte` alone, so a "cards don't show up" report can be traced to the
 component or to the scene without guessing.
 
-## Deploying to Vercel + Rivet Cloud
+## Deploying to Railway
 
-There is exactly one deployable: this SvelteKit app, built with
-`@sveltejs/adapter-vercel` (`svelte.config.js`) and declared to Vercel with
-`vercel.json`'s `{"framework": "sveltekit"}`. `bunx vite build` emits the Rivet
-catch-all (`/api/rivet/[...all]`) as an ordinary Node serverless function
-alongside every page — `vercel deploy` needs no extra configuration beyond
-environment variables.
+See [server/README.md](server/README.md) for the private engine topology, required
+variables, pinned image, release commands and live acceptance checks. The app
+serves SvelteKit and the authenticated WebSocket gateway in one Bun process.
+A separate private Rivet engine keeps actor state on a persistent volume.
 
-1. **Create a Rivet Cloud namespace** at the [Rivet dashboard](https://dashboard.rivet.dev)
-   and grab both a secret (`sk_`) and publishable (`pk_`) API token
-   (*Settings → Advanced → Cloud API Tokens*).
-2. **Set environment variables on the Vercel project.** At minimum:
-   `RIVET_ENDPOINT`, `RIVET_PUBLIC_ENDPOINT`, `ALLOWED_ORIGINS` (your deployed
-   origin — connections are refused without it once `RIVET_ENDPOINT` is set),
-   `EUCHRE_INTERNAL_TOKEN`, and `OPENROUTER_API_KEY`. Full list, with the
-   reasoning and failure mode for each, is in `.env.example` — nothing here
-   should be configured from memory instead of that file.
-3. **Deploy** (`vercel deploy` or push to the connected Git repo).
-4. **Point Rivet at the deployment.** In the Rivet dashboard, set the
-   provider URL to your Vercel deployment's origin so Rivet Cloud's calls to
-   `GET /api/rivet/start` land on it. If Vercel Deployment Protection is on,
-   add a bypass secret and forward it as the `x-vercel-protection-bypass`
-   header from Rivet's provider settings, or every such call gets a 401.
-
-The browser always opens its WebSocket directly to Rivet Cloud; Rivet Cloud
-then makes ordinary HTTPS requests back to `/api/rivet/*` on this deployment.
-Nothing in this app ever terminates a WebSocket itself, which is why a
-stock Vercel Node function is sufficient — no persistent-connection
-infrastructure to run or scale.
-
-## What's *not* built
+## What's _not_ built
 
 - **No magic-link auth.** There's a `better-auth` + Resend scaffold under
   `src/lib/server/auth/**`, but it isn't wired into any route or the actor
@@ -119,10 +101,36 @@ infrastructure to run or scale.
   your `playerProfile` key. Nothing verifies the email belongs to you — it's
   a nickname for "this browser's history," not an account, and the UI says
   so.
-- **`/play` doesn't yet use that identity.** Creating and connecting to a
-  match still runs on an M2-era placeholder: every match is owned by, and
-  every stat recorded against, a single fixed local identity, in every
-  environment — not the email-derived id above. A real per-player token for
-  match ownership (`docs/01-ARCHITECTURE.md` §6.1 describes the intended
-  shape) hasn't landed yet. Match ids are unguessable UUIDs, which is the
-  only thing standing in for per-player auth today.
+- **Guest play uses signed browser identity.** An HTTP-only cookie owns each match;
+  actor tokens are signed, expire after two hours, and reject another browser.
+  Set `EUCHRE_ACTOR_JWT_SECRET` (at least 32 characters) in production. Guest
+  play and the older email-nickname history screens remain separate identities.
+
+## Visual assets
+
+Blender 5.2 authored the walnut base, padded rail, brass piping and rounded card
+stock. `assets/euchre-table.blend` (hero) and `assets/game-table.blend` (runtime) are editable; `scripts/build-table.py` rebuilds
+both small runtime GLBs and the Cycles-rendered landing image. Live gameplay is
+rendered by Threlte on demand, with capped pixel ratio and one bounded 1024px shadow map. Idle scenes do not redraw.
+
+Traditional faces use Adrian Kennard's CC0 artwork, distributed by
+[letele/playing-cards](https://github.com/letele/playing-cards), from
+[the configurable original deck](https://www.me.uk/cards/makeadeck.cgi?view).
+The license is retained in `static/art/cards/LICENSE.txt`. The burgundy back is
+original vector artwork. Run `node scripts/raster-card-art.mjs` before Blender
+when changing card artwork.
+
+The source workspace Svelte adapter is synchronized with Layerr revision
+`186866bc9055dadf7b4f89b5d0783a8f386da843`; it includes its local framework bridge.
+
+Browser acceptance with a locally configured OpenRouter key:
+
+```sh
+EUCHRE_FAST_TEMPO=1 bun run dev
+node scripts/e2e-browser.mjs
+```
+
+The browser harness plays a complete match, reloads into the same game, checks
+phone overflow, collects browser errors and measures idle draws. It requires live
+Jev calls from every AI seat. `scripts/actor-security.mjs <gameId>` checks forged
+connection and publish rejection against the local engine.

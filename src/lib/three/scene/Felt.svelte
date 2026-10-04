@@ -30,7 +30,7 @@
 	const map = $derived(feltTexture());
 </script>
 
-<T.Mesh position={[0, y, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+<T.Mesh receiveShadow position={[0, y, 0]} rotation={[-Math.PI / 2, 0, 0]}>
 	<T.CircleGeometry args={[radius, segments]} />
 	<T.MeshStandardMaterial {map} color="#ffffff" roughness={0.95} metalness={0} side={DoubleSide} />
 </T.Mesh>

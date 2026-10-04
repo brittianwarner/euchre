@@ -29,6 +29,7 @@ function finish(canvas: HTMLCanvasElement): CanvasTexture {
 	tex.magFilter = LinearFilter;
 	tex.minFilter = LinearMipmapLinearFilter;
 	tex.generateMipmaps = true;
+	tex.anisotropy = 8;
 	tex.needsUpdate = true;
 	return tex;
 }
@@ -111,4 +112,35 @@ export function warmCardTextures(fourColor = false): number {
 export function disposeCardTextures(): void {
 	for (const tex of cache.values()) tex.dispose();
 	cache.clear();
+}
+
+/** Replace the classic deck's cached canvases with the licensed traditional print artwork.
+ * Keeping texture identity stable prevents material churn during the initial load.
+ */
+let traditionalDeck: Promise<void> | undefined;
+export function loadTraditionalDeck(): Promise<void> {
+	return (traditionalDeck ??= Promise.all(
+		[
+			...['S', 'H', 'D', 'C'].flatMap((suit) =>
+				['9', 'T', 'J', 'Q', 'K', 'A'].map((rank) => `${rank}${suit}`)
+			),
+			'back'
+		].map(async (id) => {
+			const texture = id === 'back' ? backTexture() : faceTexture(id as CardFaceId);
+			if (!texture) return;
+			const image = new Image();
+			image.src = `/art/cards/${id}.png`;
+			try {
+				await image.decode();
+				const canvas = texture.image as HTMLCanvasElement;
+				const ctx = canvas.getContext('2d');
+				if (!ctx) return;
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+				texture.needsUpdate = true;
+			} catch {
+				/* The procedural deck remains playable if artwork cannot load. */
+			}
+		})
+	).then(() => undefined));
 }
