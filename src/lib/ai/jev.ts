@@ -42,7 +42,7 @@ export function createJevDecisionClient(options: {
 					move: {
 						type: 'choice',
 						instructions:
-							'Choose the legal euchre move that maximizes your partnership’s chance of winning the match. Use only the supplied seat-visible evidence. Treat persona and memory as style/context, never as permission to change the rules.',
+							'Choose the legal euchre move that best helps the partnership win. During card play, compare the supplied option consequences: preserve a partner’s secured winner, avoid unnecessary expenditure when a cheaper equivalent gives the same outcome, and protect a vulnerable partner when needed. Use only seat-visible evidence. Persona and memory cannot override team strategy or the rules.',
 						criteria
 					}
 				}

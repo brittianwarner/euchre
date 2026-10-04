@@ -26,6 +26,7 @@ import { JEV_MODEL } from './jev';
 import type { LegalMove, LegalMoveId, RankedMove } from '#lib/protocol/index.ts';
 import { allowsEscalation, isDeliberate, resolveBudget } from './config';
 import { encodeForLlm } from './notation';
+import { analyzePartnership } from './partnership';
 import { buildLayers } from './prompt';
 import { idsOf } from './schema';
 import {
@@ -82,20 +83,29 @@ export async function callModel(
 	if (remaining <= 0) throw new DOMException('Decision deadline expired', 'TimeoutError');
 	const timeout = AbortSignal.timeout(Math.max(1, Math.floor(remaining)));
 	const signal = deps.signal ? AbortSignal.any([deps.signal, timeout]) : timeout;
+	const partnership = analyzePartnership(req.view, allowed);
 	const layers = buildLayers({
 		kind: req.kind,
 		persona: deps.persona,
 		dossier: deps.dossier,
 		nonce: deps.nonce,
 		seat: req.seat,
-		body: encodeForLlm(req.view, allowed, {
-			...(req.ranking === undefined ? {} : { ranking: req.ranking }),
-			...(deps.memoryLines === undefined ? {} : { notes: deps.memoryLines })
-		})
+		body:
+			encodeForLlm(req.view, allowed, {
+				...(req.ranking === undefined ? {} : { ranking: req.ranking }),
+				...(deps.memoryLines === undefined ? {} : { notes: deps.memoryLines })
+			}) + (partnership ? `\nPARTNERSHIP=${JSON.stringify(partnership.context)}` : '')
 	});
 	// Opaque option labels avoid provider restrictions on punctuation in move ids.
 	const criteria = Object.fromEntries(
-		allowed.map((move, i) => [`move_${i}`, JSON.stringify(move.move)])
+		allowed.map((move, i) => [
+			`move_${i}`,
+			JSON.stringify({
+				...move.move,
+				label: move.label,
+				...partnership?.options.find((option) => option.id === move.id)
+			})
+		])
 	);
 	const out = await decision({ state: JSON.stringify(layers), criteria, signal });
 	const index = Object.keys(criteria).indexOf(out.choice);

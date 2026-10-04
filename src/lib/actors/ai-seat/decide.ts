@@ -190,12 +190,12 @@ export async function runLadder(
 	// Rung 1 short-circuit — the circuit breaker has tripped. No network at all.
 	if (deps.degraded) return heuristicOutcome(0, 0, ZERO_USAGE, legal.length);
 
-	const candidates = narrowByDifficulty(
-		ranking,
-		legal,
-		deps.persona.difficulty,
-		turnRng(req.turnId, req.seat)
-	);
+	// There are at most five card plays. Let Jev compare all of them: pruning by
+	// the fallback's ranking can hide the only card that protects a partner.
+	const candidates =
+		req.kind === 'play'
+			? legal
+			: narrowByDifficulty(ranking, legal, deps.persona.difficulty, turnRng(req.turnId, req.seat));
 	const candidateSet = new Map<string, LegalMove>(candidates.map((m) => [m.id, m]));
 
 	const decider = resolveDecider();

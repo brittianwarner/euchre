@@ -14,9 +14,9 @@
  * - The follow-suit constraint is never restated, because the `LEGAL:` block is
  *   already the complete legal set as computed by the engine. The model is not
  *   asked to apply the bower rule; it is told the answer in the label.
- * - Every legal move carries the engine's own score, so the model's job collapses
- *   to "deviate from this ranking the way my character would" — which small,
- *   fast models do well and open-ended reasoning does badly.
+ * - Legal moves may carry a heuristic score as fallible advice. The decision
+ *   caller adds explicit partnership facts and per-option consequences for Jev
+ *   to weigh against that advice.
  *
  * ---
  *

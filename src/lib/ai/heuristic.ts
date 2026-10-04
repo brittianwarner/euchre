@@ -816,6 +816,7 @@ function scorePlays(
 	const iAmMaker = makerTeam !== null && makerTeam === myTeam;
 	const defendingLoner = view.aloneSeat !== null && teamOf(view.aloneSeat) !== myTeam;
 	const myTricks = view.tricksWon[myTeam] ?? 0;
+	const partnerWinning = currentlyWinning(plays, trump)?.seat === partner;
 
 	// Counts of my own cards by effective suit, for "guarded" reads.
 	const bySuit = new Map<Suit, CardId[]>();
@@ -831,6 +832,9 @@ function scorePlays(
 		const p = power(card, trump);
 		const es = effectiveSuit(card, trump);
 		const isTrump = es === trump;
+		// Conservation compares trump and plain suits on one scale. The old
+		// rank/8 vs rank/6 scale could prefer throwing trump over a plain king.
+		const cost = isTrump ? (8 + trumpRank(card, trump)) / 16 : plainRank(card) / 16;
 
 		if (leading) {
 			// Maker's side, trick 1: draw their trump or cash before the ruff.
@@ -877,14 +881,13 @@ function scorePlays(
 		const first = plays[0];
 		const led: Suit = first === undefined ? es : effectiveSuit(first.card, trump);
 		const winning = currentlyWinning(plays, trump);
-		const partnerWinning = winning !== null && winning.seat === partner;
 		const canWin =
 			winning === null || cardValue(card, led, trump) > cardValue(winning.card, led, trump);
 
 		if (partnerWinning) {
 			return seatsAfterMe === 0
-				? { id: `play:${card}`, score: 1.4 - p, why: 'lay off, it is theirs' }
-				: { id: `play:${card}`, score: 1.0 - 0.8 * p, why: 'save the good one' };
+				? { id: `play:${card}`, score: 1.4 - cost, why: 'lay off, it is theirs' }
+				: { id: `play:${card}`, score: 1.0 - 0.8 * cost, why: 'save the good one' };
 		}
 		if (canWin) {
 			if (seatsAfterMe === 0) {
@@ -895,7 +898,7 @@ function scorePlays(
 			}
 			return { id: `play:${card}`, score: 0.9 + 0.3 * p, why: 'second hand, only if it matters' };
 		}
-		return { id: `play:${card}`, score: 0.6 - p, why: 'cannot win, keep the good ones' };
+		return { id: `play:${card}`, score: 0.6 - cost, why: 'cannot win, keep the good ones' };
 	};
 
 	return legal.map((m) => {
@@ -906,14 +909,26 @@ function scorePlays(
 		let why = s.why;
 
 		// Euchre avoidance: two tricks in the bank, guarantee the third.
-		if (iAmMaker && myTricks === 2 && isTrumpCard(card, trump) && trumpRank(card, trump) >= 6) {
+		if (
+			!partnerWinning &&
+			iAmMaker &&
+			myTricks === 2 &&
+			isTrumpCard(card, trump) &&
+			trumpRank(card, trump) >= 6
+		) {
 			score += 0.35;
 			why = 'take the third and be done';
 		}
-		// Defending a loner: one trick is the whole job.
-		if (defendingLoner && isTrumpCard(card, trump) && trumpRank(card, trump) >= 7) {
+		// Stop the four-point sweep; partner's trick already does that job.
+		if (
+			!partnerWinning &&
+			defendingLoner &&
+			myTricks === 0 &&
+			isTrumpCard(card, trump) &&
+			trumpRank(card, trump) >= 7
+		) {
 			score += 0.4;
-			why = 'one trick is all we need';
+			why = 'stop the loner sweep';
 		}
 
 		return { id: m.id, score, why };
