@@ -190,7 +190,7 @@
 				>
 			</div>
 			<div class="trick-score">
-				<span>Tricks this hand</span><strong
+				<span class="trick-caption">Tricks this hand</span><span class="short-trick-caption">Tricks</span><strong
 					>Your team <b>{view.tricksWon[team]}</b><i>·</i> Other team
 					<b>{view.tricksWon[1 - team]}</b></strong
 				>
@@ -356,6 +356,7 @@
 		text-align: right;
 		font-size: 16px;
 	}
+	.short-trick-caption { display: none; }
 	.trick-score strong {
 		display: flex;
 		align-items: center;
@@ -939,8 +940,10 @@
 	}
 	@media (max-width: 360px) {
 		.trump strong { font-size: 18px; }
-		.trick-score { flex-direction: column; align-items: flex-start; gap: 2px; }
-		.trick-score strong { font-size: 13px; }
+		.trick-caption { display: none; }
+		.short-trick-caption { display: inline; }
+		.trick-score { gap: 4px; font-size: 12px; }
+		.trick-score strong { font-size: 12px; gap: 4px; }
 		.trick-score b { font-size: 18px; }
 		.trick-result { font-size: 12px; }
 	}
