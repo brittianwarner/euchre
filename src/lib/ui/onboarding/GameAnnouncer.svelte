@@ -40,7 +40,12 @@
 	let { steps, view }: Props = $props();
 
 	/** Matches the compass names already spoken in `+page.svelte`'s talk log. */
-	const SEAT_NAME = ['You', 'West', 'North', 'East'] as const satisfies readonly string[];
+	const SEAT_NAME = [
+		'You',
+		'Left opponent',
+		'Your partner',
+		'Right opponent'
+	] as const satisfies readonly string[];
 
 	const RESULT_LABEL: Readonly<Record<HandResult, string>> = {
 		point: 'Point.',

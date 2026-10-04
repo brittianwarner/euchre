@@ -139,6 +139,13 @@ export interface MoveMsg {
 	readonly userId: string;
 }
 
+/** Synthesized by authenticated actions; browsers cannot publish internal envelopes. */
+export interface ReviewMsg extends InternalEnvelope {
+	readonly action: 'set' | 'continue';
+	readonly enabled?: boolean;
+	readonly turnId: string;
+}
+
 /** Every reason a timer wakes the mutation loop. */
 export type TickKind =
 	'tempo' | 'releaseAi' | 'aiTimeout' | 'nudge' | 'abandon' | 'flushProfile' | 'reap';
@@ -194,6 +201,7 @@ export interface AiSayMsg extends InternalEnvelope {
 export const tableQueues = {
 	/** **The** human mutation path. Completes with a {@link MoveAck}. */
 	move: queue<MoveMsg, MoveAck, Guard>({ canPublish: humanPlayerOnly }),
+	review: queue<ReviewMsg, undefined, Guard>({ canPublish: externalDenied }),
 	/** An `aiSeat`'s chosen move. Authorized by {@link tokenOk}, not by the guard. */
 	aiDecision: queue<AIDecision, undefined, Guard>({ canPublish: externalDenied }),
 	/** An `aiSeat`'s persona chatter, relayed to the `chat` / `chatDelta` events. */

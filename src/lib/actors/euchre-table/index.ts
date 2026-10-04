@@ -121,6 +121,7 @@ import {
 	tokenOk,
 	type AiSayMsg,
 	type MoveMsg,
+	type ReviewMsg,
 	type TableQueueName,
 	type TickMsg
 } from './queues';
@@ -214,6 +215,9 @@ export interface TableCreateInput {
  */
 export interface TableState {
 	readonly schema: 1;
+	/** Optional for tables created before trick review was introduced. */
+	reviewTricks?: boolean;
+	reviewReadyTurnId?: string | null;
 	/** Same value as `game.gameId`; the id history is filed under. */
 	readonly matchId: string;
 	/** Empty until claimed. The authorization check in `createConnState`. */
@@ -436,6 +440,16 @@ function screenLine(text: unknown, max: number): string {
  * never truth: `projectSteps` blanks the `dealt` packets not addressed to this
  * seat, which is the one step that carries card identity for anybody else.
  */
+function tableView(c: Pick<TableCtx, 'state'>, seat: Seat): PublicGameView {
+	return {
+		...project(c.state.game, seat),
+		reviewTricks: c.state.reviewTricks ?? false,
+		awaitingTrickReview:
+			c.state.game.hand.phase === 'trick_resolve' &&
+			c.state.reviewReadyTurnId === c.state.game.turnId
+	};
+}
+
 function pushSync(c: TableCtx, steps: readonly Step[]): void {
 	const game = c.state.game;
 	for (const conn of c.conns.values()) {
@@ -443,7 +457,7 @@ function pushSync(c: TableCtx, steps: readonly Step[]): void {
 		const seat = conn.state.seat;
 		const payload: SyncEvent = {
 			v: game.v,
-			view: project(game, seat),
+			view: tableView(c, seat),
 			steps: projectSteps(steps, seat)
 		};
 		conn.send('sync', payload);
@@ -585,6 +599,12 @@ async function armTurn(c: TableCtx, steps: readonly Step[]): Promise<void> {
 	}
 
 	const phase = game.hand.phase;
+	if (
+		phase === 'trick_resolve' &&
+		c.state.reviewTricks &&
+		c.state.reviewReadyTurnId === game.turnId
+	)
+		return;
 	if (phase === 'trick_resolve' || phase === 'hand_score') {
 		const seals = steps.some((s) => s.t === 'trickWon' && s.sealsEuchre);
 		const ms = phase === 'hand_score' ? TEMPO.handScoreMs : trickResolveMs(seals);
@@ -1244,6 +1264,45 @@ function onAiSay(c: TableCtx, body: AiSayMsg): void {
 	c.broadcast('chatDelta', { msgId: body.msgId, seat: body.seat, delta });
 }
 
+/** A reviewed trick uses the same reducer/persist/fan-out ordering as a timer. */
+async function advanceTempo(c: TableCtx): Promise<void> {
+	const before = c.state.game;
+	const out = advance(before);
+	if (out.state === before) return;
+	c.state.reviewReadyTurnId = null;
+	commit(c, out.state);
+	const steps = settle(c, [...out.steps]);
+	await c.saveState({ immediate: true });
+	emitScript(c, steps);
+	pushSync(c, steps);
+	await handBoundary(c, before, steps);
+	await armTurn(c, steps);
+}
+
+async function onReview(c: TableCtx, body: ReviewMsg): Promise<void> {
+	const game = c.state.game;
+	if (
+		!tokenOk(game.internalToken, body.internalToken) ||
+		body.gameId !== game.gameId ||
+		game.status !== 'active'
+	)
+		return;
+	if (body.action === 'set' && typeof body.enabled === 'boolean') {
+		c.state.reviewTricks = body.enabled;
+		commit(c, game);
+		await c.saveState({ immediate: true });
+		pushSync(c, []);
+		if (!body.enabled && c.state.reviewReadyTurnId === game.turnId) await advanceTempo(c);
+	} else if (
+		body.action === 'continue' &&
+		body.turnId === game.turnId &&
+		c.state.reviewReadyTurnId === game.turnId &&
+		game.hand.phase === 'trick_resolve'
+	) {
+		await advanceTempo(c);
+	}
+}
+
 /** Every timer, after it has been made durable by passing through the queue. */
 async function onTick(c: TableCtx, body: TickMsg): Promise<void> {
 	const game = c.state.game;
@@ -1278,16 +1337,14 @@ async function onTick(c: TableCtx, body: TickMsg): Promise<void> {
 	switch (body.kind) {
 		case 'tempo': {
 			c.state.tempoId = null;
-			const before = c.state.game;
-			const out = advance(before);
-			if (out.state === before) return;
-			commit(c, out.state);
-			const steps = settle(c, [...out.steps]);
-			await c.saveState({ immediate: true }); // 1. PERSIST
-			emitScript(c, steps);
-			pushSync(c, steps); // 2. FAN OUT
-			await handBoundary(c, before, steps);
-			await armTurn(c, steps);
+			if (game.hand.phase === 'trick_resolve' && c.state.reviewTricks) {
+				c.state.reviewReadyTurnId = game.turnId;
+				commit(c, game);
+				await c.saveState({ immediate: true });
+				pushSync(c, []);
+				return;
+			}
+			await advanceTempo(c);
 			return;
 		}
 		case 'releaseAi': {
@@ -1393,6 +1450,7 @@ async function reconcile(c: TableCtx): Promise<void> {
  * The cast is the only one in this file and is confined to the `for await` head.
  */
 type TableMessage =
+	| { readonly name: 'review'; readonly body: ReviewMsg; complete(): Promise<void> }
 	| { readonly name: 'move'; readonly body: MoveMsg; complete(response: MoveAck): Promise<void> }
 	| { readonly name: 'aiDecision'; readonly body: AIDecision; complete(): Promise<void> }
 	| { readonly name: 'aiSay'; readonly body: AiSayMsg; complete(): Promise<void> }
@@ -1549,7 +1607,7 @@ export const euchreTable = actor({
 	onConnect: (c, conn): void => {
 		if (conn.state.role !== 'player') return;
 		const seat = conn.state.seat;
-		const payload: SyncEvent = { v: c.state.game.v, view: project(c.state.game, seat), steps: [] };
+		const payload: SyncEvent = { v: c.state.game.v, view: tableView(c, seat), steps: [] };
 		conn.send('sync', payload);
 		c.broadcast('presence', { seat, online: true });
 	},
@@ -1585,6 +1643,11 @@ export const euchreTable = actor({
 			c.log.info('euchreTable queue', { name: message.name });
 			try {
 				switch (message.name) {
+					case 'review': {
+						await onReview(c, message.body);
+						await message.complete();
+						break;
+					}
 					case 'move': {
 						const ack = await onMove(c, message.body);
 						await message.complete(ack); // 3. ACK, after persist and fan-out
@@ -1628,6 +1691,31 @@ export const euchreTable = actor({
 	},
 
 	actions: {
+		/** Nonblocking enqueue avoids holding the local serverless action lane. */
+		reviewTrick: async (
+			c,
+			request: { action: 'set'; enabled: boolean } | { action: 'continue'; turnId: string }
+		): Promise<{ queued: true }> => {
+			if (c.conn.state.role !== 'player' || c.conn.state.seat !== HUMAN_SEAT)
+				throw new UserError('Not a player connection', { code: PROTOCOL_ERROR_CODES.forbidden });
+			if (
+				!request ||
+				(request.action !== 'set' && request.action !== 'continue') ||
+				(request.action === 'set' && typeof request.enabled !== 'boolean') ||
+				(request.action === 'continue' && typeof request.turnId !== 'string')
+			)
+				throw new UserError('Invalid review request', {
+					code: PROTOCOL_ERROR_CODES.internal_error
+				});
+			await c.queue.send('review', {
+				internalToken: c.state.game.internalToken,
+				gameId: c.state.game.gameId,
+				action: request.action,
+				enabled: request.action === 'set' ? request.enabled : undefined,
+				turnId: request.action === 'continue' ? request.turnId : c.state.game.turnId
+			});
+			return { queued: true };
+		},
 		/**
 		 * The reconnect resync, and a read-only action like every other one here
 		 * except `submitMove`.
@@ -1635,7 +1723,7 @@ export const euchreTable = actor({
 		 * Redacted from `c.conn.state.seat` — the seat this connection was assigned,
 		 * not a seat it asked for.
 		 */
-		snapshot: (c): PublicGameView => project(c.state.game, c.conn.state.seat),
+		snapshot: (c): PublicGameView => tableView(c, c.conn.state.seat),
 
 		/**
 		 * The last completed trick, for the last-trick viewer.

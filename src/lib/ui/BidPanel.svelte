@@ -1,5 +1,6 @@
 <!-- Bidding controls use only server-provided legal moves. The solo toggle selects the corresponding legal variant without inventing a move. -->
 <script lang="ts">
+	import { SUIT_NAME } from '#lib/euchre/index.ts';
 	import type { LegalMoveId, PublicGameView } from '#lib/protocol/index.ts';
 
 	let {
@@ -35,13 +36,6 @@
 {#if moves.length > 0 && view.turnSeat === view.you}
 	<section class="bids" aria-label="Bidding">
 		<div class="bid-heading">
-			<p>
-				{view.phase === 'cutting'
-					? 'A fresh deck. Your call.'
-					: view.phase === 'bid_round_1'
-						? 'Make it trump, or pass?'
-						: 'Choose your trump suit.'}
-			</p>
 			{#if aloneMoves.length > 0}<label
 					><input
 						type="checkbox"
@@ -56,7 +50,18 @@
 					type="button"
 					class:secondary={move.id === 'pass' || move.id === 'cut:no'}
 					{disabled}
-					onclick={() => onPlay(move.id)}>{move.label}</button
+					onclick={() => onPlay(move.id)}
+					>{move.move.t === 'pass'
+						? 'Pass'
+						: move.move.t === 'orderUp'
+							? `Make ${view.upCard ? SUIT_NAME[view.upCard[1] as keyof typeof SUIT_NAME].toLowerCase() : 'it'} trump`
+							: move.move.t === 'call'
+								? SUIT_NAME[move.move.suit]
+								: move.move.t === 'cut'
+									? move.move.cut
+										? 'Cut the deck'
+										: 'Deal the cards'
+									: move.label}</button
 				>{/each}
 		</div>
 	</section>
@@ -65,97 +70,124 @@
 <style>
 	.bids {
 		width: 100%;
-		max-width: 570px;
+		max-width: 850px;
 		margin: auto;
-		font-family: var(--font-sans);
 	}
 	.bid-heading {
 		display: flex;
 		align-items: center;
-		justify-content: center;
+		justify-content: space-between;
 		gap: 20px;
-		margin-bottom: 12px;
+		margin-bottom: 14px;
 	}
-	.bid-heading p {
-		margin: 0;
-		font-size: 13px;
-		color: #52624c;
-	}
+
 	.bid-heading label {
 		display: flex;
-		gap: 7px;
+		gap: 10px;
 		align-items: center;
-		font-size: 11px;
-		color: #6a7763;
-		white-space: nowrap;
-		min-height: 24px;
+		font-size: 17px;
+		min-height: 48px;
 		cursor: pointer;
 	}
 	.bid-heading input {
-		width: 14px;
-		height: 14px;
-		border-radius: 3px;
-		accent-color: #274d3a;
+		width: 22px;
+		height: 22px;
+		border-radius: 4px;
+		accent-color: #285641;
 	}
 	.row {
 		display: flex;
 		justify-content: center;
-		gap: 9px;
+		gap: 12px;
+		flex-wrap: wrap;
 	}
 	button {
-		min-height: 44px;
-		min-width: 100px;
-		padding: 10px 22px;
-		border: 1px solid #cbdfa3;
-		border-radius: 7px;
-		background: #d4ed9b;
-		color: #203c2d;
-		font: 600 13px var(--font-sans);
+		min-height: 56px;
+		flex: 1;
+		min-width: 130px;
+		padding: 12px 22px;
+		border: 1px solid #295641;
+		border-radius: 8px;
+		background: #285641;
+		color: #fffdf4;
+		font-size: 19px;
+		font-weight: 600;
 		cursor: pointer;
-		transition:
-			background 0.15s,
-			transform 0.15s;
 	}
 	button:hover:not(:disabled) {
-		background: #c5e285;
-		transform: translateY(-1px);
+		background: #1b4531;
 	}
 	button.secondary {
 		background: #fffdf6;
-		border-color: #d5dbcc;
-		color: #62705b;
+		border-color: #85957b;
+		color: #334d3e;
 	}
 	button.secondary:hover:not(:disabled) {
 		background: #e9eddf;
 	}
 	button:disabled {
-		opacity: 0.5;
+		opacity: 0.55;
 		cursor: default;
 	}
-	@media (max-width: 700px) {
+	@media (max-width: 600px) {
 		.bid-heading {
-			gap: 14px;
-			margin-bottom: 9px;
-		}
-		.bid-heading p {
-			font-size: 12px;
-		}
-		.row {
-			gap: 6px;
+			flex-wrap: wrap;
+			gap: 4px 16px;
 		}
 		button {
-			min-width: 0;
-			flex: 1;
-			padding: 10px 9px;
-			font-size: 11px;
-		}
-		.bids {
-			max-width: 460px;
+			font-size: 17px;
+			padding: 12px;
 		}
 	}
-	@media (prefers-reduced-motion: reduce) {
+
+	.bids {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+	}
+	.bid-heading {
+		order: 2;
+		margin: 0;
+		flex-shrink: 0;
+	}
+	.bid-heading label {
+		white-space: nowrap;
+	}
+	.row {
+		flex: 1;
+		flex-wrap: nowrap;
+		gap: 10px;
+	}
+	button {
+		min-width: 0;
+		padding: 10px 16px;
+	}
+	@media (max-width: 700px) {
+		.bids {
+			gap: 8px;
+			flex-wrap: wrap;
+		}
+		.row {
+			width: 100%;
+			flex: auto;
+			gap: 8px;
+		}
 		button {
-			transition: none;
+			min-height: 46px;
+			font-size: 15px;
+			padding: 8px;
+		}
+		.bid-heading {
+			width: 100%;
+			justify-content: flex-end;
+		}
+		.bid-heading label {
+			min-height: 28px;
+			font-size: 14px;
+		}
+		.bid-heading input {
+			width: 20px;
+			height: 20px;
 		}
 	}
 </style>

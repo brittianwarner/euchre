@@ -58,14 +58,36 @@ const snapshot = await Promise.race([
 console.log('WebSocket snapshot', { handNo: snapshot.handNo, phase: snapshot.phase });
 if (process.argv.includes('--play-hand')) {
 	let view = snapshot;
+	const reviewTricks = process.argv.includes('--review-tricks');
+	let reviewedTricks = 0;
+	if (reviewTricks) {
+		await conn.action({ name: 'reviewTrick', args: [{ action: 'set', enabled: true }] });
+	}
 	let submittedTurn: string | undefined;
 	let humanMoves = 0;
 	const handNo = Math.max(1, snapshot.handNo);
 	const deadline = Date.now() + 180_000;
 	while (Date.now() < deadline) {
 		if (view.result || view.handNo > handNo) {
-			console.log('Production hand completed', { gameId, humanMoves, score: view.score });
+			console.log('Production hand completed', {
+				gameId,
+				humanMoves,
+				reviewedTricks,
+				score: view.score
+			});
 			break;
+		}
+		if (reviewTricks && view.awaitingTrickReview) {
+			await Bun.sleep(1500);
+			const held = await conn.action({ name: 'snapshot', args: [] });
+			if (held.turnId !== view.turnId || held.phase !== 'trick_resolve')
+				throw new Error('Reviewed trick advanced without Continue');
+			await conn.action({
+				name: 'reviewTrick',
+				args: [{ action: 'continue', turnId: view.turnId }]
+			});
+			reviewedTricks++;
+			console.log('Trick held and continued', { reviewedTricks });
 		}
 		if (view.legal.length && view.turnId !== submittedTurn) {
 			const move = view.legal.find((m) => m.id === 'pass') ?? view.legal[0];
@@ -88,6 +110,7 @@ if (process.argv.includes('--play-hand')) {
 		view = await conn.action({ name: 'snapshot', args: [] });
 	}
 	if (!view.result && view.handNo <= handNo) throw new Error('Production hand timed out');
+	if (reviewTricks && reviewedTricks < 5) throw new Error('Not all five tricks were reviewed');
 }
 await conn.dispose();
 const outsider = await fetch(origin + '/api/table-session/' + gameId, {

@@ -85,8 +85,8 @@
 		{
 			title: 'Welcome to the table',
 			body:
-				'Four players, two teams. You and North are partners, sitting across ' +
-				'from each other; West and East play together. First team to 10 points wins.'
+				'Four players, two teams. You and Your partner play together. The left ' +
+				'and right opponents are the other team. First team to 10 points wins.'
 		},
 		{
 			title: 'The deck',
@@ -122,10 +122,9 @@
 		{
 			title: "You're ready",
 			body:
-				'Everything else you’ll pick up as you go: a card you can’t play is ' +
-				'dimmed, and tapping it explains why in plain words. Turn on Hints any ' +
-				'time for a nudge on your turn, and the ? in the corner has the full ' +
-				'rulebook whenever you want it.'
+				'Select a card, then press Play. Cards you cannot play explain why when ' +
+				'you tap them. How to play opens the rules, and Settings has hints and ' +
+				'a Wait for me option so you can review each trick at your own pace.'
 		}
 	];
 

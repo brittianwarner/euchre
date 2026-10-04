@@ -32,6 +32,7 @@
  * identically and a replay is reproducible (V20).
  */
 
+import { TRICK_PRESENTATION_MS } from '#lib/protocol/pacing.ts';
 import { fnv1a } from '#lib/euchre/index.ts';
 import type { AIDecisionKind } from '#lib/protocol/index.ts';
 
@@ -51,9 +52,9 @@ const LOCAL_FAST = process.env.EUCHRE_FAST_TEMPO === '1';
 /** The table's whole timing policy. Frozen so a caller cannot drift one seat. */
 export const TEMPO = Object.freeze({
 	/** Server-held read pause after a trick completes. */
-	trickResolveMs: LOCAL_FAST ? 120 : 1700,
+	trickResolveMs: LOCAL_FAST ? 120 : TRICK_PRESENTATION_MS,
 	/** Longer hold when the trick just made a euchre certain — the moment deserves it. */
-	trickResolveSealsEuchreMs: LOCAL_FAST ? 180 : 2200,
+	trickResolveSealsEuchreMs: LOCAL_FAST ? 180 : TRICK_PRESENTATION_MS + 500,
 	/** Server-held pause on the hand recap before the next deal. */
 	handScoreMs: LOCAL_FAST ? 250 : 2500,
 

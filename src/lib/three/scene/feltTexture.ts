@@ -22,6 +22,7 @@ import {
 
 const SIZE = 512;
 let cached: CanvasTexture | null = null;
+let plainCached: CanvasTexture | null = null;
 
 /** Deterministic "noise" — a fixed felt grain, not a per-load random one, so screenshots are stable. */
 function grain(x: number, y: number): number {
@@ -29,7 +30,7 @@ function grain(x: number, y: number): number {
 	return s - Math.floor(s);
 }
 
-function paint(ctx: CanvasRenderingContext2D): void {
+function paint(ctx: CanvasRenderingContext2D, marked: boolean): void {
 	const base = '#245a49'; // warm felt green, not a cold billiard green
 	const edge = '#10382c';
 
@@ -55,6 +56,7 @@ function paint(ctx: CanvasRenderingContext2D): void {
 		ctx.fillStyle = `rgba(${shade},${shade},${shade},0.05)`;
 		ctx.fillRect(x, y, 1, 1);
 	}
+	if (!marked) return;
 	// Baked tailoring and a quiet club mark add detail without extra geometry,
 	// lights, shaders, or work in the animation loop.
 	ctx.strokeStyle = 'rgba(218,230,176,0.22)';
@@ -85,14 +87,15 @@ function makeCanvas(): HTMLCanvasElement | null {
 }
 
 /** The shared felt texture. `null` during SSR; callers render nothing until the scene mounts. */
-export function feltTexture(): CanvasTexture | null {
-	if (cached) return cached;
+export function feltTexture(marked = true): CanvasTexture | null {
+	const existing = marked ? cached : plainCached;
+	if (existing) return existing;
 	const canvas = makeCanvas();
 	if (canvas === null) return null;
 	const ctx = canvas.getContext('2d');
 	if (ctx === null) return null;
 
-	paint(ctx);
+	paint(ctx, marked);
 
 	const tex = new CanvasTexture(canvas);
 	tex.colorSpace = SRGBColorSpace;
@@ -102,7 +105,8 @@ export function feltTexture(): CanvasTexture | null {
 	tex.minFilter = LinearMipmapLinearFilter;
 	tex.generateMipmaps = true;
 	tex.needsUpdate = true;
-	cached = tex;
+	if (marked) cached = tex;
+	else plainCached = tex;
 	return tex;
 }
 
@@ -110,4 +114,6 @@ export function feltTexture(): CanvasTexture | null {
 export function disposeFeltTexture(): void {
 	cached?.dispose();
 	cached = null;
+	plainCached?.dispose();
+	plainCached = null;
 }

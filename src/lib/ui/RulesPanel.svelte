@@ -183,10 +183,10 @@
 	type="button"
 	class="trigger"
 	aria-haspopup="dialog"
-	aria-label="Rules and help"
+	aria-label="How to play"
 	onclick={open}
 >
-	?
+	How to play
 </button>
 
 <dialog
@@ -243,20 +243,21 @@
 
 <style>
 	.trigger {
-		min-width: 44px;
-		min-height: 44px;
-		border-radius: 999px;
+		min-width: 120px;
+		min-height: 52px;
+		padding: 10px 16px;
+		border-radius: 8px;
 		border: 1px solid rgba(232, 194, 122, 0.55);
-		background: rgba(20, 26, 16, 0.85);
-		color: #f4ecd8;
+		background: #fffdf5;
+		color: #233e32;
 		font: inherit;
 		font-weight: 700;
 		font-size: 1.1rem;
 		cursor: pointer;
-		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+		box-shadow: none;
 	}
 	.trigger:hover {
-		background: rgba(74, 58, 28, 0.9);
+		background: #e9eddf;
 	}
 
 	.rules {
@@ -266,8 +267,9 @@
 		max-width: min(34rem, 92vw);
 		width: 100%;
 		max-height: min(85vh, 44rem);
-		color: #f2e8d5;
-		font-family: 'Source Serif 4', 'Iowan Old Style', Georgia, serif;
+		color: #233e32;
+		font-family: var(--font-sans);
+		font-size: 18px;
 	}
 	.rules::backdrop {
 		background: rgba(6, 5, 3, 0.68);
@@ -280,7 +282,7 @@
 		padding: 1.25rem 1.35rem;
 		border-radius: 0.9rem;
 		border: 1px solid rgba(232, 194, 122, 0.35);
-		background: #17130d;
+		background: #f5f3e9;
 		box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
 		overflow-y: auto;
 	}
@@ -293,14 +295,14 @@
 	h2 {
 		margin: 0;
 		font-size: 1.3rem;
-		color: #f7f1e4;
+		color: #233e32;
 	}
 	.close {
 		min-width: 44px;
-		min-height: 44px;
+		min-height: 52px;
 		border: none;
 		background: transparent;
-		color: #c9b89a;
+		color: #385240;
 		font-size: 1.4rem;
 		line-height: 1;
 		cursor: pointer;
@@ -314,10 +316,10 @@
 	}
 	.context .eyebrow {
 		margin: 0 0 0.3rem;
-		font-size: 0.75rem;
+		font-size: 15px;
 		letter-spacing: 0.05em;
 		text-transform: uppercase;
-		color: #e8c27a;
+		color: #526446;
 		font-weight: 700;
 	}
 	.context p:last-child {
@@ -326,12 +328,12 @@
 	}
 	.search input {
 		width: 100%;
-		min-height: 44px;
+		min-height: 52px;
 		padding: 0.5rem 0.7rem;
 		border-radius: 0.5rem;
 		border: 1px solid rgba(232, 194, 122, 0.3);
-		background: #0f0b07;
-		color: #f2e8d5;
+		background: #fffdf6;
+		color: #233e32;
 		font: inherit;
 	}
 	.sections {
@@ -342,32 +344,32 @@
 	details {
 		border-radius: 0.5rem;
 		border: 1px solid rgba(232, 194, 122, 0.2);
-		background: rgba(0, 0, 0, 0.22);
+		background: #fffdf6;
 		padding: 0.15rem 0.75rem;
 	}
 	summary {
 		padding: 0.6rem 0;
 		font-weight: 600;
 		cursor: pointer;
-		min-height: 44px;
+		min-height: 52px;
 		display: flex;
 		align-items: center;
 	}
 	details p {
 		margin: 0 0 0.75rem;
 		line-height: 1.5;
-		color: #e8dcc6;
+		color: #334d3e;
 	}
 	.empty {
 		margin: 0;
 		color: #9aab8a;
 	}
 	.replay {
-		min-height: 44px;
+		min-height: 52px;
 		border: 1px dashed rgba(232, 194, 122, 0.4);
 		border-radius: 0.5rem;
 		background: transparent;
-		color: #d8b464;
+		color: #31513a;
 		font: inherit;
 		cursor: pointer;
 	}

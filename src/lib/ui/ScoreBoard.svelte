@@ -1,161 +1,141 @@
 <script lang="ts">
 	import type { PublicGameView } from '#lib/protocol/index.ts';
 	let { view }: { view: PublicGameView } = $props();
-	const glyph = { S: '♠', H: '♥', D: '♦', C: '♣' };
+	const team = $derived(view.you % 2);
 </script>
 
-<section class="score" aria-label="Match score" aria-live="polite">
+<section class="score" aria-label="Match score">
 	<a class="brand" href="/" aria-label="Euchre home">euchre<span aria-hidden="true">♣</span></a>
 	<div class="scoreline">
-		<div><span>US</span><strong>{view.score[0]}</strong></div>
-		<span class="divider">:</span>
-		<div><strong>{view.score[1]}</strong><span>THEM</span></div>
+		<div><span>Your team</span><strong>{view.score[team]}</strong></div>
+		<span class="divider">—</span>
+		<div><strong>{view.score[1 - team]}</strong><span>Other team</span></div>
 	</div>
-	<div class="meta">
-		<span>HAND <b>{view.handNo + 1}</b></span><span class="meta-divider"></span><span
-			>{view.trump ? 'TRUMP' : 'FIRST TO'}
-			<b class:red={view.trump === 'H' || view.trump === 'D'}
-				>{view.trump ? glyph[view.trump] : '10'}</b
-			></span
-		>
-	</div>
+	<span class="goal">First to 10</span>
 </section>
 
 <style>
 	.score {
 		display: flex;
 		align-items: center;
-		gap: 42px;
+		gap: 28px;
 		color: #233e32;
 		min-width: 0;
 		flex: 1;
-		font-family: var(--font-sans);
 	}
 	.brand {
-		font: 600 34px/1 var(--font-serif);
+		font: 600 38px/1 var(--font-serif);
 		letter-spacing: -0.075em;
 		text-decoration: none;
 		white-space: nowrap;
 	}
 	.brand span {
-		font-size: 20px;
-		margin-left: 5px;
+		font-size: 23px;
+		margin-left: 6px;
 	}
 	.scoreline {
 		display: flex;
 		align-items: center;
-		gap: 17px;
-		padding-left: 35px;
-		border-left: 1px solid #d9ded2;
+		gap: 18px;
+		padding-left: 28px;
+		border-left: 1px solid #d3d9c9;
 	}
 	.scoreline div {
 		display: flex;
-		gap: 13px;
 		align-items: center;
+		gap: 12px;
 	}
 	.scoreline span {
-		font-size: 12px;
-		font-weight: 650;
-		letter-spacing: 0.1em;
-		color: #778271;
+		font-size: 17px;
+		font-weight: 500;
 	}
 	.scoreline strong {
-		font-size: 32px;
-		font-weight: 500;
+		font-size: 36px;
+		font-weight: 600;
 		font-variant-numeric: tabular-nums;
 		line-height: 1;
 	}
-	.scoreline .divider {
-		font-size: 20px;
-		color: #a6b19c;
+	.divider {
+		color: #78856d;
 	}
-	.meta {
-		margin-left: auto;
-		display: flex;
-		align-items: center;
-		gap: 20px;
-		font-size: 12px;
-		letter-spacing: 0.12em;
-		color: #778271;
-	}
-	.meta > span {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-	}
-	.meta b {
+	.goal {
 		font-size: 15px;
-		color: #233e32;
-		font-weight: 550;
+		color: #596952;
+		white-space: nowrap;
 	}
-	.meta b.red {
-		color: #b64e3c;
-	}
-	.meta .meta-divider {
-		width: 1px;
-		height: 20px;
-		background: #d9ded2;
+	@media (max-width: 1050px) {
+		.goal {
+			display: none;
+		}
+		.score {
+			gap: 18px;
+		}
+		.scoreline {
+			gap: 12px;
+			padding-left: 18px;
+		}
 	}
 	@media (max-width: 700px) {
 		.score {
-			gap: 20px;
-			align-items: flex-start;
+			width: 100%;
+			flex-wrap: wrap;
 		}
 		.brand {
-			font-size: 27px;
+			font-size: 32px;
+		}
+		.scoreline {
+			border: 0;
+			margin-left: auto;
+			padding: 0;
+			gap: 10px;
+		}
+		.scoreline div {
+			gap: 8px;
+		}
+		.scoreline span {
+			font-size: 15px;
+		}
+		.scoreline strong {
+			font-size: 30px;
+		}
+	}
+	@media (max-width: 420px) {
+		.brand {
+			font-size: 25px;
 		}
 		.brand span {
 			font-size: 16px;
+			margin-left: 3px;
 		}
-		.scoreline {
-			padding-left: 18px;
-			gap: 10px;
-			height: 30px;
-		}
-		.scoreline div {
-			gap: 7px;
-		}
-		.scoreline strong {
-			font-size: 24px;
-		}
-		.scoreline span {
-			font-size: 10px;
-		}
-		.meta {
-			position: absolute;
-			bottom: 12px;
-			left: 20px;
-			right: 20px;
-			justify-content: center;
-			gap: 18px;
-		}
-		.meta b {
-			font-size: 13px;
-		}
-		.meta .meta-divider {
-			height: 12px;
-		}
-	}
-	@media (max-width: 380px) {
 		.score {
-			gap: 11px;
+			gap: 8px;
 		}
 		.scoreline {
-			padding-left: 11px;
 			gap: 7px;
 		}
 		.scoreline div {
 			gap: 5px;
+			flex-direction: row;
 		}
-		.scoreline div > span {
-			position: absolute;
-			width: 1px;
-			height: 1px;
-			clip: rect(0, 0, 0, 0);
-			overflow: hidden;
+		.scoreline span {
+			font-size: 13px;
 		}
+		.scoreline strong {
+			font-size: 25px;
+		}
+	}
+	@media (max-width: 350px) {
 		.brand {
-			font-size: 24px;
+			font-size: 20px;
+		}
+		.brand span {
+			display: none;
+		}
+		.scoreline span {
+			font-size: 12px;
+		}
+		.scoreline {
+			gap: 5px;
 		}
 	}
 </style>

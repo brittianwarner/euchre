@@ -438,6 +438,10 @@ export interface GameState {
  * exists, never of which card it was (V13), and `upCard` is never nulled (V14).
  */
 export interface PublicGameView {
+	/** Actor-owned accessibility preference; omitted by the pure rules projection. */
+	readonly reviewTricks?: boolean;
+	/** True only after the server-held read pause has elapsed. */
+	readonly awaitingTrickReview?: boolean;
 	/** The state version this view was cut from; the client drops `v <= seen`. */
 	readonly v: number;
 	/** The seat this view was projected for. */

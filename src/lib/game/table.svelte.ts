@@ -60,6 +60,7 @@ export class TableStore {
 
 	/** Apply a `sync` event from the actor (called from page-level onEvent). */
 	applySync(payload: SyncEvent): void {
+		if (this.view && payload.view.v < this.view.v) return;
 		this.view = payload.view;
 		this.status = 'ready';
 		this.error = null;
@@ -74,7 +75,7 @@ export class TableStore {
 				handle.snapshot(),
 				new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), 4000))
 			]);
-			if (snap) {
+			if (snap && (!this.view || snap.v >= this.view.v)) {
 				this.view = snap;
 				this.status = 'ready';
 			}

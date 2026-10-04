@@ -27,8 +27,15 @@ in it documents what it does and whether it's required.
 
 Your hand uses separate, full-card buttons: click or tap a card, then **Play**
 (or **Discard**). Double-click plays directly. Arrow keys move focus; Enter or
-Space selects. On phones, larger rank-and-suit labels sit beneath each card.
-The table animates a deal only when a new hand starts.
+Space selects. Card names sit beneath the original traditional artwork. The
+table fits the visible viewport; shorter phones use one row of cards, while
+taller phones use two rows. Remaining cards keep their positions after a play.
+
+A completed trick highlights its winning card, pauses for reading, then gathers
+the cards into the winner's stack. **Settings → Wait for me after each trick**
+holds the actual game until **Continue**, including after a reload. Reduced-motion
+preferences skip card flights. The decorative Threlte felt loads after the game
+UI and renders only on demand.
 
 ## How the pieces fit
 

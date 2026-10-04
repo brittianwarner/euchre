@@ -1,5 +1,9 @@
 <!-- Native card targets never move or overlap; only their non-interactive artwork lifts. -->
 <script lang="ts">
+	import { untrack } from 'svelte';
+	import { reducedMotion } from '#lib/three/layout/reducedMotion.svelte.ts';
+	import { playDeal } from './sound';
+	import { reconcileHandSlots, type HandSlots } from './table-presentation';
 	import { cardName, whyIllegal } from '#lib/euchre/index.ts';
 	import type { CardId, LegalMoveId, PublicGameView } from '#lib/protocol/index.ts';
 
@@ -19,7 +23,13 @@
 		onIllegal: (card: CardId) => void;
 	} = $props();
 
-	const suitSymbol = { S: '♠', H: '♥', D: '♦', C: '♣' } as const;
+	let slots = $state.raw<HandSlots | null>(null);
+	$effect(() => {
+		const next = view;
+		untrack(() => {
+			slots = reconcileHandSlots(slots, next);
+		});
+	});
 
 	const cardMoves = $derived.by(() => {
 		const moves = new Map<CardId, LegalMoveId>();
@@ -30,6 +40,32 @@
 		}
 		return moves;
 	});
+
+	// The initial snapshot is already dealt. Only newly dealt cards animate;
+	// a sync or reconnect cannot replay cards we have already shown.
+	const dealtKeys = untrack(() => view.hand.map((card) => `${view.handNo}:${card}`));
+	function dealCard(node: HTMLElement) {
+		const context = untrack(() => ({
+			handNo: view.handNo,
+			reduced: reducedMotion.enabled,
+			phase: view.phase
+		}));
+		const key = `${context.handNo}:${node.dataset.card}`;
+		if (dealtKeys.includes(key)) return;
+		dealtKeys.push(key);
+		if (dealtKeys.length > 30) dealtKeys.shift();
+		if (context.reduced || context.phase === 'dealer_discard') return;
+		const index = Number(node.dataset.index);
+		const animation = node.animate(
+			[
+				{ transform: 'translateY(-24px) rotateY(18deg) scale(.92)', opacity: 0 },
+				{ transform: 'none', opacity: 1 }
+			],
+			{ duration: 580, delay: index * 75, easing: 'cubic-bezier(.22,.7,.25,1)', fill: 'backwards' }
+		);
+		if (index === 0) playDeal();
+		return () => animation.cancel();
+	}
 
 	function unavailableReason(card: CardId): string {
 		if (disabled) return 'Please wait until the table is ready.';
@@ -53,11 +89,6 @@
 		onSelect(card);
 	}
 
-	function playCard(card: CardId): void {
-		const move = cardMoves.get(card);
-		if (!disabled && move) onPlay(move);
-	}
-
 	function moveFocus(event: KeyboardEvent): void {
 		if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
 		const current = event.currentTarget as HTMLButtonElement;
@@ -77,46 +108,58 @@
 	}
 </script>
 
-{#if view.hand.length > 0}
-	<section class="card-rack" aria-label="Your cards" style:--card-count={view.hand.length}>
+{#if slots && slots.cards.length > 0}
+	<section class="card-rack" aria-label="Your cards" style:--card-count={slots.cards.length}>
 		<ul>
-			{#each view.hand as card (card)}
+			{#each slots.cards as card, index (`${slots.handNo}:${card}`)}
+				{@const held = view.hand.includes(card)}
 				{@const legal = cardMoves.has(card) && !disabled}
 				{@const isSelected = selected === card}
 				<li>
-					<button
-						type="button"
-						data-card-id={card}
-						class:selected={isSelected}
-						class:unavailable={!legal}
-						class:must-follow={cardMoves.size > 0 && !cardMoves.has(card)}
-						aria-pressed={isSelected}
-						aria-disabled={!legal}
-						aria-label={`Select ${cardName(card)}. ${legal ? 'Press to select; double-click to play.' : unavailableReason(card)}`}
-						onclick={() => selectCard(card)}
-						ondblclick={() => playCard(card)}
-						onkeydown={moveFocus}
-					>
-						<span class="artwork" aria-hidden="true">
-							<img
-								src={`/art/cards/${card}.png`}
-								alt=""
-								width="635"
-								height="889"
-								draggable="false"
-								decoding="async"
-							/>
-							{#if isSelected}<span class="selected-mark">✓</span>{/if}
-						</span>
-						<span
-							class="card-label"
-							class:red={card.endsWith('H') || card.endsWith('D')}
-							aria-hidden="true"
+					{#if held}
+						<button
+							type="button"
+							data-card-id={card}
+							class:selected={isSelected}
+							class:unavailable={!legal}
+							class:must-follow={cardMoves.size > 0 && !cardMoves.has(card)}
+							aria-pressed={isSelected}
+							aria-disabled={!legal}
+							aria-label={`Select ${cardName(card)}. ${legal ? 'Press to select, then use Play. Or double-click to play.' : unavailableReason(card)}`}
+							onclick={() => selectCard(card)}
+							ondblclick={() => {
+								const move = cardMoves.get(card);
+								if (!disabled && move) onPlay(move);
+							}}
+							onkeydown={moveFocus}
 						>
-							{card[0] === 'T' ? '10' : card[0]}
-							{suitSymbol[card[1] as keyof typeof suitSymbol]}
-						</span>
-					</button>
+							<span
+								class="artwork"
+								aria-hidden="true"
+								data-card={card}
+								data-index={index}
+								{@attach dealCard}
+							>
+								<img
+									src={`/art/cards/${card}.png`}
+									alt=""
+									width="635"
+									height="889"
+									draggable="false"
+									decoding="async"
+								/>
+							</span>
+							<span class="card-label" aria-hidden="true"
+								>{cardName(card)}<small
+									>{isSelected
+										? 'Selected ✓'
+										: cardMoves.size > 0 && !legal
+											? 'Must follow suit'
+											: ' '}</small
+								></span
+							>
+						</button>
+					{:else}<div class="empty-slot" aria-hidden="true"></div>{/if}
 				</li>
 			{/each}
 		</ul>
@@ -125,141 +168,229 @@
 
 <style>
 	.card-rack {
-		--card-width: clamp(112px, 15dvh, 148px);
-		width: min(100%, calc(var(--card-count) * var(--card-width) + (var(--card-count) - 1) * 10px));
+		width: min(100%, calc(var(--card-count) * 150px + (var(--card-count) - 1) * 18px));
 		margin-inline: auto;
-		font-family: var(--font-sans);
 	}
 	ul {
 		display: grid;
 		grid-template-columns: repeat(var(--card-count), minmax(0, 1fr));
-		gap: 10px;
+		gap: 18px;
 		list-style: none;
-		margin: 0;
 		padding: 12px 0 0;
+		margin: 0;
 	}
 	li {
 		min-width: 0;
 	}
 	button {
 		display: block;
-		position: relative;
 		width: 100%;
-		min-width: 44px;
-		min-height: 44px;
-		aspect-ratio: 5 / 7;
+		position: relative;
 		padding: 0;
-		margin: 0;
-		background: transparent;
 		border: 0;
-		border-radius: 7px;
+		background: transparent;
+		border-radius: 8px;
 		cursor: pointer;
 		touch-action: manipulation;
-		-webkit-tap-highlight-color: transparent;
+		color: #233e32;
 	}
 	.artwork {
 		display: block;
-		position: absolute;
-		inset: 0;
-		border: 2px solid #eee9da;
+		aspect-ratio: 5/7;
 		border-radius: 7px;
-		background: #faf6eb;
+		background: white;
 		box-shadow:
-			0 3px 0 #c9c5b7,
-			0 7px 15px #001b2440;
+			0 1px 0 #fff,
+			0 3px 0 #c4c7b9,
+			0 7px 13px #16382c24;
 		pointer-events: none;
 		transition:
-			transform 150ms ease,
-			border-color 150ms ease,
-			box-shadow 150ms ease;
+			transform 180ms ease,
+			box-shadow 180ms ease;
 	}
 	img {
 		display: block;
 		width: 100%;
 		height: 100%;
 		object-fit: contain;
-		border-radius: 4px;
-		pointer-events: none;
+		border-radius: 7px;
 		user-select: none;
+	}
+	.card-label {
+		display: block;
+		font-size: 16px;
+		font-weight: 600;
+		padding-top: 12px;
+		line-height: 1.35;
+		min-height: 56px;
+		pointer-events: none;
+	}
+	.card-label small {
+		display: block;
+		font-size: 14px;
+		line-height: 1.5;
+		min-height: 21px;
+		font-weight: 400;
+	}
+	button.selected .artwork {
+		transform: perspective(1000px) translateY(-8px) rotateX(2deg);
+		outline: 3px solid #295744;
+		outline-offset: 3px;
+		box-shadow:
+			0 4px 0 #bac2b1,
+			0 15px 20px #15301d30;
+	}
+	button.selected small {
+		font-weight: 700;
 	}
 	button.unavailable {
 		cursor: help;
 	}
-	button.must-follow .artwork {
-		filter: saturate(0.8) brightness(0.9);
-	}
-	button.selected .artwork {
-		transform: translateY(-10px);
-		border-color: #d4ed9b;
-		box-shadow:
-			0 0 0 2px #d4ed9b,
-			0 4px 0 #749052,
-			0 10px 20px #001b2450;
-		filter: none;
+	button.must-follow small {
+		color: #735548;
 	}
 	button:focus-visible {
-		outline: 3px solid #d4ed9b;
-		outline-offset: 5px;
+		outline: 3px solid #295744;
+		outline-offset: 6px;
 	}
-	.selected-mark {
-		position: absolute;
-		top: -9px;
-		right: -7px;
-		width: 21px;
-		height: 21px;
+	.empty-slot {
+		aspect-ratio: 5/7;
+		border: 1px dashed #b9c3b3;
+		border-radius: 7px;
+		color: #53664e;
 		display: grid;
 		place-items: center;
-		background: #d4ed9b;
-		color: #233e32;
-		border: 2px solid #1c3929;
-		border-radius: 50%;
-		font: 700 12px/1 var(--font-sans);
-	}
-	.card-label {
-		display: none;
+		font-size: 16px;
 	}
 	@media (hover: hover) {
 		button:not(.unavailable):not(.selected):hover .artwork {
-			transform: translateY(-5px);
-			border-color: #d4ed9b;
+			transform: translateY(-4px);
 		}
 	}
-	@media (max-width: 700px) {
-		ul {
-			gap: 4px;
-		}
-		.artwork {
-			border-width: 1px;
-			border-radius: 5px;
-		}
-		button {
-			border-radius: 5px;
-			aspect-ratio: auto;
-			padding-bottom: 28px;
-		}
-		.artwork {
-			position: relative;
-			aspect-ratio: 5 / 7;
+	@media (min-width: 701px) and (max-height: 850px) {
+		.card-rack {
+			width: min(100%, calc(var(--card-count) * 126px + (var(--card-count) - 1) * 18px));
 		}
 		.card-label {
-			display: block;
-			position: absolute;
-			bottom: 0;
-			width: 100%;
-			color: #faf6eb;
-			font: 600 18px/24px var(--font-sans);
-			pointer-events: none;
+			padding-top: 8px;
+			min-height: 44px;
+			font-size: 15px;
 		}
-		.card-label.red {
-			color: #ffb0a5;
+		.card-label small {
+			min-height: 18px;
+			line-height: 1.25;
 		}
-		img {
-			border-radius: 4px;
+	}
+	@media (max-width: 600px) {
+		.card-rack {
+			max-width: 400px;
+		}
+		ul {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 14px 12px;
+		}
+		.card-label {
+			font-size: 14px;
+			min-height: 48px;
+			padding-top: 8px;
+		}
+		.card-label small {
+			font-size: 13px;
 		}
 	}
 	@media (prefers-reduced-motion: reduce) {
 		.artwork {
 			transition: none;
 		}
+		button.selected .artwork {
+			transform: none;
+		}
+	}
+	/* Each fixed slot sizes its artwork to the space left by the game controls. */
+	.card-rack {
+		height: 100%;
+		min-height: 0;
+		width: min(100%, 850px);
+	}
+	ul {
+		height: 100%;
+		min-height: 0;
+		padding: 10px 0 0;
+		grid-auto-rows: minmax(0, 1fr);
+	}
+	li {
+		container-type: size;
+	}
+	button {
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+	}
+	.artwork {
+		width: min(100cqw, calc((100cqh - 46px) * 5 / 7));
+		height: auto;
+		flex: none;
+	}
+	.card-label {
+		min-height: 0;
+		padding-top: 8px;
+		font-size: 15px;
+		line-height: 1.25;
+	}
+	.card-label small {
+		line-height: 1.2;
+		min-height: 17px;
+		font-size: 13px;
+	}
+	.empty-slot {
+		height: calc(100% - 46px);
+		width: auto;
+		margin: auto;
+	}
+	@media (max-width: 700px) {
+		.card-rack {
+			max-width: 420px;
+		}
+		ul {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 6px 14px;
+			padding-top: 8px;
+		}
+		.artwork {
+			width: min(100cqw, calc((100cqh - 34px) * 5 / 7));
+		}
+		.card-label {
+			font-size: 13px;
+			line-height: 1.2;
+			padding-top: 6px;
+		}
+		.card-label small {
+			display: none;
+		}
+		.empty-slot {
+			height: calc(100% - 34px);
+			font-size: 14px;
+		}
+	}
+	.empty-slot {
+		visibility: hidden;
+		width: 100%;
+		height: 100%;
+		aspect-ratio: auto;
+		border: 0;
+	}
+	@media (max-width: 700px) and (max-height: 750px) {
+		ul {
+			grid-template-columns: repeat(var(--card-count), minmax(0, 1fr));
+			gap: 7px;
+		}
+		.card-label {
+			font-size: 12px;
+		}
+	}
+	button {
+		justify-content: flex-start;
 	}
 </style>
