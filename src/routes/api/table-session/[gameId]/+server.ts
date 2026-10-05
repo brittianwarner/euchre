@@ -37,6 +37,7 @@ export const POST: RequestHandler = async ({ request, url, cookies, params }) =>
 		: undefined;
 	return json(
 		{
+			actorId: await table.resolve(),
 			token,
 			gatewayToken: issued?.token,
 			expiresAt: issued?.expiresAt ?? Date.now() + 900_000

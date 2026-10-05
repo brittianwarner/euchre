@@ -47,12 +47,32 @@
 	// The parent keys this page by game ID, so tokens never cross between tables.
 	const {
 		rivet: { useActor },
-		getParams
+		getParams,
+		getActorId
 	} = createGameRivet(untrack(() => data.gameId));
 	const store = new TableStore();
 
+	let actorId = $state<string>();
+	let connectionError = $state<string>();
+	onMount(() => {
+		let mounted = true;
+		void getActorId()
+			.then((id) => {
+				if (mounted) actorId = id;
+			})
+			.catch((error: unknown) => {
+				if (mounted)
+					connectionError = error instanceof Error ? error.message : 'Unable to open this table.';
+			});
+		return () => {
+			mounted = false;
+		};
+	});
+
 	const table = useActor(() => ({
 		name: 'euchreTable' as const,
+		actorId,
+		enabled: Boolean(actorId),
 		noCreate: true,
 		key: ['table', data.gameId],
 		getParams
@@ -296,8 +316,9 @@
 			<h1>{table.isConnected ? 'Your hand is on its way.' : 'A seat at the table.'}</h1>
 			<p>{table.isConnected ? 'Dealing your cards…' : 'Connecting to your game…'}</p>
 			<button type="button" onclick={() => window.location.reload()}>Reconnect to this game</button
-			><a href="/games">Your saved games</a>{#if table.lastError}<p class="err">
-					We couldn’t open this table. Try reconnecting, or open Your saved games.
+			><a href="/games">Your saved games</a>{#if table.lastError || connectionError}<p class="err">
+					{connectionError ??
+						'We couldn’t open this table. Try reconnecting, or open Your saved games.'}
 				</p>{/if}
 		</div>
 	{:else}

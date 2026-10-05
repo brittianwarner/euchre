@@ -4,6 +4,7 @@ import { createClient, createRivetKitWithClient } from '@rivetkit/svelte';
 import type { registry } from '#lib/actors/registry.ts';
 
 interface TableSession {
+	actorId: string;
 	token: string;
 	gatewayToken?: string;
 	expiresAt: number;
@@ -55,6 +56,7 @@ export function createGameRivet(gameId: string) {
 		rivet: createRivetKitWithClient<typeof registry>(client, {
 			actionDefaults: { timeout: 12_000, throwOnError: false, guardConnection: true }
 		}),
+		getActorId: async () => (await credentials()).actorId,
 		getParams: async () => ({ token: (await credentials()).token })
 	};
 }

@@ -27,7 +27,7 @@ const client = createClient({
 	devtools: false,
 	gateway: { skipReadyWait: true }
 });
-const handle = client.euchreTable.get(['table', gameId], { params: { token: session.token } });
+const handle = client.euchreTable.getForId(session.actorId, { params: { token: session.token } });
 
 const NativeSocket = globalThis.WebSocket;
 globalThis.WebSocket = class extends NativeSocket {
