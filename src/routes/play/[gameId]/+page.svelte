@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onDestroy, onMount, untrack, type Component } from 'svelte';
 	import { createGameRivet } from '#lib/client/rivet.ts';
+	import { warmCardArt } from '#lib/ui/card-art.ts';
 	import { TableStore, type TableActorHandle } from '#lib/game/table.svelte.ts';
 	import { applyOptimistic, whyIllegal } from '#lib/euchre/index.ts';
 	import HandReview from '#lib/ui/HandReview.svelte';
@@ -19,6 +20,7 @@
 
 	let FeltLayer = $state<Component | null>(null);
 	onMount(() => {
+		warmCardArt();
 		let active = true;
 		void import('#lib/three/TableFelt3D.svelte')
 			.then((module) => {

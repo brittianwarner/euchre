@@ -54,49 +54,61 @@
 	const animations = new Set<Animation>();
 	const suitGlyph = { H: '♥', D: '♦', S: '♠', C: '♣' };
 
-	function arrive(node: HTMLElement) {
+	function arrive(node: HTMLImageElement) {
 		const context = untrack(() => ({ you: view.you, origin, reduced: reducedMotion.enabled }));
 		const key = node.dataset.playKey!;
 		if (seen.has(key)) return;
 		seen.add(key);
 		if (seen.size > 40) seen.delete(seen.values().next().value!);
-		if (context.reduced) return;
-		const seat = Number(node.dataset.seat);
-		const rect = node.getBoundingClientRect();
-		const fromHand =
-			seat === context.you &&
-			context.origin &&
-			context.origin.card === node.dataset.card &&
-			performance.now() - context.origin.at < 2500
-				? context.origin.rect
-				: null;
-		const anchor = surface?.querySelector(`[data-seat-anchor="${seat}"]`)?.getBoundingClientRect();
-		const dx = fromHand
-			? fromHand.left - rect.left
-			: anchor
-				? anchor.left + anchor.width / 2 - rect.left - rect.width / 2
-				: 0;
-		const dy = fromHand ? fromHand.top - rect.top : seat === context.you ? 130 : -95;
-		const scale = fromHand ? fromHand.width / rect.width : 0.75;
-		const animation = node.animate(
-			[
-				{
-					transform: `translate(${dx}px,${dy}px) scale(${scale}) rotate(${seat === context.you ? 0 : -6}deg)`,
-					opacity: 0.4
-				},
-				{ transform: 'translate(0,-8px) scale(1.025) rotate(1deg)', opacity: 1, offset: 0.82 },
-				{ transform: 'none', opacity: 1 }
-			],
-			{ duration: TABLE_MOTION.play, easing: 'cubic-bezier(.22,.7,.25,1)' }
-		);
-		animations.add(animation);
-		animation.onfinish = () => {
-			animations.delete(animation);
-			playPlace();
-		};
+		let disposed = false;
+		let animation: Animation | undefined;
+		// Preserve the slot but never animate a blank, undecoded card face.
+		node.style.visibility = 'hidden';
+		void node.decode().then(showCard, showCard);
+		function showCard() {
+			if (disposed) return;
+			node.style.visibility = '';
+			if (context.reduced) return;
+			const seat = Number(node.dataset.seat);
+			const rect = node.getBoundingClientRect();
+			const fromHand =
+				seat === context.you &&
+				context.origin &&
+				context.origin.card === node.dataset.card &&
+				performance.now() - context.origin.at < 2500
+					? context.origin.rect
+					: null;
+			const anchor = surface
+				?.querySelector(`[data-seat-anchor="${seat}"]`)
+				?.getBoundingClientRect();
+			const dx = fromHand
+				? fromHand.left - rect.left
+				: anchor
+					? anchor.left + anchor.width / 2 - rect.left - rect.width / 2
+					: 0;
+			const dy = fromHand ? fromHand.top - rect.top : seat === context.you ? 130 : -95;
+			const scale = fromHand ? fromHand.width / rect.width : 0.75;
+			animation = node.animate(
+				[
+					{
+						transform: `translate(${dx}px,${dy}px) scale(${scale}) rotate(${seat === context.you ? 0 : -6}deg)`,
+						opacity: 0.4
+					},
+					{ transform: 'translate(0,-8px) scale(1.025) rotate(1deg)', opacity: 1, offset: 0.82 },
+					{ transform: 'none', opacity: 1 }
+				],
+				{ duration: TABLE_MOTION.play, easing: 'cubic-bezier(.22,.7,.25,1)' }
+			);
+			animations.add(animation);
+			animation.onfinish = () => {
+				animations.delete(animation!);
+				playPlace();
+			};
+		}
 		return () => {
-			animation.cancel();
-			animations.delete(animation);
+			disposed = true;
+			animation?.cancel();
+			if (animation) animations.delete(animation);
 		};
 	}
 
