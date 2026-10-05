@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ScoreCards from './ScoreCards.svelte';
 	import type { PublicGameView } from '#lib/protocol/index.ts';
 	let { view }: { view: PublicGameView } = $props();
 	const team = $derived(view.you % 2);
@@ -7,9 +8,17 @@
 <section class="score" aria-label="Match score">
 	<a class="brand" href="/" aria-label="Euchre home">euchre<span aria-hidden="true">♣</span></a>
 	<div class="scoreline">
-		<div><span>Your team</span><strong>{view.score[team]}</strong></div>
+		<div>
+			<ScoreCards score={view.score[team]} /><span>Your team</span><strong
+				>{view.score[team]}</strong
+			>
+		</div>
 		<span class="divider">—</span>
-		<div><strong>{view.score[1 - team]}</strong><span>Other team</span></div>
+		<div>
+			<strong>{view.score[1 - team]}</strong><span>Other team</span><ScoreCards
+				score={view.score[1 - team]}
+			/>
+		</div>
 	</div>
 	<span class="goal">First to 10</span>
 </section>
@@ -76,6 +85,13 @@
 		}
 	}
 	@media (max-width: 700px) {
+		.brand {
+			display: none;
+		}
+		.scoreline {
+			width: 100%;
+			justify-content: space-between;
+		}
 		.score {
 			width: 100%;
 			flex-wrap: wrap;

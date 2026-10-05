@@ -39,10 +39,40 @@
 
 <main class="page">
 	<div class="content">
+		{#if data.recent.tables.length > 0}
+			<section class="saved-tables" aria-label="Saved tables">
+				<h2>Your saved tables</h2>
+				<p>Resume in this browser, exactly where the table is waiting.</p>
+				{#each data.recent.tables as table (table.gameId)}
+					<a href={`/play/${table.gameId}`}>
+						{#if table.score && table.handNo !== null}{table.status === 'active'
+								? 'Resume game'
+								: 'Open game'} · Hand {table.handNo + 1} · {table.score[0]}–{table.score[1]} →{:else}Reconnect
+							saved table · {table.gameId.slice(0, 8)} →{/if}
+					</a>
+				{/each}
+			</section>
+		{/if}
+		{#if data.recent.unavailable}<p role="status">
+				Some saved tables could not be opened. Their links are kept above; try reconnecting.
+				Completed matches are also listed below.
+			</p>{/if}
+		{#if data.browserGames?.rows.length}
+			<section class="saved-tables" aria-label="Games from this browser">
+				<h2>Games from this browser</h2>
+				<p>Matches you completed before choosing an email stay here too.</p>
+				{#each data.browserGames.rows as row (row.matchId)}
+					<a href={`/games/${row.matchId}?profile=browser`}
+						>{formatDate(row.playedAt)} · {OUTCOME_LABEL[row.outcome]} · {row.score[0]}–{row
+							.score[1]} →</a
+					>
+				{/each}
+			</section>
+		{/if}
 		{#if data.identity === null}
 			<IdentityGate
 				heading="Whose scrapbook is this?"
-				lede="Tell us an email and we'll start keeping score — every match you play from here on will show up on this page."
+				lede="Enter your email address and we'll start keeping score — every match you play from here on will show up on this page."
 				errorMessage={form?.error ?? null}
 			/>
 		{:else}
@@ -129,7 +159,7 @@
 						Play your first hand and it'll land right here — the date, the final score, whether you
 						sent them home early, all of it. Think of this as the scrapbook on top of the fridge.
 					</p>
-					<a class="cta" href="/play">Deal a hand</a>
+					<a class="cta" href="/new">Deal a hand</a>
 				</section>
 			{/if}
 		{/if}
@@ -137,6 +167,18 @@
 </main>
 
 <style>
+	.saved-tables {
+		margin-bottom: 24px;
+		padding: 20px;
+		background: #f4f3e9;
+		color: #233e32;
+		border-radius: 12px;
+	}
+	.saved-tables a {
+		display: block;
+		padding: 16px 0;
+		min-height: 48px;
+	}
 	.page {
 		width: 100%;
 		min-height: 100dvh;

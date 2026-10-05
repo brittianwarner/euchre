@@ -25,7 +25,13 @@
 
 	let { view, onReplayTour }: Props = $props();
 
-	let dialogEl = $state<HTMLDialogElement | undefined>(undefined);
+	let dialogEl: HTMLDialogElement | undefined;
+	function attachElement(node: HTMLDialogElement) {
+		dialogEl = node;
+		return () => {
+			dialogEl = undefined;
+		};
+	}
 	let query = $state('');
 
 	function open(): void {
@@ -45,7 +51,7 @@
 			case 'cutting':
 				return {
 					title: 'Right now: cutting for the deal',
-					body: 'Whoever cuts either "bumps" the deck (cuts it) or says "run \'em" and skips it. It only decides who deals first.'
+					body: 'The player to the dealer’s right may cut (“bump”) or say “run ’em” to leave the deck as shuffled.'
 				};
 			case 'bid_round_1': {
 				const upSuit = v.upCard !== null ? SUIT_NAME[suitOf(v.upCard)] : 'that suit';
@@ -64,7 +70,7 @@
 			case 'bid_round_2':
 				return {
 					title: 'Right now: round two',
-					body: `The turned-down suit (${v.turnedDownSuit ? SUIT_NAME[v.turnedDownSuit] : 'that suit'}) may not be named again. Each player may name any of the other three suits as trump, or pass. If it comes all the way back around to the dealer with everyone else passed, the dealer must name a suit — no more passing.`
+					body: `The turned-down suit (${v.turnedDownSuit ? SUIT_NAME[v.turnedDownSuit] : 'that suit'}) may not be named again. Each player may name any of the other three suits as trump, or pass. If it comes all the way back around to the dealer with everyone else passed, ${v.rules?.stickTheDealer !== false ? 'the dealer must name a suit — no more passing.' : 'the dealer may pass too; four passes mean a fresh deal.'}`
 				};
 			case 'trick_play': {
 				const leftBowerNote =
@@ -115,7 +121,7 @@
 			title: 'Trump and the bowers',
 			body:
 				`The jack of the trump suit — the right bower — is the single best card in the game. ` +
-				`The jack of the OTHER suit that's the same colour becomes trump too, and outranks every ` +
+				`The jack of the OTHER suit that's the same color becomes trump too, and outranks every ` +
 				`other trump except the right bower — that's the left bower. ${
 					bowerIsLive
 						? `Right now ${SUIT_NAME[bowerSuit]} are trump, so the ${cardNameLower(bowerPair[1])} counts as ${SUIT_NAME[bowerSuit].toLowerCase()}, not its printed suit, for the rest of this hand.`
@@ -143,7 +149,7 @@
 			body:
 				"If everyone passes, the up-card turns face down and can't be named. Starting left of the dealer " +
 				'again, each player may name any of the other three suits as trump, or pass. If it reaches the ' +
-				'dealer with all three others having passed, the dealer must name a suit — "stuck".'
+				'dealer with all three others having passed, the dealer must name a suit if stick the dealer is enabled; otherwise, four passes mean a fresh deal.'
 		},
 		{
 			id: 'alone',
@@ -190,7 +196,7 @@
 </button>
 
 <dialog
-	bind:this={dialogEl}
+	{@attach attachElement}
 	class="rules"
 	aria-labelledby="rules-title"
 	onclick={(e) => {
@@ -203,6 +209,12 @@
 			<button type="button" class="close" aria-label="Close rules" onclick={close}>×</button>
 		</header>
 
+		{#if view?.rules}<p class="house-rules">
+				This table: stick the dealer {view.rules.stickTheDealer ? 'on' : 'off'} · Natural trump to call
+				{view.rules.requireNaturalTrump
+					? 'required (left bower alone does not qualify)'
+					: 'not required'}.
+			</p>{/if}
 		{#if note !== null}
 			<section class="context" aria-live="off">
 				<p class="eyebrow">{note.title}</p>

@@ -1,3 +1,4 @@
+import type { CompletedHandReview } from '#lib/protocol/hand-review.ts';
 /**
  * `euchreTable` — key `["table", gameId]`. The single authority on one match.
  *
@@ -188,6 +189,7 @@ export interface TableCreateInput {
 	 * authenticated connection claims the table — see {@link claimOwner}.
 	 */
 	readonly ownerUserId?: string;
+	readonly profileUserId?: string;
 	/** Overrides the cryptographically random seed. Fixtures and replays only. */
 	readonly seed?: string;
 	readonly cfg?: Partial<EngineConfig>;
@@ -222,6 +224,7 @@ export interface TableState {
 	readonly matchId: string;
 	/** Empty until claimed. The authorization check in `createConnState`. */
 	ownerUserId: string;
+	profileUserId?: string;
 	readonly startedAt: number;
 	/** The authoritative match state. Replaced wholesale, never patched in place. */
 	game: GameState;
@@ -237,7 +240,7 @@ export interface TableState {
 	lastResetHandNo: number;
 	/** Set once the durable copy exists in `playerProfile`. Gates self-reap. */
 	recordedAt: number | null;
-	/** Two consecutive abandon fires flip `status` to `abandoned`. */
+	/** Legacy persisted counter; human timeout messages now have no game effect. */
 	abandonStrikes: number;
 	/** Schedule ids with no home in `GameState`. Cancelled on every turn advance. */
 	tempoId: string | null;
@@ -279,6 +282,7 @@ interface TableConn {
  * typed as {@link TableState} rather than degrading to `any`.
  */
 interface TableCtx {
+	readonly kv: { put(key: string, value: string): Promise<void> };
 	state: TableState;
 	readonly vars: TableVars;
 	readonly key: string[];
@@ -444,6 +448,10 @@ function tableView(c: Pick<TableCtx, 'state'>, seat: Seat): PublicGameView {
 	return {
 		...project(c.state.game, seat),
 		reviewTricks: c.state.reviewTricks ?? false,
+		rules: {
+			stickTheDealer: c.state.game.cfg.stickTheDealer,
+			requireNaturalTrump: c.state.game.cfg.requireNaturalTrump ?? false
+		},
 		awaitingTrickReview:
 			c.state.game.hand.phase === 'trick_resolve' &&
 			c.state.reviewReadyTurnId === c.state.game.turnId
@@ -582,7 +590,7 @@ async function cancelTurnSchedules(c: TableCtx): Promise<void> {
  *
  * Five outcomes, and they are exhaustive over the phase machine:
  * `game_over`/non-active → record and reap; `trick_resolve`/`hand_score` → the
- * server-held read pause; the human's turn → the nudge/abandon ladder; an AI
+ * server-held read pause; the human's turn → wait without a timer; an AI
  * seat's turn → dispatch with a watchdog; no seat at all → nothing (which only
  * happens if the engine is mid-transition, and {@link settle} has already run).
  *
@@ -622,21 +630,13 @@ async function armTurn(c: TableCtx, steps: readonly Step[]): Promise<void> {
 	await dispatchAi(c, seat);
 }
 
-/**
- * Arm the two human timers.
- *
- * There is **no 30-second human turn timer**, and this comment exists so that one
- * is not re-added: there is one human at this table and nobody is waiting on
- * them, so a turn timer would mean the game plays itself while the player reads
- * the rules panel. What is armed instead is a 90 s partner nudge that changes no
- * state, and a 240 s auto-play that exists only so a walked-away solo match
- * terminates instead of pinning an actor forever.
- */
+/** A solo human turn waits indefinitely, including across reconnects. */
 async function armHumanLadder(c: TableCtx): Promise<void> {
 	const game = c.state.game;
 	game.turnDeadlineAt = null;
-	game.timerId = await c.schedule.after(TEMPO.nudgeMs, 'onNudge', game.turnId);
-	c.state.abandonId = await c.schedule.after(TEMPO.abandonMs, 'onAbandon', game.turnId);
+	// A solo player may read, step away, or reconnect without losing their turn.
+	game.timerId = null;
+	c.state.abandonId = null;
 	await c.saveState({ immediate: true });
 }
 
@@ -688,7 +688,9 @@ function aiSeatCreateInput(
 		dossier: assignment.dossier,
 		matchId: c.state.matchId
 	};
-	return c.state.ownerUserId === '' ? base : { ...base, profileKey: ['user', c.state.ownerUserId] };
+	return c.state.ownerUserId === ''
+		? base
+		: { ...base, profileKey: ['user', c.state.profileUserId ?? c.state.ownerUserId] };
 }
 
 /**
@@ -844,7 +846,7 @@ type Attribution =
  * Apply one seat's move and carry the table all the way to the next open turn.
  *
  * The single choke point every mutation path funnels through — human, AI, parked
- * AI release, watchdog force-play and abandon auto-play all end up here — so the
+ * AI release and watchdog force-play end up here — so the
  * durability ordering is written once: apply → commit → journal → settle →
  * **persist** → fan out → hand boundary. Arming the next turn is the caller's
  * job, because the human path has to slot its ack in between the fan-out and the
@@ -922,12 +924,14 @@ async function handBoundary(c: TableCtx, before: GameState, steps: readonly Step
 	const thrownIn = steps.some((s) => s.t === 'throwIn');
 
 	if (game.hand.phase === 'hand_score' && c.state.lastJournaledHandNo !== game.hand.handNo) {
+		await archiveHand(c, game.hand);
 		c.state.lastJournaledHandNo = game.hand.handNo;
 		c.state.handsPlayed += 1;
 		c.state.stats = accumulateStats(c.state.stats, game.hand);
 		await recordHand(c, game.hand);
 		await notifyAiSeats(c, 'handEnd', game.hand.handNo);
 	} else if (thrownIn && c.state.lastJournaledHandNo !== before.hand.handNo) {
+		await archiveHand(c, before.hand);
 		c.state.lastJournaledHandNo = before.hand.handNo;
 		c.state.stats = { ...c.state.stats, throwIns: c.state.stats.throwIns + 1 };
 		await recordHand(c, before.hand);
@@ -949,7 +953,10 @@ async function handBoundary(c: TableCtx, before: GameState, steps: readonly Step
  */
 function profileHandle(c: TableCtx): ActorSendHandle | null {
 	if (c.state.ownerUserId === '') return null;
-	return tableClient(c).playerProfile.getOrCreate(['user', c.state.ownerUserId]);
+	return tableClient(c).playerProfile.getOrCreate([
+		'user',
+		c.state.profileUserId ?? c.state.ownerUserId
+	]);
 }
 
 /**
@@ -968,6 +975,25 @@ function profileHandle(c: TableCtx): ActorSendHandle | null {
  * row durable; per-hand journalling has no equivalent retry because the match
  * write at game end still succeeds without it.
  */
+/** Persist separately from live state; only a finished hand can cross this boundary. */
+async function archiveHand(c: TableCtx, hand: HandState): Promise<void> {
+	const review: CompletedHandReview = {
+		handNo: hand.handNo,
+		trump: hand.trump,
+		makerSeat: hand.makerSeat,
+		aloneSeat: hand.aloneSeat,
+		tricks: hand.trickLog,
+		buried: [
+			...hand.kitty.slice(1),
+			...(hand.dealerDiscard ? [hand.dealerDiscard] : hand.upCard ? [hand.upCard] : [])
+		],
+		unplayed: Object.values(hand.hands).flat(),
+		result: hand.result,
+		delta: hand.delta
+	};
+	await c.kv.put(`review/${hand.handNo}`, JSON.stringify(review));
+}
+
 async function recordHand(c: TableCtx, hand: HandState): Promise<void> {
 	const profile = profileHandle(c);
 	const token = profileInternalToken();
@@ -1029,7 +1055,7 @@ async function recordMatchIfNeeded(c: TableCtx): Promise<void> {
 	const record: MatchRecord = {
 		schema: 1,
 		matchId: c.state.matchId,
-		userId: c.state.ownerUserId,
+		userId: c.state.profileUserId ?? c.state.ownerUserId,
 		seed: game.seed,
 		cfg: game.cfg,
 		firstDealer: game.firstDealer,
@@ -1361,31 +1387,12 @@ async function onTick(c: TableCtx, body: TickMsg): Promise<void> {
 			await autoPlay(c, seat, 'ai_timeout');
 			return;
 		}
-		case 'nudge': {
-			c.state.game.timerId = null;
-			// Presentation only: the partner says something, no state changes.
-			emitChat(
-				c,
-				partnerOf(HUMAN_SEAT),
-				'system',
-				'Your call, partner.',
-				`${game.gameId}:${game.turnId}:nudge`
-			);
-			return;
-		}
+		case 'nudge':
 		case 'abandon': {
+			// Ignore timers persisted by releases that auto-played for slow players.
+			c.state.game.timerId = null;
 			c.state.abandonId = null;
-			const seat = game.hand.turnSeat;
-			if (seat !== HUMAN_SEAT) return;
-			c.state.abandonStrikes += 1;
-			if (c.state.abandonStrikes >= 2) {
-				commit(c, { ...c.state.game, status: 'abandoned' });
-				await c.saveState({ immediate: true });
-				pushSync(c, []);
-				await recordMatchIfNeeded(c);
-				return;
-			}
-			await autoPlay(c, seat, 'abandon');
+			await c.saveState({ immediate: true });
 			return;
 		}
 	}
@@ -1495,6 +1502,7 @@ export const euchreTable = actor({
 			schema: 1,
 			matchId: gameId,
 			ownerUserId: input?.ownerUserId ?? '',
+			profileUserId: input?.profileUserId,
 			startedAt: Date.now(),
 			game,
 			personas: input?.personas ?? [],
@@ -1731,6 +1739,13 @@ export const euchreTable = actor({
 		 * During `trick_resolve`, `hand.trick` and the final entry of `hand.trickLog`
 		 * are **the same trick**; reading only the log avoids showing it twice.
 		 */
+		getHandReview: async (c, handNo: number): Promise<CompletedHandReview | null> => {
+			if (c.conn.state.role !== 'player')
+				throw new UserError('Not a player connection', { code: PROTOCOL_ERROR_CODES.forbidden });
+			if (!Number.isInteger(handNo) || handNo < 0 || handNo > c.state.game.hand.handNo) return null;
+			const saved = await c.kv.get(`review/${handNo}`);
+			return saved ? (JSON.parse(saved) as CompletedHandReview) : null;
+		},
 		lastTrick: (c): Trick | null => {
 			const log = c.state.game.hand.trickLog;
 			return log.length === 0 ? null : (log[log.length - 1] ?? null);

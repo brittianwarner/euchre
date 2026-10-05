@@ -23,8 +23,14 @@ export const POST: RequestHandler = async ({ request, url, cookies, params }) =>
 	try {
 		// snapshot passes the same origin and owner checks as a browser connection.
 		await table.snapshot();
-	} catch {
-		error(403, 'This table is not available to this browser');
+	} catch (cause) {
+		const code = cause && typeof cause === 'object' && 'code' in cause ? cause.code : '';
+		if (code === 'forbidden') error(403, 'This table belongs to another browser');
+		console.warn('[table-session] snapshot unavailable', {
+			gameId: params.gameId,
+			code: String(code)
+		});
+		error(503, 'Your table is temporarily unavailable. Please reconnect.');
 	}
 	const issued = process.env.RIVET_TOKEN
 		? await table.issueToken({ subject: userId, expiresIn: 900 })

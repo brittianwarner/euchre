@@ -184,6 +184,13 @@ export function legalMoves(state: GameState, seat: Seat): LegalMove[] {
 
 		case 'bid_round_1': {
 			const order = orderLabel(seat, h.dealerSeat);
+			if (
+				state.cfg.requireNaturalTrump &&
+				h.upCard &&
+				seat !== h.dealerSeat &&
+				!h.hands[seat].some((c) => c[1] === h.upCard![1])
+			)
+				return [{ id: 'pass', move: { t: 'pass' }, label: 'Pass' }];
 			return [
 				{ id: 'pass', move: { t: 'pass' }, label: 'Pass' },
 				{ id: 'orderUp', move: { t: 'orderUp', alone: false }, label: order },
@@ -205,6 +212,12 @@ export function legalMoves(state: GameState, seat: Seat): LegalMove[] {
 				: [{ id: 'pass', move: { t: 'pass' }, label: 'Pass' }];
 			for (const s of SUITS) {
 				if (s === h.turnedDownSuit) continue;
+				if (
+					state.cfg.requireNaturalTrump &&
+					!isStuckDealer(state, seat) &&
+					!h.hands[seat].some((c) => c[1] === s)
+				)
+					continue;
 				out.push({
 					id: `call:${s}`,
 					move: { t: 'call', suit: s, alone: false },

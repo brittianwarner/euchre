@@ -103,7 +103,7 @@
 		{#if data.identity === null}
 			<IdentityGate
 				heading="Whose opponents are these?"
-				lede="Tell us an email and the three seats you set up here will be waiting every time you play."
+				lede="Enter your email address and the three seats you set up here will be waiting every time you play."
 				errorMessage={form?.error ?? null}
 			/>
 		{:else}

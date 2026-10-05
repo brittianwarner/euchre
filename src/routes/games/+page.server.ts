@@ -9,6 +9,7 @@
  * bookmarked and still land on the right page.
  */
 
+import { loadRecentTables, readGuestUserId } from '#lib/server/recent-tables.ts';
 import { fail, redirect } from '@sveltejs/kit';
 import type { MatchListPage } from '#lib/protocol/index.ts';
 import type { ProfileStats } from '#lib/actors/player-profile/types.ts';
@@ -38,8 +39,20 @@ function hrefFor(cursor: string, back: readonly string[]): string {
 }
 
 export const load: PageServerLoad = async ({ cookies, url }) => {
+	const recent = await loadRecentTables(cookies);
 	const identity = await readIdentity(cookies);
-	if (!identity) return { identity: null };
+	const guestUserId = await readGuestUserId(cookies);
+	let browserGames: MatchListPage | null = null;
+	if (guestUserId && guestUserId !== identity?.userId) {
+		try {
+			browserGames = await (
+				await connectProfile({ userId: guestUserId, email: '' })
+			).listGames({ limit: PAGE_SIZE });
+		} catch {
+			/* The saved-table links remain usable if the scrapbook is offline. */
+		}
+	}
+	if (!identity) return { identity: null, recent, browserGames };
 
 	const cursorParam = url.searchParams.get('cursor');
 	const backStack = backStackFrom(url);
@@ -60,6 +73,8 @@ export const load: PageServerLoad = async ({ cookies, url }) => {
 					: null;
 
 		return {
+			recent,
+			browserGames,
 			identity,
 			stats,
 			page,
@@ -69,6 +84,8 @@ export const load: PageServerLoad = async ({ cookies, url }) => {
 		};
 	} catch {
 		return {
+			recent,
+			browserGames,
 			identity,
 			stats: null,
 			page: null,

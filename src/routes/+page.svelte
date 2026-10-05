@@ -17,7 +17,7 @@
 				with a fresh seat at the table.
 			</p>
 			<div class="hero-actions">
-				<a class="deal-button" href="/play">Let’s play <span aria-hidden="true">↗</span></a>
+				<a class="deal-button" href="/new">Let’s play <span aria-hidden="true">↗</span></a>
 				<a class="rules-link" href="#how-to-play"
 					>New to euchre? <span aria-hidden="true">↓</span></a
 				>
@@ -113,7 +113,7 @@
 	<footer>
 		<a class="footer-brand" href="/">euchre<span>♣</span></a>
 		<p>A good hand is better shared.</p>
-		<a href="/play">See you at the table <span aria-hidden="true">↗</span></a>
+		<a href="/new">See you at the table <span aria-hidden="true">↗</span></a>
 	</footer>
 </main>
 

@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 
 	const links = [
-		{ href: '/play', label: 'Play', title: 'Deal a new hand' },
+		{ href: '/new', label: 'Play', title: 'Deal a new hand' },
 		{ href: '/games', label: 'Your games', title: 'Your past games' },
 		{ href: '/settings', label: 'Settings', title: 'Edit the opponents' }
 	] as const;
@@ -19,8 +19,7 @@
 		<nav aria-label="Main navigation">
 			{#if !onHome}<a href="/" aria-label="Euchre home" class="home-link">♣</a>{/if}
 			{#each links as link (link.href)}
-				{@const active =
-					here === link.href || (link.href !== '/play' && here.startsWith(link.href))}
+				{@const active = here === link.href || (link.href !== '/new' && here.startsWith(link.href))}
 				<a href={link.href} title={link.title} aria-current={active ? 'page' : undefined}
 					>{link.label}</a
 				>

@@ -28,6 +28,12 @@ export function turnInstruction(view: PublicGameView): string {
 			? 'Your team wins the match!'
 			: 'The other team wins the match.';
 	if (view.phase === 'hand_score') return 'Hand complete. Adding the points…';
+	if (view.awaitingTrickReview)
+		return view.trick.index === 4
+			? 'Press Continue to finish this hand.'
+			: view.trick.winnerSeat === view.you
+				? 'You lead next. Press Continue first.'
+				: 'Press Continue when you’re ready for the next trick.';
 	if (view.phase === 'trick_resolve')
 		return view.trick.winnerSeat === null
 			? 'Finishing this trick…'
@@ -41,7 +47,10 @@ export function turnInstruction(view: PublicGameView): string {
 	if (view.phase === 'cutting') return 'Your choice: cut the deck, or let the dealer deal.';
 	if (view.phase === 'bid_round_1' && view.upCard)
 		return `Make ${SUIT_NAME[view.upCard[1] as keyof typeof SUIT_NAME].toLowerCase()} trump, or pass.`;
-	if (view.phase === 'bid_round_2') return 'Choose a trump suit, or pass if you can.';
+	if (view.phase === 'bid_round_2')
+		return view.legal.some((m) => m.id === 'pass')
+			? 'Choose a trump suit, or pass.'
+			: 'Everyone passed. Stick the dealer is on: choose trump.';
 	return view.trick.ledSuit
 		? `${SUIT_NAME[view.trick.ledSuit]} were led. Follow suit if you can.`
 		: 'You lead. Select any card, then press Play.';

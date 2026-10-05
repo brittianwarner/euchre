@@ -1,8 +1,10 @@
 <script lang="ts">
-	import { onDestroy, untrack } from 'svelte';
+	import { onDestroy, onMount, untrack, type Component } from 'svelte';
 	import { createGameRivet } from '#lib/client/rivet.ts';
 	import { TableStore, type TableActorHandle } from '#lib/game/table.svelte.ts';
 	import { applyOptimistic, whyIllegal } from '#lib/euchre/index.ts';
+	import HandReview from '#lib/ui/HandReview.svelte';
+	import GameFeedback from '#lib/ui/GameFeedback.svelte';
 	import TableStage, { type CardOrigin } from '#lib/ui/TableStage.svelte';
 	import { cardName } from '#lib/euchre/index.ts';
 	import { turnInstruction } from '#lib/ui/table-presentation.ts';
@@ -14,6 +16,21 @@
 	import Walkthrough from '#lib/ui/onboarding/Walkthrough.svelte';
 	import ScoreBoard from '#lib/ui/ScoreBoard.svelte';
 	import SoundToggle from '#lib/ui/sound/SoundToggle.svelte';
+
+	let FeltLayer = $state<Component | null>(null);
+	onMount(() => {
+		let active = true;
+		void import('#lib/three/TableFelt3D.svelte')
+			.then((module) => {
+				if (active) FeltLayer = module.default;
+			})
+			.catch(() => {
+				/* CSS felt remains usable without WebGL. */
+			});
+		return () => {
+			active = false;
+		};
+	});
 
 	/** Compass names for the spoken log. Seat 0 is the player. */
 	const SEAT_NAME = ['You', 'Left opponent', 'Your partner', 'Right opponent'] as const;
@@ -37,7 +54,6 @@
 	const table = useActor(() => ({
 		name: 'euchreTable' as const,
 		noCreate: true,
-		actorId: data.actorId,
 		key: ['table', data.gameId],
 		getParams
 	}));
@@ -125,7 +141,51 @@
 	let flightOrigin = $state.raw<CardOrigin | null>(null);
 	let reviewBusy = $state(false);
 	let reviewError = $state<string | null>(null);
-	let pageRoot = $state<HTMLElement>();
+	let pageRoot: HTMLElement | undefined;
+	function attachElement(node: HTMLElement) {
+		pageRoot = node;
+		return () => {
+			pageRoot = undefined;
+		};
+	}
+	let settingsOpen = $state(false);
+	let settingsPinned = $state(false);
+	let menuPosition = $state.raw<{ x: number; y: number } | null>(null);
+	let menuNode: HTMLElement | undefined;
+	function attachMenu(node: HTMLElement) {
+		menuNode = node;
+		return () => {
+			menuNode = undefined;
+		};
+	}
+	let dragStart: { x: number; y: number; left: number; top: number } | null = null;
+	function pinSettings() {
+		const rect = menuNode?.getBoundingClientRect();
+		settingsPinned = !settingsPinned;
+		menuPosition =
+			settingsPinned && rect ? { x: Math.max(8, rect.left), y: Math.max(8, rect.top) } : null;
+	}
+	function startSettingsDrag(event: PointerEvent) {
+		if (!settingsPinned || (event.target as HTMLElement).closest('button')) return;
+		const rect = menuNode?.getBoundingClientRect();
+		if (!rect) return;
+		dragStart = { x: event.clientX, y: event.clientY, left: rect.left, top: rect.top };
+		(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+	}
+
+	function positionSettings(x: number, y: number) {
+		menuPosition = {
+			x: Math.max(8, Math.min(window.innerWidth - (menuNode?.offsetWidth ?? 350) - 8, x)),
+			y: Math.max(8, Math.min(window.innerHeight - (menuNode?.offsetHeight ?? 80) - 8, y))
+		};
+	}
+	function dragSettings(event: PointerEvent) {
+		if (dragStart)
+			positionSettings(
+				dragStart.left + event.clientX - dragStart.x,
+				dragStart.top + event.clientY - dragStart.y
+			);
+	}
 
 	/** Submits any legal move id, previewing its effect locally first. Used by the bid panel, card rack, and confirm button — so the whole table gets the same instant feedback from one place. */
 	async function submitMove(moveId: LegalMoveId): Promise<void> {
@@ -157,6 +217,8 @@
 	 */
 	function illegalReason(view: PublicGameView, card: CardId): string {
 		if (view.status !== 'active') return 'This game is finished.';
+		if (view.phase === 'trick_resolve' && view.reviewTricks)
+			return 'Press Continue to finish reviewing this trick before playing.';
 		if (view.turnSeat !== view.you) return "It's not your turn yet.";
 		if (view.phase === 'dealer_discard') {
 			return "It's not your turn to discard.";
@@ -219,8 +281,13 @@
 	onDestroy(() => clearTimeout(illegalTimer));
 </script>
 
+<svelte:window
+	onresize={() => {
+		if (settingsPinned && menuPosition) positionSettings(menuPosition.x, menuPosition.y);
+	}}
+/>
 <svelte:head><title>Euchre — your table</title></svelte:head>
-<main class="table-page" bind:this={pageRoot}>
+<main class="table-page" {@attach attachElement}>
 	<Walkthrough view={displayView} bind:open={tourOpen} />
 	<GameAnnouncer steps={lastSteps} view={displayView} />
 	{#if !displayView}
@@ -228,47 +295,98 @@
 			<span aria-hidden="true">♣</span>
 			<h1>{table.isConnected ? 'Your hand is on its way.' : 'A seat at the table.'}</h1>
 			<p>{table.isConnected ? 'Dealing your cards…' : 'Connecting to your game…'}</p>
-			<a href="/">Back to the club</a>{#if table.lastError}<p class="err">
-					{String(table.lastError)}
+			<button type="button" onclick={() => window.location.reload()}>Reconnect to this game</button
+			><a href="/games">Your saved games</a>{#if table.lastError}<p class="err">
+					We couldn’t open this table. Try reconnecting, or open Your saved games.
 				</p>{/if}
 		</div>
 	{:else}
+		<GameFeedback view={displayView} steps={lastSteps} />
 		<header class="game-header">
 			<ScoreBoard view={displayView} />
 			<div class="table-tools">
 				<RulesPanel view={displayView} onReplayTour={() => (tourOpen = true)} />
-				<details class="table-menu">
-					<summary>Settings <span aria-hidden="true">⌄</span></summary>
-					<div class="menu-panel">
-						<div class="sound-setting"><span>Table sounds</span><SoundToggle /></div>
-						<label class="review-setting"
-							><input
-								type="checkbox"
-								checked={displayView.reviewTricks ?? false}
-								disabled={reviewBusy || !table.isConnected}
-								onchange={(event) =>
-									void reviewTrick({ action: 'set', enabled: event.currentTarget.checked })}
-							/><span
-								>Wait for me after each trick<small>Review the cards, then press Continue.</small
-								></span
-							></label
+				<div class="table-menu">
+					<button
+						type="button"
+						class="settings-trigger"
+						aria-expanded={settingsOpen}
+						onclick={() => (settingsOpen = !settingsOpen)}
+						>Settings <span aria-hidden="true">⌄</span></button
+					>
+					{#if settingsOpen}<aside
+							class="menu-panel"
+							class:pinned={settingsPinned}
+							{@attach attachMenu}
+							style:left={menuPosition ? `${menuPosition.x}px` : undefined}
+							style:top={menuPosition ? `${menuPosition.y}px` : undefined}
+							aria-label="Table settings"
 						>
-						<Hint view={displayView} {lastDecision} />
-						<a href="/play">Start a new game</a><a href="/">Back to the club</a>
-						<details class="conversation">
-							<summary>Table talk</summary>
-							<div>
-								{#each store.chat as line (line.msgId)}<p>
-										<strong>{SEAT_NAME[line.seat] ?? 'Table'}</strong>
-										{line.text}
-									</p>{:else}<p>The conversation starts with the first call.</p>{/each}
+							<div
+								class="settings-handle"
+								role="toolbar"
+								tabindex="0"
+								aria-label="Move settings"
+								onkeydown={(event) => {
+									if (
+										settingsPinned &&
+										menuPosition &&
+										['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)
+									) {
+										event.preventDefault();
+										positionSettings(
+											menuPosition.x +
+												(event.key === 'ArrowLeft' ? -16 : event.key === 'ArrowRight' ? 16 : 0),
+											menuPosition.y +
+												(event.key === 'ArrowUp' ? -16 : event.key === 'ArrowDown' ? 16 : 0)
+										);
+									}
+								}}
+								onpointerdown={startSettingsDrag}
+								onpointermove={dragSettings}
+								onpointerup={() => (dragStart = null)}
+								onpointercancel={() => (dragStart = null)}
+							>
+								<strong>Table settings</strong><button type="button" onclick={pinSettings}
+									>{settingsPinned ? 'Unpin' : 'Pin'}</button
+								><button
+									type="button"
+									aria-label="Close settings"
+									onclick={() => (settingsOpen = false)}>×</button
+								>
 							</div>
-						</details>
-					</div>
-				</details>
+							<div class="sound-setting"><span>Table sounds</span><SoundToggle /></div>
+							<label class="review-setting"
+								><input
+									type="checkbox"
+									checked={displayView.reviewTricks ?? false}
+									disabled={reviewBusy || !table.isConnected}
+									onchange={(event) =>
+										void reviewTrick({ action: 'set', enabled: event.currentTarget.checked })}
+								/><span
+									>Wait for me after each trick<small>Review the cards, then press Continue.</small
+									></span
+								></label
+							>
+							<HandReview view={displayView} load={(handNo) => table.getHandReview(handNo)} />
+							<Hint view={displayView} {lastDecision} />
+							<a href="/new">Start a new game</a><a href="/">Back to home</a>
+							<a href="/games">Your saved games</a>
+							<details class="conversation">
+								<summary>Table talk</summary>
+								<div>
+									{#each store.chat as line (line.msgId)}<p>
+											<strong>{SEAT_NAME[line.seat] ?? 'Table'}</strong>
+											{line.text}
+										</p>{:else}<p>The conversation starts with the first call.</p>{/each}
+								</div>
+							</details>
+						</aside>{/if}
+				</div>
 			</div>
 		</header>
 		<div class="table-layout">
+			{#if FeltLayer}<FeltLayer />{/if}
 			{#if !table.isConnected}<p class="notice" role="status">
 					Reconnecting… Your table is saved. Controls will return when you’re connected.
 				</p>{/if}
@@ -291,9 +409,12 @@
 						<h1>
 							{displayView.status !== 'active'
 								? 'A good game, well played.'
-								: displayView.turnSeat === displayView.you && displayView.phase !== 'trick_resolve'
-									? 'Your turn.'
-									: 'Make yourself at home.'}
+								: displayView.phase === 'trick_resolve' && displayView.reviewTricks
+									? 'Review the trick.'
+									: displayView.turnSeat === displayView.you &&
+										  displayView.phase !== 'trick_resolve'
+										? 'Your turn.'
+										: 'Make yourself at home.'}
 						</h1>
 					</div>
 					{#if displayView.status === 'active' && (displayView.phase === 'trick_play' || displayView.phase === 'trick_resolve' || displayView.phase === 'dealer_discard')}
@@ -310,7 +431,7 @@
 							{selectedCard ? cardName(selectedCard) : 'selected card'}
 							<span aria-hidden="true">→</span></button
 						>
-					{:else if displayView.status !== 'active'}<a class="confirm-card" href="/play"
+					{:else if displayView.status !== 'active'}<a class="confirm-card" href="/new"
 							>Play again <span aria-hidden="true">→</span></a
 						>{/if}
 				</div>
@@ -340,6 +461,51 @@
 </main>
 
 <style>
+	.settings-trigger {
+		font-family: inherit;
+		background: transparent;
+		color: inherit;
+	}
+	.settings-handle {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding-bottom: 12px;
+	}
+	.settings-handle strong {
+		margin-right: auto;
+	}
+	.settings-handle button {
+		min-height: 44px;
+		padding: 8px;
+		border: 1px solid #bdc9ae;
+		border-radius: 6px;
+		background: #fffdf6;
+		color: #233e32;
+		cursor: pointer;
+	}
+	.menu-panel.pinned {
+		position: fixed;
+		right: auto;
+		z-index: 20;
+		max-height: calc(100dvh - 100px);
+		overflow-y: auto;
+	}
+	.pinned .settings-handle {
+		cursor: move;
+		touch-action: none;
+	}
+	.loading button {
+		min-height: 48px;
+		padding: 12px 20px;
+		border-radius: 8px;
+		border: 1px solid #bdc9ae;
+		background: #285641;
+		color: white;
+		font: 600 18px var(--font-sans);
+		cursor: pointer;
+	}
+
 	.table-page {
 		min-height: 100dvh;
 		background: #f4f3e9;
@@ -365,7 +531,7 @@
 	.table-menu {
 		position: relative;
 	}
-	.table-menu > summary {
+	.settings-trigger {
 		display: flex;
 		gap: 14px;
 		align-items: center;
@@ -377,7 +543,7 @@
 		cursor: pointer;
 		list-style: none;
 	}
-	.table-menu > summary::-webkit-details-marker {
+	.settings-trigger::-webkit-details-marker {
 		display: none;
 	}
 	.menu-panel {
@@ -620,7 +786,8 @@
 			right: 0;
 		}
 	}
-	/* The game uses the visible viewport. Menus and help scroll independently. */
+
+	/* One full-width table. Help and settings scroll independently. */
 	.table-page {
 		height: 100dvh;
 		min-height: 0;
@@ -630,169 +797,279 @@
 	}
 	.game-header {
 		flex-shrink: 0;
-		min-height: 72px;
-		padding-block: 10px;
+		min-height: 64px;
+		padding: 8px 24px;
+		background: #f4f3e9;
+		color: #233e32;
 	}
 	.table-layout {
+		position: relative;
+		isolation: isolate;
 		flex: 1;
 		min-height: 0;
 		width: 100%;
+		max-width: none;
+		margin: 0;
 		display: grid;
-		grid-template-rows: minmax(0, 1.06fr) minmax(0, 0.94fr);
-		gap: 12px;
-		padding: 14px 28px max(10px, env(safe-area-inset-bottom));
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-rows: minmax(0, 1fr) clamp(280px, 46dvh, 420px);
+		gap: 8px;
+		padding: 8px 24px max(8px, env(safe-area-inset-bottom));
+		background: #17452f;
+		color: #fff8e8;
+	}
+	.table-layout > :global(.felt),
+	.hand-area {
+		position: relative;
+		z-index: 1;
+		min-height: 0;
 	}
 	.hand-area {
-		min-height: 0;
-		padding: 0 28px;
+		width: 100%;
+		padding: 8px 24px 0;
 		display: grid;
 		grid-template-rows: auto auto minmax(0, 1fr) auto;
+		border-top: 1px solid #e2dbbd26;
 	}
-	.hand-heading { grid-row: 1; }
-	.instruction { grid-row: 2; }
-	.hand-area :global(.card-rack) { grid-row: 3; }
-	.bid-controls { grid-row: 4; }
-	.hand-heading h1 {
-		font-size: 27px;
+	.hand-heading {
+		grid-row: 1;
+		flex-direction: row;
+		align-items: center;
+		gap: 12px;
 	}
 	.hand-heading > div {
 		display: flex;
 		align-items: baseline;
-		gap: 12px;
+		gap: 14px;
+	}
+	.hand-heading h1 {
+		font-size: 25px;
+		margin: 0;
+	}
+	.hand-heading .eyebrow {
+		color: #e9e9d5;
+		font-size: 16px;
 	}
 	.instruction {
-		margin: 4px 0 5px;
+		grid-row: 2;
 		font-size: 17px;
-		line-height: 1.4;
+		line-height: 1.3;
+		margin: 4px 0;
 		min-height: 0;
 	}
-	.confirm-card {
-		min-height: 52px;
-		padding: 10px 18px;
+	.hand-area :global(.card-rack) {
+		grid-row: 3;
+		max-width: 980px;
 	}
-	.table-footer {
-		display: none;
+	.hand-area :global(.card-label) {
+		color: #f7f1df;
+	}
+	.hand-area :global(.card-label small) {
+		color: #ddd5bd;
+	}
+	.hand-area :global(button.selected .artwork) {
+		outline-color: #f5d98e;
+	}
+	.hand-area :global(button:focus-visible) {
+		outline-color: #f5d98e;
+	}
+	.confirm-card {
+		min-width: 0;
+		min-height: 48px;
+		font-size: 17px;
+		padding: 8px 18px;
+		background: #f5e8c3;
+		color: #233e32;
+		border-color: #ead8aa;
+	}
+	.confirm-card:hover:not(:disabled) {
+		background: #fff0c7;
+	}
+	.confirm-card:disabled {
+		background: #e8eadb;
+		color: #6a7466;
+		border-color: #d5ddc7;
+	}
+	.bid-controls {
+		grid-row: 4;
 	}
 	.bid-controls:has(:global(.bids)) {
 		margin: 4px 0 0;
 	}
-	.table-layout > .notice,
-	.table-layout > .err {
-		position: absolute;
-		top: 80px;
-		left: 24px;
-		right: 24px;
-		z-index: 6;
+	.bid-controls :global(button:not(.secondary)) {
+		background: #f5e8c3;
+		color: #233e32;
+		border-color: #ead8aa;
 	}
+	.hand-area :global(.bid-heading) {
+		margin: 0;
+	}
+	.table-footer {
+		display: none;
+	}
+	.table-layout > .notice,
+	.table-layout > .err,
 	.hand-area > .err {
 		position: absolute;
-		bottom: 20px;
+		z-index: 6;
 		left: 24px;
 		right: 24px;
-		z-index: 6;
+		top: 8px;
+		color: #233e32;
 	}
+	.hand-area > .err {
+		top: auto;
+		bottom: 12px;
+	}
+	@media (min-width: 701px) and (min-height: 501px) {
+		.hand-area {
+			max-width: 1100px;
+			margin-inline: auto;
+			padding-inline: 16px;
+		}
+		.hand-area :global(.card-rack) {
+			width: 100%;
+			max-width: 980px;
+		}
+		.hand-heading .eyebrow {
+			display: none;
+		}
+		.hand-heading h1 {
+			font-size: 28px;
+		}
+		.confirm-card {
+			min-width: 230px;
+		}
+	}
+
 	@media (max-width: 700px) {
 		.game-header {
-			padding: 8px 14px;
+			padding: 6px 12px;
 			gap: 6px;
 		}
 		.table-tools {
 			width: 100%;
-			gap: 8px;
 			justify-content: space-between;
+			gap: 8px;
 		}
 		.table-tools :global(.trigger),
-		.table-menu > summary {
+		.settings-trigger {
 			min-height: 44px;
 			padding: 7px 12px;
 			font-size: 15px;
 		}
 		.table-layout {
+			padding: 6px 10px max(8px, env(safe-area-inset-bottom));
 			grid-template-rows: minmax(0, 0.92fr) minmax(0, 1.08fr);
-			gap: 8px;
-			padding: 8px 10px max(8px, env(safe-area-inset-bottom));
+			gap: 6px;
 		}
 		.hand-area {
-			padding: 0 4px;
-		}
-		.hand-heading {
-			flex-direction: row;
-			align-items: center;
-			gap: 10px;
+			padding: 6px 4px 0;
 		}
 		.hand-heading h1 {
 			display: none;
 		}
 		.hand-heading .eyebrow {
-			color: #233e32;
 			font-size: 18px;
 			font-weight: 650;
 			white-space: nowrap;
 		}
 		.confirm-card {
 			width: auto;
-			min-width: 0;
 			min-height: 48px;
+			padding: 8px 12px;
 			font-size: 15px;
 			gap: 8px;
-			padding: 9px 12px;
 		}
 		.instruction {
 			font-size: 15px;
 			margin: 5px 0;
-			line-height: 1.3;
 		}
 		.hand-area.bidding .hand-heading {
 			display: none;
 		}
+		.menu-panel.pinned {
+			width: min(280px, calc(100vw - 24px));
+			max-height: 50dvh;
+			padding: 14px;
+		}
 	}
-	@media (min-width: 701px) and (max-height: 500px) {
+	@media (max-width: 700px) and (max-height: 750px) and (orientation: portrait) {
+		.table-layout {
+			grid-template-rows: minmax(0, 1fr) 230px;
+		}
+		.table-layout:has(.hand-area.bidding) {
+			grid-template-rows: minmax(0, 1fr) 250px;
+		}
+	}
+	@media (max-width: 360px) and (max-height: 650px) and (orientation: portrait) {
+		.table-layout {
+			grid-template-rows: minmax(0, 1fr) 190px;
+		}
+		.table-layout:has(.hand-area.bidding) {
+			grid-template-rows: minmax(0, 1fr) 220px;
+		}
+	}
+	@media (orientation: landscape) and (max-height: 500px) {
 		.game-header {
+			padding: 6px 12px;
+			gap: 8px;
 			min-height: 60px;
 		}
-		.table-layout {
-			grid-template-columns: 1fr 1fr;
-			grid-template-rows: minmax(0, 1fr);
+		.table-tools {
+			width: auto;
+			margin-left: auto;
+		}
+		.table-layout,
+		.table-layout:has(.hand-area.bidding) {
+			grid-template-rows: minmax(0, 1fr) 125px;
+			padding: 4px 10px;
 		}
 		.hand-area {
-			padding: 0 6px;
+			grid-template-columns: 180px minmax(0, 1fr);
+			grid-template-rows: auto minmax(0, 1fr);
+			gap: 4px 14px;
+			padding: 4px;
 		}
+		.hand-heading {
+			grid-column: 1;
+			grid-row: 1;
+		}
+		.hand-heading .eyebrow,
 		.hand-heading h1 {
 			display: none;
 		}
 		.confirm-card {
-			min-width: 0;
-			font-size: 16px;
+			width: 100%;
+			min-height: 44px;
+			font-size: 14px;
+			padding: 6px;
 		}
-	}
-	@media (max-width: 700px) and (max-height: 750px) {
-		.table-layout {
-			grid-template-rows: minmax(0, 0.9fr) minmax(0, 1.1fr);
+		.instruction {
+			grid-column: 1;
+			grid-row: 2;
+			font-size: 14px;
+		}
+		.hand-area :global(.card-rack) {
+			grid-column: 2;
+			grid-row: 1 / 3;
+		}
+		.hand-area :global(.card-rack ul) {
+			grid-template-columns: repeat(var(--card-count), minmax(0, 1fr));
+			gap: 8px;
+		}
+		.hand-area :global(.card-label) {
+			display: none;
+		}
+		.hand-area :global(.artwork) {
+			width: min(100cqw, calc((100cqh - 8px) * 5 / 7));
 		}
 		.hand-area.bidding .bid-controls {
-			margin: 0;
+			grid-column: 1;
+			grid-row: 1;
 		}
-		.hand-area.bidding {
-			grid-template-rows: auto auto minmax(0, 1fr) auto;
+		.hand-area.bidding .instruction {
+			grid-row: 2;
 		}
-	}
-	@media (max-width: 700px) and (max-height: 750px) {
-		.table-layout:has(.hand-area.bidding) {
-			grid-template-rows: minmax(0, 0.7fr) minmax(0, 1.3fr);
-		}
-	}
-	@media (orientation: landscape) and (max-height: 500px) {
-		.game-header { min-height: 60px; gap: 8px; padding: 6px 12px; }
-		.table-tools { width: auto; margin-left: auto; }
-		.table-layout,
-		.table-layout:has(.hand-area.bidding) {
-			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-			grid-template-rows: minmax(0, 1fr);
-			padding: 8px 10px max(8px, env(safe-area-inset-bottom));
-		}
-		.hand-area { padding: 0 4px; }
-		.hand-heading h1 { display: none; }
-		.hand-heading .eyebrow { font-size: 15px; }
-		.confirm-card { min-width: 0; font-size: 14px; padding: 8px; }
 	}
 </style>

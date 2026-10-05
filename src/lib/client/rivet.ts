@@ -22,7 +22,14 @@ export function createGameRivet(gameId: string) {
 			headers: { 'Content-Type': 'application/json' }
 		})
 			.then(async (response) => {
-				if (!response.ok) throw new Error('Unable to authorize this table. Please reload.');
+				if (!response.ok)
+					throw new Error(
+						response.status === 403
+							? 'This table belongs to another browser. Open Your games to find your table.'
+							: response.status === 401
+								? 'Please start a game in this browser first.'
+								: 'Your table is temporarily unavailable. Please reconnect.'
+					);
 				session = (await response.json()) as TableSession;
 				return session;
 			})

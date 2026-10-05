@@ -7,7 +7,7 @@
   inside it — the hit area is the button's own padding/min-size, not the icon.
 -->
 <script lang="ts">
-	import { soundSettings } from './sound.svelte';
+	import { soundSettings, playTrumpCalled } from './sound.svelte';
 </script>
 
 <button
@@ -16,7 +16,10 @@
 	aria-pressed={soundSettings.enabled}
 	aria-label={soundSettings.enabled ? 'Mute table sound' : 'Unmute table sound'}
 	title={soundSettings.enabled ? 'Sound on' : 'Sound off'}
-	onclick={() => soundSettings.toggle()}
+	onclick={() => {
+		soundSettings.toggle();
+		if (soundSettings.enabled) playTrumpCalled('H');
+	}}
 >
 	{#if soundSettings.enabled}
 		<!-- speaker, sound waves -->

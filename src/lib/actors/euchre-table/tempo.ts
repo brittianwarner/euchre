@@ -66,7 +66,7 @@ export const TEMPO = Object.freeze({
 	thinkFloorMs: Object.freeze(
 		LOCAL_FAST
 			? { cut: 80, bid1: 120, bid2: 120, discard: 120, play: 100 }
-			: { cut: 700, bid1: 1100, bid2: 1100, discard: 1100, play: 1000 }
+			: { cut: 700, bid1: 1900, bid2: 1900, discard: 1100, play: 1000 }
 	) satisfies Record<AIDecisionKind, number>,
 
 	/** Width of the deterministic jitter added on top of the floor. */
@@ -81,17 +81,17 @@ export const TEMPO = Object.freeze({
 	/** When `thinking { extended: true }` is raised so the UI escalates rather than freezing. */
 	aiExtendedAtMs: LOCAL_FAST ? 800 : 2200,
 
-	/** Partner speaks a nudge line. No state change; there is deliberately no human turn timer. */
+	/** Legacy compatibility constant; human nudge timers are no longer armed. */
 	nudgeMs: LOCAL_FAST ? 30_000 : 90_000,
 
-	/** Auto-play so a walked-away solo match terminates instead of pinning an actor forever. */
+	/** Legacy compatibility constant; human turns never auto-play or abandon. */
 	abandonMs: LOCAL_FAST ? 90_000 : 240_000,
 
 	/** Retry delay for the durable `playerProfile` write. */
 	profileRetryMs: 30_000,
 
 	/** Self-reap delay after `game_over`, and only once the durable copy exists. */
-	reapMs: 600_000
+	reapMs: 30 * 86400_000
 });
 
 /**

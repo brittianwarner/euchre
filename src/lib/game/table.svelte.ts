@@ -79,8 +79,8 @@ export class TableStore {
 				this.view = snap;
 				this.status = 'ready';
 			}
-		} catch (err) {
-			this.error = `Resync failed: ${String(err)}`;
+		} catch {
+			this.error = 'Could not reconnect yet. Your last table view is kept here. Please try again.';
 		}
 	}
 
@@ -104,21 +104,19 @@ export class TableStore {
 				clientMoveId
 			});
 			if (!ack || ack.ok === false) {
-				const detail =
-					handle.lastActionError != null
-						? String(handle.lastActionError)
-						: ack && 'code' in ack
-							? String(ack.code)
-							: 'no ack';
-				this.error = `Move rejected (${detail})`;
-				this.submitting = false;
 				await this.resync();
+				// A lost acknowledgement is not a rejected move. The same
+				// turn nonce must still be current before offering a retry.
+				if (this.view && this.view.turnId !== view.turnId) return true;
+				this.error = 'The table could not confirm your move. Your game is saved. Please try again.';
 				return false;
 			}
 			return true;
 		} catch (err) {
 			console.error('[table-store] play error', err);
-			this.error = `Move failed: ${String(err)}`;
+			await this.resync();
+			if (this.view && this.view.turnId !== view.turnId) return true;
+			this.error = 'Connection interrupted. Your game is saved. Reconnect and try again.';
 			return false;
 		} finally {
 			this.submitting = false;

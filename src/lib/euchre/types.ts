@@ -284,6 +284,8 @@ export interface EngineConfig {
 	readonly gameTo: number;
 	/** Default `true`: the dealer may not pass in round 2 once three have passed. */
 	readonly stickTheDealer: boolean;
+	/** A left bower alone does not qualify to name trump. Stuck dealers are exempt. */
+	readonly requireNaturalTrump?: boolean;
 	/** Only the maker may go alone, and only on the successful call. */
 	readonly loner: 'makerOnly';
 	/** Defending alone. Branch exists and is unit-tested; unreachable in v1. */
@@ -305,6 +307,7 @@ export const DEFAULT_ENGINE_CONFIG: EngineConfig = Object.freeze({
 	deckVariant: '24',
 	gameTo: 10,
 	stickTheDealer: true,
+	requireNaturalTrump: false,
 	loner: 'makerOnly',
 	defendAlone: false,
 	superEuchre: false,
@@ -440,6 +443,7 @@ export interface GameState {
 export interface PublicGameView {
 	/** Actor-owned accessibility preference; omitted by the pure rules projection. */
 	readonly reviewTricks?: boolean;
+	readonly rules?: { readonly stickTheDealer: boolean; readonly requireNaturalTrump: boolean };
 	/** True only after the server-held read pause has elapsed. */
 	readonly awaitingTrickReview?: boolean;
 	/** The state version this view was cut from; the client drops `v <= seen`. */

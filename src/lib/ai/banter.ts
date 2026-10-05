@@ -118,7 +118,7 @@ export async function generateBanter(deps: DecideDeps, req: BanterRequest): Prom
 					content:
 						'One line of table talk, at most 90 characters. Public events only. ' +
 						'Never name a card, never describe your own holdings, never hint at what ' +
-						'you hold, never speculate about another player’s cards. No markup.'
+						'you hold, never speculate about another player’s cards. No markup. Never advise, encourage, direct, or address a partner about a move. No table coaching or signals.'
 				}
 			],
 			messages: [{ role: 'user', content: layers.user }],

@@ -70,6 +70,8 @@
 	function unavailableReason(card: CardId): string {
 		if (disabled) return 'Please wait until the table is ready.';
 		if (view.status !== 'active') return 'This match is finished.';
+		if (view.phase === 'trick_resolve' && view.reviewTricks)
+			return 'Press Continue to finish reviewing this trick.';
 		if (view.turnSeat !== view.you) return 'Wait for your turn.';
 		if (view.phase !== 'trick_play' && view.phase !== 'dealer_discard') {
 			return 'Finish bidding before selecting a card.';
@@ -390,5 +392,11 @@
 	}
 	button {
 		justify-content: flex-start;
+	}
+	@media (max-width: 700px) and (max-height: 750px) and (orientation: portrait) {
+		ul {
+			grid-template-columns: repeat(var(--card-count), minmax(0, 1fr));
+			gap: 8px;
+		}
 	}
 </style>

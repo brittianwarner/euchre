@@ -1,24 +1,10 @@
 <script lang="ts">
-	import { onMount, untrack, type Component } from 'svelte';
+	import { untrack } from 'svelte';
 	import { cardName, SUIT_NAME } from '#lib/euchre/index.ts';
 	import type { CardId, PublicGameView, Seat } from '#lib/protocol/index.ts';
 	import { reducedMotion } from '#lib/three/layout/reducedMotion.svelte.ts';
 	import { playPlace, playTrickTake } from './sound';
 	import { TABLE_MOTION, seatName } from './table-presentation';
-	let FeltLayer = $state<Component | null>(null);
-	onMount(() => {
-		let active = true;
-		void import('#lib/three/TableFelt3D.svelte')
-			.then((module) => {
-				if (active) FeltLayer = module.default;
-			})
-			.catch(() => {
-				/* The CSS felt remains usable without WebGL. */
-			});
-		return () => {
-			active = false;
-		};
-	});
 
 	export interface CardOrigin {
 		card: CardId;
@@ -36,7 +22,13 @@
 		connected?: boolean;
 		onContinue: (turnId: string) => Promise<boolean>;
 	} = $props();
-	let surface = $state<HTMLElement>();
+	let surface: HTMLElement | undefined;
+	function attachElement(node: HTMLElement) {
+		surface = node;
+		return () => {
+			surface = undefined;
+		};
+	}
 	let collecting = $state(false);
 	let collectedKey = $state<string | null>(null);
 	const seats = $derived([1, 2, 3, 0].map((offset) => ((view.you + offset) % 4) as Seat));
@@ -49,6 +41,13 @@
 		)
 	);
 	const team = $derived(view.you % 2);
+	const leadSeat = $derived(
+		view.trick.plays[0]?.seat ?? (view.phase === 'trick_play' ? view.turnSeat : null)
+	);
+	function bidFor(seat: Seat) {
+		const bids = view.phase === 'bid_round_2' ? view.bids.slice(4) : view.bids;
+		return [...bids].reverse().find((b) => b.seat === seat);
+	}
 	const seen = new Set(
 		untrack(() => view.trick.plays.map((play) => `${view.handNo}:${view.trick.index}:${play.card}`))
 	);
@@ -98,6 +97,27 @@
 		return () => {
 			animation.cancel();
 			animations.delete(animation);
+		};
+	}
+
+	// Only an up card already visible at this table can travel to the dealer.
+	// A reconnect in the discard phase does not replay the pickup.
+	function pickup(node: HTMLElement, dealt: { handNo: number; dealer: Seat }) {
+		const ordered =
+			view.handNo === dealt.handNo && view.bids.some((bid) => bid.move.t === 'orderUp');
+		const target = surface?.querySelector(`[data-seat-anchor="${dealt.dealer}"]`);
+		if (!ordered || !target || reducedMotion.enabled) return { duration: 0 };
+		const from = node.getBoundingClientRect();
+		const to = target.getBoundingClientRect();
+		const dx = to.left + to.width / 2 - from.left - from.width / 2;
+		const dy = to.top + to.height / 2 - from.top - from.height / 2;
+		return {
+			duration: 850,
+			css: (t: number) => {
+				const progress = 1 - t;
+				const eased = progress * progress * (3 - 2 * progress);
+				return `position:fixed;left:${from.left}px;top:${from.top}px;width:${from.width}px;height:${from.height}px;max-height:none;margin:0;z-index:20;pointer-events:none;transform:translate(${dx * eased}px,${dy * eased - Math.sin(progress * Math.PI) * 24}px) scale(${1 - eased * 0.72}) rotate(${eased * 8}deg);opacity:${Math.min(1, t * 5)};`;
+			}
 		};
 	}
 
@@ -176,11 +196,10 @@
 
 <section
 	class="felt"
-	bind:this={surface}
+	{@attach attachElement}
 	aria-label="The table"
 	class:collected={collectedKey === trickKey}
 >
-	{#if FeltLayer}<FeltLayer />{/if}
 	<div class="felt-content">
 		<div class="table-status">
 			<div class="trump">
@@ -188,9 +207,20 @@
 					>{#if view.trump}<span aria-hidden="true">{suitGlyph[view.trump]}</span>
 						{SUIT_NAME[view.trump]} are trump{:else}Choosing trump{/if}</strong
 				>
+				{#if view.trick.ledSuit}<span
+						class="led-marker"
+						aria-label={`${SUIT_NAME[view.trick.ledSuit]} led`}
+						>↗ {suitGlyph[view.trick.ledSuit]} <small>Led</small></span
+					>{/if}
 			</div>
+			{#if view.aloneSeat !== null}<span class="loner-marker"
+					>★ {seatName(view.aloneSeat, view.you)} alone</span
+				>{/if}
+
 			<div class="trick-score">
-				<span class="trick-caption">Tricks this hand</span><span class="short-trick-caption">Tricks</span><strong
+				<span class="trick-caption">Tricks this hand</span><span class="mobile-led"
+					>{#if view.trick.ledSuit}Led {suitGlyph[view.trick.ledSuit]}{:else}Tricks{/if}</span
+				><span class="short-trick-caption">Tricks</span><strong
 					>Your team <b>{view.tricksWon[team]}</b><i>·</i> Other team
 					<b>{view.tricksWon[1 - team]}</b></strong
 				>
@@ -205,9 +235,32 @@
 					data-seat-anchor={seat}
 				>
 					<span class="seat-name"
-						>{seatName(seat, view.you)}{#if seat === view.dealerSeat}<span
-								class="dealer"
-								title="Dealer">D<span class="sr-only">ealer</span></span
+						><svg
+							class="player-marker"
+							viewBox="0 0 32 32"
+							width="28"
+							height="28"
+							aria-hidden="true"
+							><circle cx="16" cy="16" r="15" fill="currentColor" opacity=".18" /><circle
+								cx="16"
+								cy="11"
+								r="5"
+								fill="currentColor"
+							/><path d="M6 27c0-8 4-11 10-11s10 3 10 11" fill="currentColor" /></svg
+						><span class="full-seat-name">{seatName(seat, view.you)}</span><span
+							class="short-seat-name"
+							>{['You', 'Left', 'Partner', 'Right'][(seat - view.you + 4) % 4]}</span
+						>
+						{#if seat === view.makerSeat && view.trump}<span
+								class="maker-marker"
+								title="Named trump"
+								aria-label="Named trump">{suitGlyph[view.trump]}</span
+							>{/if}
+						{#if seat === leadSeat}<span title="Leads this trick" aria-label="Leads this trick"
+								>↗</span
+							>{/if}
+						{#if seat === view.dealerSeat}<span class="dealer" title="Dealer"
+								>D<span class="sr-only">ealer</span></span
 							>{/if}</span
 					>
 					<span class="seat-detail"
@@ -217,7 +270,9 @@
 								? seat === view.you
 									? 'Your turn'
 									: 'Thinking…'
-								: `${view.handCounts[seat]} cards`}</span
+								: bidding && bidFor(seat)?.move.t === 'pass'
+									? 'Passed'
+									: `${view.handCounts[seat]} ${view.handCounts[seat] === 1 ? 'card' : 'cards'}`}</span
 					>
 					<span
 						class="taken-stack"
@@ -233,6 +288,7 @@
 				{#if view.upCard && !view.upCardTurnedDown && view.phase !== 'dealer_discard'}
 					<img
 						class="upcard"
+						out:pickup|global={{ handNo: view.handNo, dealer: view.dealerSeat }}
 						src={`/art/cards/${view.upCard}.png`}
 						width="635"
 						height="889"
@@ -293,9 +349,13 @@
 					><strong
 						>{seatName(winner, view.you)} {winner === view.you ? 'win' : 'wins'} the trick.</strong
 					>
-					{view.trick.index < 4
-						? `${seatName(winner, view.you)} ${winner === view.you ? 'lead' : 'leads'} next.`
-						: 'That’s the last trick of this hand.'}</span
+					<span class="next-lead"
+						>{view.trick.index < 4
+							? view.reviewTricks
+								? 'Press Continue before the next lead.'
+								: `${seatName(winner, view.you)} ${winner === view.you ? 'lead' : 'leads'} next.`
+							: 'That’s the last trick of this hand.'}</span
+					></span
 				>
 				{#if view.reviewTricks && view.phase === 'trick_resolve'}<button
 						type="button"
@@ -316,6 +376,34 @@
 </section>
 
 <style>
+	.player-marker {
+		display: inline-block;
+		color: #b9d2c1;
+		font-size: 16px;
+	}
+	.partner .player-marker {
+		color: #e4cf91;
+	}
+	.maker-marker {
+		background: #f4ead0;
+		color: #243d31;
+		border-radius: 50%;
+		padding: 2px 6px;
+	}
+	.loner-marker {
+		font-weight: 700;
+		color: #f2d887;
+		white-space: nowrap;
+	}
+	.led-marker {
+		color: #fff8dc;
+		font-size: 26px;
+		white-space: nowrap;
+	}
+	.led-marker small {
+		font: 500 13px var(--font-sans);
+	}
+
 	.felt {
 		position: relative;
 		isolation: isolate;
@@ -356,7 +444,9 @@
 		text-align: right;
 		font-size: 16px;
 	}
-	.short-trick-caption { display: none; }
+	.short-trick-caption {
+		display: none;
+	}
 	.trick-score strong {
 		display: flex;
 		align-items: center;
@@ -772,6 +862,7 @@
 			padding: 10px 12px 4px;
 		}
 		.table-status {
+			position: relative;
 			gap: 6px;
 			padding-bottom: 6px;
 			flex-direction: column;
@@ -818,7 +909,10 @@
 			align-content: center;
 		}
 		.seat-detail {
-			display: none;
+			display: block;
+			font-size: 11px;
+			min-height: 14px;
+			margin-top: 0;
 		}
 		.dealer {
 			width: 16px;
@@ -907,7 +1001,10 @@
 			font-size: 13px;
 		}
 		.seat-detail {
-			display: none;
+			display: block;
+			font-size: 11px;
+			min-height: 14px;
+			margin-top: 0;
 		}
 		.seats,
 		.played-cards {
@@ -938,13 +1035,350 @@
 			display: none;
 		}
 	}
+	@media (max-width: 700px) {
+		.player-marker {
+			display: none;
+		}
+		.loner-marker {
+			font-size: 13px;
+		}
+		.led-marker {
+			position: absolute;
+			right: 0;
+			top: -3px;
+			font-size: 20px;
+		}
+		.led-marker small {
+			display: none;
+		}
+		.table-status:has(.led-marker) .trump {
+			padding-right: 28px;
+		}
+	}
 	@media (max-width: 360px) {
-		.trump strong { font-size: 18px; }
-		.trick-caption { display: none; }
-		.short-trick-caption { display: inline; }
-		.trick-score { gap: 4px; font-size: 12px; }
-		.trick-score strong { font-size: 12px; gap: 4px; }
-		.trick-score b { font-size: 18px; }
-		.trick-result { font-size: 12px; }
+		.trump strong {
+			font-size: 18px;
+		}
+		.trick-caption {
+			display: none;
+		}
+		.short-trick-caption {
+			display: inline;
+		}
+		.trick-score {
+			gap: 4px;
+			font-size: 12px;
+		}
+		.trick-score strong {
+			font-size: 12px;
+			gap: 4px;
+		}
+		.trick-score b {
+			font-size: 18px;
+		}
+		.trick-result {
+			font-size: 12px;
+		}
+	}
+
+	@media (min-width: 701px) and (min-height: 501px) {
+		.felt-content {
+			grid-template-rows: auto 0 minmax(0, 1fr) auto;
+			padding: 18px;
+		}
+		.table-status {
+			flex-wrap: wrap;
+			gap: 10px;
+			padding-bottom: 12px;
+		}
+		.trump strong {
+			font-size: 26px;
+		}
+		.seats {
+			position: absolute;
+			inset: 100px 14px 80px;
+			display: block;
+			max-width: none;
+			pointer-events: none;
+		}
+		.seat {
+			position: absolute;
+			width: 160px;
+			border: 0;
+			background: none;
+			padding: 0;
+			transform: translateX(-50%);
+		}
+		.seat:nth-child(1) {
+			left: 14%;
+			top: 20%;
+		}
+		.seat:nth-child(2) {
+			left: 50%;
+			top: 0;
+		}
+		.seat:nth-child(3) {
+			left: 86%;
+			top: 20%;
+		}
+		.seat:nth-child(4) {
+			left: 50%;
+			bottom: 0;
+		}
+		.seat-name {
+			font-size: 15px;
+			flex-wrap: wrap;
+			gap: 4px;
+		}
+		.seat.active .seat-name {
+			color: #ffe5a4;
+		}
+		.seat-detail {
+			font-size: 13px;
+			min-height: 18px;
+			margin: 2px 0;
+		}
+		.dealer {
+			width: 18px;
+			height: 18px;
+			font-size: 11px;
+		}
+		.taken-stack {
+			right: 4px;
+			bottom: -18px;
+		}
+		.played-cards {
+			grid-row: 3;
+			display: block;
+			position: relative;
+			padding: 0;
+		}
+		.played-slot {
+			position: absolute;
+			width: 24%;
+			height: 38%;
+			transform: translate(-50%, -50%);
+		}
+		.played-slot:nth-child(1) {
+			left: 18%;
+			top: 60%;
+		}
+		.played-slot:nth-child(2) {
+			left: 50%;
+			top: 28%;
+		}
+		.played-slot:nth-child(3) {
+			left: 82%;
+			top: 60%;
+		}
+		.played-slot:nth-child(4) {
+			left: 50%;
+			top: 65%;
+		}
+		.bid-table {
+			grid-row: 3;
+			padding: 60px 0;
+			gap: 12px;
+			flex-direction: column;
+		}
+		.bid-table h2 {
+			font-size: 23px;
+		}
+		.bid-table p {
+			display: none;
+		}
+		.trick-result {
+			grid-row: 4;
+			font-size: 15px;
+			min-height: 44px;
+		}
+	}
+	.mobile-led {
+		display: none;
+	}
+	@media (max-width: 700px) {
+		.led-marker,
+		.trick-caption,
+		.short-trick-caption {
+			display: none;
+		}
+		.table-status:has(.led-marker) .trump {
+			padding-right: 0;
+		}
+		.mobile-led {
+			display: inline;
+			white-space: nowrap;
+			font-size: 15px;
+		}
+	}
+	.short-seat-name {
+		display: none;
+	}
+	@media (max-width: 360px) {
+		.full-seat-name,
+		.next-lead {
+			display: none;
+		}
+		.short-seat-name {
+			display: inline;
+		}
+		.seat-name {
+			min-height: 22px;
+		}
+	}
+	/* The page supplies one continuous felt surface beneath table and hand. */
+	.felt {
+		background: transparent;
+		border: 0;
+		border-radius: 0;
+		box-shadow: none;
+	}
+	@media (min-width: 701px) and (min-height: 501px) {
+		.table-status {
+			align-items: flex-start;
+			flex-wrap: nowrap;
+		}
+		.trump {
+			display: flex;
+			flex-wrap: wrap;
+			max-width: 42%;
+			align-items: center;
+			gap: 6px 12px;
+		}
+		.trump .eyebrow {
+			width: 100%;
+			margin: 0;
+		}
+		.led-marker {
+			font-size: 18px;
+			padding: 4px 10px;
+			border-radius: 20px;
+			background: #ffffff0c;
+		}
+		.seat {
+			width: 180px;
+		}
+		.seat-name {
+			font-size: 17px;
+		}
+		.seat-detail {
+			color: #d3decf;
+			font-size: 14px;
+		}
+
+		.felt-content {
+			padding: 8px 20px 0;
+		}
+		.seats {
+			inset: 60px 14px 50px;
+		}
+		.seat:nth-child(1) {
+			left: 13%;
+			top: 38%;
+		}
+		.seat:nth-child(3) {
+			left: 87%;
+			top: 38%;
+		}
+		.seat:nth-child(2) {
+			top: -22px;
+		}
+		.seat:nth-child(4) {
+			width: 120px;
+			bottom: -12px;
+		}
+		.played-slot {
+			width: 15%;
+			height: 68%;
+		}
+		.played-slot:nth-child(1) {
+			left: 26%;
+			top: 45%;
+		}
+		.played-slot:nth-child(2) {
+			left: 42%;
+			top: 45%;
+		}
+		.played-slot:nth-child(3) {
+			left: 58%;
+			top: 45%;
+		}
+		.played-slot:nth-child(4) {
+			left: 74%;
+			top: 45%;
+		}
+		.bid-table {
+			flex-direction: row;
+			padding: 14px 0;
+			gap: 28px;
+		}
+	}
+
+	@media (orientation: landscape) and (max-height: 500px) {
+		.felt-content {
+			padding: 2px 10px 0;
+		}
+		.table-status {
+			flex-direction: row;
+			align-items: center;
+			padding-bottom: 2px;
+			gap: 8px;
+		}
+		.trump {
+			gap: 8px;
+		}
+		.trump strong {
+			font-size: 18px;
+		}
+		.trump .eyebrow {
+			display: none;
+		}
+		.trick-score {
+			gap: 8px;
+		}
+		.mobile-led {
+			display: none;
+		}
+		.trick-score strong {
+			font-size: 12px;
+		}
+		.seat {
+			padding: 0 0 2px;
+		}
+		.seat-name {
+			min-height: 18px;
+			font-size: 12px;
+		}
+		.seat-detail {
+			font-size: 10px;
+			min-height: 12px;
+		}
+		.played-cards {
+			padding-top: 4px;
+		}
+		.trick-result {
+			min-height: 24px;
+			margin-top: 2px;
+			font-size: 12px;
+		}
+		.trick-result.won {
+			font-size: 12px;
+		}
+		.trick-result button {
+			min-height: 44px;
+			padding: 5px 10px;
+		}
+		.bid-table {
+			flex-direction: row;
+			gap: 20px;
+			padding-top: 4px;
+		}
+		.bid-table h2 {
+			font-size: 18px;
+		}
+		.bid-table p,
+		.bid-table .eyebrow {
+			display: none;
+		}
 	}
 </style>

@@ -136,7 +136,12 @@ export function cardsNamedIn(
 /* ========================================================================== */
 
 export type ScreenReject =
-	'private_card' | 'unresolved_bower' | 'markup' | 'empty' | 'too_long_after_clamp';
+	| 'private_card'
+	| 'unresolved_bower'
+	| 'markup'
+	| 'empty'
+	| 'too_long_after_clamp'
+	| 'table_advice';
 
 export type ScreenResult =
 	| { readonly ok: true; readonly text: string }
@@ -186,6 +191,12 @@ export function screenText(raw: string, view: PublicGameView, opts: ScreenOption
 
 /** Banter: public state only, clamped to {@link BANTER_MAX_CHARS}. */
 export function screenBanter(raw: string, view: PublicGameView): ScreenResult {
+	if (
+		/\b(partner|your (?:call|choice)|you should|play (?:your|the)|lead (?:your|the)|save (?:your|the)|trump (?:it|in)|take (?:it|this)|go on|go alone)\b/i.test(
+			raw
+		)
+	)
+		return { ok: false, reason: 'table_advice' };
 	return screenText(raw, view, { maxChars: BANTER_MAX_CHARS });
 }
 
@@ -218,9 +229,9 @@ export const PHRASEBOOK: Readonly<Record<string, readonly string[]>> = {
 	generic: ['Hm.', 'All right then.', 'We go on.', 'Fair enough.', "That's the way of it."],
 	bid: ['I like my chances.', 'Somebody has to.', "I'll take a look at it.", 'Worth a try.'],
 	pass: ['Not from here.', 'Pass.', "It's not for me.", 'Someone else can have it.'],
-	loner: ['On my own, then.', 'Stay out of it, partner.', "I'll handle this one."],
+	loner: ['On my own, then.', 'Going alone.', "I'll handle this one."],
 	win_trick: ['Mine.', 'That one travels.', "I'll take it."],
-	lose_trick: ['Yours.', 'Take it.', 'Go on then.'],
+	lose_trick: ['Yours.', 'Well played.', 'Nice trick.'],
 	euchre: ['Well. That happened.', "Didn't hold up.", "We'll get the next one."],
 	march: ['All five.', "That'll do nicely.", 'Clean sweep.'],
 	game: ['Good game.', "That's the game.", 'Well played.']

@@ -8,9 +8,11 @@ import { redirect } from '@sveltejs/kit';
 import { guestIdentity } from '#lib/server/guest.ts';
 import { getRivetClient } from '#lib/server/rivet.ts';
 import { defaultPersonas } from '#lib/server/personas.ts';
+import { rememberTable } from '#lib/server/recent-tables.ts';
+import { readIdentity } from '../games/_lib/session.server';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ fetch, cookies }) => {
+export const load: PageServerLoad = async ({ fetch, cookies, url }) => {
 	// Cold local starts must initialize the engine before the first actor create.
 	if (!env.RIVET_ENDPOINT) {
 		const response = await fetch('/api/rivet/metadata');
@@ -24,10 +26,16 @@ export const load: PageServerLoad = async ({ fetch, cookies }) => {
 			ownerUserId: await guestIdentity(cookies),
 			seed: gameId.replace(/-/g, '').slice(0, 32),
 			personas: defaultPersonas(),
+			profileUserId: (await readIdentity(cookies))?.userId,
 			// Standard euchre match.
-			cfg: { gameTo: 10 }
+			cfg: {
+				gameTo: 10,
+				stickTheDealer: url.searchParams.get('stick') === 'true',
+				requireNaturalTrump: url.searchParams.get('natural') === 'true'
+			}
 		}
 	});
 
+	rememberTable(cookies, gameId);
 	redirect(302, `/play/${gameId}`);
 };

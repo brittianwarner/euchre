@@ -20,15 +20,6 @@ console.log('Session authorized', {
 	gameId,
 	durationSeconds: (session.expiresAt - Date.now()) / 1000
 });
-const pageData = (await (
-	await fetch(origin + location + '/__data.json', { headers: { Cookie: cookie } })
-).json()) as any;
-let id;
-for (const node of pageData.nodes ?? []) {
-	if (node?.data?.[0]?.actorId) id = node.data[node.data[0].actorId];
-}
-if (!id) throw new Error('No actor ID in page data');
-console.log('Resolved actor:', id);
 const client = createClient({
 	endpoint: origin + '/api/rivet',
 	token: session.gatewayToken,
@@ -36,7 +27,7 @@ const client = createClient({
 	devtools: false,
 	gateway: { skipReadyWait: true }
 });
-const handle = client.euchreTable.getForId(id, { params: { token: session.token } });
+const handle = client.euchreTable.get(['table', gameId], { params: { token: session.token } });
 
 const NativeSocket = globalThis.WebSocket;
 globalThis.WebSocket = class extends NativeSocket {
@@ -65,7 +56,7 @@ if (process.argv.includes('--play-hand')) {
 	}
 	let submittedTurn: string | undefined;
 	let humanMoves = 0;
-	const handNo = Math.max(1, snapshot.handNo);
+	const handNo = snapshot.handNo;
 	const deadline = Date.now() + 180_000;
 	while (Date.now() < deadline) {
 		if (view.result || view.handNo > handNo) {

@@ -25,7 +25,14 @@ async function fixture(trickIndex = 0) {
 	const inbox: Message[] = [];
 	const sent: unknown[] = [];
 	const handle = { send: vi.fn(async () => {}) };
+	const archive = new Map<string, string>();
 	const context = {
+		kv: {
+			put: vi.fn(async (key: string, value: string) => {
+				archive.set(key, value);
+			}),
+			get: vi.fn(async (key: string) => archive.get(key) ?? null)
+		},
 		state,
 		key: ['table', 'review-test'],
 		vars: {},
@@ -116,6 +123,33 @@ describe('durable trick review', () => {
 		await f.run(f.review('continue'), f.review('continue'));
 		expect(f.state.game.hand.phase).toBe('hand_score');
 		expect(f.state.handsPlayed).toBe(1);
+		const review = await euchreTable.config.actions!.getHandReview(
+			f.context as never,
+			f.state.game.hand.handNo
+		);
+		expect(review?.tricks).toHaveLength(5);
+		expect(review?.buried).toHaveLength(4);
+	});
+	it('keeps buried cards inaccessible until the hand has finished and rejects non-player reads', async () => {
+		const f = await fixture();
+		expect(
+			await euchreTable.config.actions!.getHandReview(f.context as never, f.state.game.hand.handNo)
+		).toBeNull();
+		f.context.conn.state.role = 'internal';
+		await expect(euchreTable.config.actions!.getHandReview(f.context as never, 0)).rejects.toThrow(
+			'Not a player connection'
+		);
+	});
+	it('ignores old human timeout messages without playing or abandoning', async () => {
+		const f = await fixture();
+		await f.run(f.tempo);
+		const before = JSON.stringify(f.state.game);
+		await f.run({
+			name: 'tick',
+			body: { ...f.tempo.body, turnId: f.state.game.turnId, kind: 'abandon' }
+		});
+		expect(JSON.stringify(f.state.game)).toBe(before);
+		expect(f.state.abandonStrikes).toBe(0);
 	});
 	it('rejects forged internal review messages', async () => {
 		const f = await fixture();
