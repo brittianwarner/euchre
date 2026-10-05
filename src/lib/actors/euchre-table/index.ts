@@ -60,6 +60,7 @@ import type { CompletedHandReview } from '#lib/protocol/hand-review.ts';
  */
 
 import { UserError, actor } from 'rivetkit';
+import { sendBounded } from './send-bounded';
 import {
 	HUMAN_SEAT,
 	advance,
@@ -282,6 +283,7 @@ interface TableConn {
  * typed as {@link TableState} rather than degrading to `any`.
  */
 interface TableCtx {
+	readonly abortSignal?: AbortSignal;
 	readonly kv: { put(key: string, value: string): Promise<void> };
 	state: TableState;
 	readonly vars: TableVars;
@@ -305,7 +307,7 @@ interface TableCtx {
 
 /** A handle on another actor, narrowed to the one verb this table uses. */
 interface ActorSendHandle {
-	send(name: string, body: unknown): Promise<unknown>;
+	send(name: string, body: unknown, options?: { signal: AbortSignal }): Promise<unknown>;
 }
 
 /**
@@ -791,7 +793,7 @@ async function dispatchAi(c: TableCtx, seat: Seat): Promise<void> {
 		// Fire-and-forget: `aiSeat` replies over `aiDecision`, never over this call.
 		// A blocking wait here would park the run loop on the very request the
 		// watchdog above exists to survive.
-		await handle.send('decide', req);
+		await sendBounded(handle, 'decide', req, c.abortSignal, Math.max(1, deadlineAt - Date.now()));
 	} catch (err) {
 		// Never fatal: the heuristic decision is already parked and scheduled.
 		c.log.warn('dispatch to aiSeat failed; heuristic stands', {
@@ -825,7 +827,7 @@ async function notifyAiSeats(
 		const handle = aiSeatHandle(c, seat);
 		if (handle === null) continue;
 		try {
-			await handle.send(kind, message);
+			await sendBounded(handle, kind, message, c.abortSignal);
 		} catch (err) {
 			c.log.warn('notifyAiSeats failed', { seat, kind, e: String(err).slice(0, 200) });
 		}
@@ -979,6 +981,9 @@ function profileHandle(c: TableCtx): ActorSendHandle | null {
 async function archiveHand(c: TableCtx, hand: HandState): Promise<void> {
 	const review: CompletedHandReview = {
 		handNo: hand.handNo,
+		dealerSeat: hand.dealerSeat,
+		tricksWon: hand.tricksWon,
+		upCard: hand.upCard,
 		trump: hand.trump,
 		makerSeat: hand.makerSeat,
 		aloneSeat: hand.aloneSeat,
@@ -1022,7 +1027,7 @@ async function recordHand(c: TableCtx, hand: HandState): Promise<void> {
 	};
 
 	try {
-		await profile.send('recordHands', body);
+		await sendBounded(profile, 'recordHands', body, c.abortSignal);
 	} catch (err) {
 		c.log.warn('recordHand failed; hand journal entry dropped', {
 			handNo: hand.handNo,
@@ -1088,7 +1093,7 @@ async function recordMatchIfNeeded(c: TableCtx): Promise<void> {
 	const body: RecordGameMessage = { internalToken: token, record };
 
 	try {
-		await profile.send('recordGame', body);
+		await sendBounded(profile, 'recordGame', body, c.abortSignal);
 		c.state.recordedAt = Date.now();
 		await notifyAiSeats(c, 'gameEnd');
 	} catch (err) {

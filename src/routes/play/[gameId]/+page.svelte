@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onDestroy, onMount, untrack, type Component } from 'svelte';
+	import { onDestroy, onMount, tick, untrack, type Component } from 'svelte';
 	import { createGameRivet } from '#lib/client/rivet.ts';
 	import { warmCardArt } from '#lib/ui/card-art.ts';
 	import { TableStore, type TableActorHandle } from '#lib/game/table.svelte.ts';
@@ -101,6 +101,14 @@
 
 	store.bind(table as unknown as TableActorHandle);
 
+	// Recover a lost sync even if the transport still reports connected.
+	onMount(() => {
+		const timer = setInterval(() => {
+			if (table.isConnected && document.visibilityState === 'visible') void store.resync();
+		}, 10_000);
+		return () => clearInterval(timer);
+	});
+
 	$effect(() => {
 		if (table.isConnected) {
 			void store.resync();
@@ -171,42 +179,63 @@
 		};
 	}
 	let settingsOpen = $state(false);
-	let settingsPinned = $state(false);
-	let menuPosition = $state.raw<{ x: number; y: number } | null>(null);
+	let windowWidth = $state(0);
+	const compactSettings = $derived(windowWidth < 1200);
 	let menuNode: HTMLElement | undefined;
+	let settingsTrigger: HTMLButtonElement | undefined;
 	function attachMenu(node: HTMLElement) {
 		menuNode = node;
 		return () => {
 			menuNode = undefined;
 		};
 	}
-	let dragStart: { x: number; y: number; left: number; top: number } | null = null;
-	function pinSettings() {
-		const rect = menuNode?.getBoundingClientRect();
-		settingsPinned = !settingsPinned;
-		menuPosition =
-			settingsPinned && rect ? { x: Math.max(8, rect.left), y: Math.max(8, rect.top) } : null;
-	}
-	function startSettingsDrag(event: PointerEvent) {
-		if (!settingsPinned || (event.target as HTMLElement).closest('button')) return;
-		const rect = menuNode?.getBoundingClientRect();
-		if (!rect) return;
-		dragStart = { x: event.clientX, y: event.clientY, left: rect.left, top: rect.top };
-		(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
-	}
-
-	function positionSettings(x: number, y: number) {
-		menuPosition = {
-			x: Math.max(8, Math.min(window.innerWidth - (menuNode?.offsetWidth ?? 350) - 8, x)),
-			y: Math.max(8, Math.min(window.innerHeight - (menuNode?.offsetHeight ?? 80) - 8, y))
+	function attachSettingsTrigger(node: HTMLButtonElement) {
+		settingsTrigger = node;
+		return () => {
+			settingsTrigger = undefined;
 		};
 	}
-	function dragSettings(event: PointerEvent) {
-		if (dragStart)
-			positionSettings(
-				dragStart.left + event.clientX - dragStart.x,
-				dragStart.top + event.clientY - dragStart.y
-			);
+	async function closeSettings() {
+		settingsOpen = false;
+		await tick();
+		settingsTrigger?.focus();
+	}
+	async function toggleSettings() {
+		if (settingsOpen) {
+			closeSettings();
+			return;
+		}
+		settingsOpen = true;
+		if (compactSettings) {
+			await tick();
+			menuNode?.querySelector<HTMLButtonElement>('button')?.focus();
+		}
+	}
+	function settingsKeydown(event: KeyboardEvent) {
+		if (!settingsOpen || event.defaultPrevented || document.querySelector('dialog[open]')) return;
+		if (event.key === 'Escape') {
+			event.preventDefault();
+			closeSettings();
+			return;
+		}
+		if (!compactSettings || event.key !== 'Tab' || !menuNode) return;
+		const controls = [
+			...menuNode.querySelectorAll<HTMLElement>(
+				'button:not([disabled]), input:not([disabled]), select:not([disabled]), a[href], summary'
+			)
+		].filter((node) => node.getClientRects().length > 0);
+		const first = controls[0];
+		const last = controls.at(-1);
+		if (!menuNode.contains(document.activeElement)) {
+			event.preventDefault();
+			(event.shiftKey ? last : first)?.focus();
+		} else if (event.shiftKey && document.activeElement === first) {
+			event.preventDefault();
+			last?.focus();
+		} else if (!event.shiftKey && document.activeElement === last) {
+			event.preventDefault();
+			first?.focus();
+		}
 	}
 
 	/** Submits any legal move id, previewing its effect locally first. Used by the bid panel, card rack, and confirm button — so the whole table gets the same instant feedback from one place. */
@@ -303,13 +332,9 @@
 	onDestroy(() => clearTimeout(illegalTimer));
 </script>
 
-<svelte:window
-	onresize={() => {
-		if (settingsPinned && menuPosition) positionSettings(menuPosition.x, menuPosition.y);
-	}}
-/>
+<svelte:window bind:innerWidth={windowWidth} onkeydown={settingsKeydown} />
 <svelte:head><title>Euchre — your table</title></svelte:head>
-<main class="table-page" {@attach attachElement}>
+<main class="table-page" class:settings-open={settingsOpen} {@attach attachElement}>
 	<Walkthrough view={displayView} bind:open={tourOpen} />
 	<GameAnnouncer steps={lastSteps} view={displayView} />
 	{#if !displayView}
@@ -325,160 +350,153 @@
 		</div>
 	{:else}
 		<GameFeedback view={displayView} steps={lastSteps} />
-		<header class="game-header">
-			<ScoreBoard view={displayView} />
-			<div class="table-tools">
-				<RulesPanel view={displayView} onReplayTour={() => (tourOpen = true)} />
-				<div class="table-menu">
-					<button
-						type="button"
-						class="settings-trigger"
-						aria-expanded={settingsOpen}
-						onclick={() => (settingsOpen = !settingsOpen)}
-						>Settings <span aria-hidden="true">⌄</span></button
-					>
-					{#if settingsOpen}<aside
-							class="menu-panel"
-							class:pinned={settingsPinned}
-							{@attach attachMenu}
-							style:left={menuPosition ? `${menuPosition.x}px` : undefined}
-							style:top={menuPosition ? `${menuPosition.y}px` : undefined}
-							aria-label="Table settings"
-						>
-							<div
-								class="settings-handle"
-								role="toolbar"
-								tabindex="0"
-								aria-label="Move settings"
-								onkeydown={(event) => {
-									if (
-										settingsPinned &&
-										menuPosition &&
-										['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)
-									) {
-										event.preventDefault();
-										positionSettings(
-											menuPosition.x +
-												(event.key === 'ArrowLeft' ? -16 : event.key === 'ArrowRight' ? 16 : 0),
-											menuPosition.y +
-												(event.key === 'ArrowUp' ? -16 : event.key === 'ArrowDown' ? 16 : 0)
-										);
-									}
-								}}
-								onpointerdown={startSettingsDrag}
-								onpointermove={dragSettings}
-								onpointerup={() => (dragStart = null)}
-								onpointercancel={() => (dragStart = null)}
-							>
-								<strong>Table settings</strong><button type="button" onclick={pinSettings}
-									>{settingsPinned ? 'Unpin' : 'Pin'}</button
-								><button
-									type="button"
-									aria-label="Close settings"
-									onclick={() => (settingsOpen = false)}>×</button
-								>
-							</div>
-							<div class="sound-setting"><span>Table sounds</span><SoundToggle /></div>
-							<label class="review-setting"
-								><input
-									type="checkbox"
-									checked={displayView.reviewTricks ?? false}
-									disabled={reviewBusy || !table.isConnected}
-									onchange={(event) =>
-										void reviewTrick({ action: 'set', enabled: event.currentTarget.checked })}
-								/><span
-									>Wait for me after each trick<small>Review the cards, then press Continue.</small
-									></span
-								></label
-							>
-							<HandReview view={displayView} load={(handNo) => table.getHandReview(handNo)} />
-							<Hint view={displayView} {lastDecision} />
-							<a href="/new">Start a new game</a><a href="/">Back to home</a>
-							<a href="/games">Your saved games</a>
-							<details class="conversation">
-								<summary>Table talk</summary>
-								<div>
-									{#each store.chat as line (line.msgId)}<p>
-											<strong>{SEAT_NAME[line.seat] ?? 'Table'}</strong>
-											{line.text}
-										</p>{:else}<p>The conversation starts with the first call.</p>{/each}
-								</div>
-							</details>
-						</aside>{/if}
-				</div>
-			</div>
-		</header>
-		<div class="table-layout">
-			{#if FeltLayer}<FeltLayer />{/if}
-			{#if !table.isConnected}<p class="notice" role="status">
-					Reconnecting… Your table is saved. Controls will return when you’re connected.
-				</p>{/if}
-			{#if reviewError}<p class="err" role="alert">{reviewError}</p>{/if}
-			<TableStage
-				view={displayView}
-				origin={flightOrigin}
-				connected={table.isConnected}
-				onContinue={(turnId) =>
-					displayView ? reviewTrick({ action: 'continue', turnId }) : Promise.resolve(false)}
-			/>
-			<section
-				class="hand-area"
-				class:bidding={displayView.phase.startsWith('bid') || displayView.phase === 'cutting'}
-				aria-label="Your hand and controls"
-			>
-				<div class="hand-heading">
-					<div>
-						<span class="eyebrow">Your hand</span>
-						<h1>
-							{displayView.status !== 'active'
-								? 'A good game, well played.'
-								: displayView.phase === 'trick_resolve' && displayView.reviewTricks
-									? 'Review the trick.'
-									: displayView.turnSeat === displayView.you &&
-										  displayView.phase !== 'trick_resolve'
-										? 'Your turn.'
-										: 'Make yourself at home.'}
-						</h1>
-					</div>
-					{#if displayView.status === 'active' && (displayView.phase === 'trick_play' || displayView.phase === 'trick_resolve' || displayView.phase === 'dealer_discard')}
+		<div class="game-content" inert={settingsOpen && compactSettings}>
+			<header class="game-header">
+				<ScoreBoard view={displayView} />
+				<div class="table-tools">
+					<RulesPanel view={displayView} onReplayTour={() => (tourOpen = true)} />
+					<div class="table-menu">
 						<button
 							type="button"
-							class="confirm-card"
-							disabled={!selectedMove || store.submitting || !table.isConnected}
-							onclick={() => selectedMove && submitMove(selectedMove.id)}
-							>{store.submitting
-								? 'Playing…'
-								: displayView.phase === 'dealer_discard'
-									? 'Discard'
-									: 'Play'}
-							{selectedCard ? cardName(selectedCard) : 'selected card'}
-							<span aria-hidden="true">→</span></button
+							class="settings-trigger"
+							{@attach attachSettingsTrigger}
+							aria-controls="table-settings"
+							aria-expanded={settingsOpen}
+							onclick={() => void toggleSettings()}
+							>Settings <span aria-hidden="true">⌄</span></button
 						>
-					{:else if displayView.status !== 'active'}<a class="confirm-card" href="/new"
-							>Play again <span aria-hidden="true">→</span></a
-						>{/if}
+					</div>
 				</div>
-				<p class="instruction" role="status">{illegalMessage ?? turnInstruction(displayView)}</p>
-				{#if store.error}<p class="err" role="alert">{store.error}</p>{/if}
-				<CardRack
+			</header>
+			<div class="table-layout">
+				{#if FeltLayer}<FeltLayer />{/if}
+				{#if !table.isConnected}<p class="notice" role="status">
+						Reconnecting… Your table is saved. Controls will return when you’re connected.
+					</p>{/if}
+				{#if reviewError}<p class="err" role="alert">{reviewError}</p>{/if}
+				<TableStage
 					view={displayView}
-					disabled={store.submitting || !table.isConnected}
-					selected={selectedCard}
-					onSelect={selectCard}
-					onPlay={submitMove}
-					onIllegal={handleCardIllegal}
+					origin={flightOrigin}
+					connected={table.isConnected}
+					onContinue={(turnId) =>
+						displayView ? reviewTrick({ action: 'continue', turnId }) : Promise.resolve(false)}
 				/>
-				<div class="bid-controls">
-					<BidPanel
+				<section
+					class="hand-area"
+					class:bidding={displayView.phase.startsWith('bid') || displayView.phase === 'cutting'}
+					aria-label="Your hand and controls"
+				>
+					<div class="hand-heading">
+						<div>
+							<span class="eyebrow">Your hand</span>
+							<h1>
+								{store.submitting
+									? 'Sending your move…'
+									: displayView.status !== 'active'
+										? 'A good game, well played.'
+										: displayView.phase === 'trick_resolve' && displayView.reviewTricks
+											? 'Review the trick.'
+											: displayView.turnSeat === displayView.you &&
+												  displayView.phase !== 'trick_resolve'
+												? 'Your turn.'
+												: 'Make yourself at home.'}
+							</h1>
+						</div>
+						{#if displayView.status === 'active' && (displayView.phase === 'trick_play' || displayView.phase === 'trick_resolve' || displayView.phase === 'dealer_discard')}
+							<button
+								type="button"
+								class="confirm-card"
+								disabled={!selectedMove || store.submitting || !table.isConnected}
+								onclick={() => selectedMove && submitMove(selectedMove.id)}
+								>{store.submitting
+									? 'Playing…'
+									: displayView.phase === 'dealer_discard'
+										? 'Discard'
+										: 'Play'}
+								{selectedCard ? cardName(selectedCard) : 'selected card'}
+								<span aria-hidden="true">→</span></button
+							>
+						{:else if displayView.status !== 'active'}<a class="confirm-card" href="/new"
+								>Play again <span aria-hidden="true">→</span></a
+							>{/if}
+					</div>
+					<p class="instruction" role="status">
+						{store.submitting
+							? 'Waiting for the table to confirm your move…'
+							: (illegalMessage ?? turnInstruction(displayView))}
+					</p>
+					{#if store.error}<p class="err" role="alert">{store.error}</p>{/if}
+					<CardRack
 						view={displayView}
 						disabled={store.submitting || !table.isConnected}
+						selected={selectedCard}
+						onSelect={selectCard}
 						onPlay={submitMove}
+						onIllegal={handleCardIllegal}
 					/>
-				</div>
-			</section>
-			<footer class="table-footer">
-				<span>A little friendly competition.</span><span>Select a card. Then press Play.</span>
-			</footer>
+					<div class="bid-controls">
+						<BidPanel
+							view={displayView}
+							disabled={store.submitting || !table.isConnected}
+							onPlay={submitMove}
+						/>
+					</div>
+				</section>
+				<footer class="table-footer">
+					<span>A little friendly competition.</span><span>Select a card. Then press Play.</span>
+				</footer>
+			</div>
+		</div>
+		<button
+			class="settings-backdrop"
+			type="button"
+			aria-label="Close settings panel"
+			tabindex="-1"
+			aria-hidden={!settingsOpen || !compactSettings}
+			onclick={closeSettings}
+		></button>
+		<div class="settings-rail" inert={!settingsOpen} aria-hidden={!settingsOpen}>
+			<aside
+				id="table-settings"
+				class="menu-panel"
+				{@attach attachMenu}
+				role={compactSettings ? 'dialog' : 'complementary'}
+				aria-modal={compactSettings && settingsOpen ? true : undefined}
+				aria-labelledby="settings-title"
+			>
+				<header class="settings-heading">
+					<div>
+						<span class="settings-eyebrow">Your table</span>
+						<h2 id="settings-title">Table settings</h2>
+					</div>
+					<button type="button" aria-label="Close settings" onclick={closeSettings}>×</button>
+				</header>
+				<div class="sound-setting"><span>Table sounds</span><SoundToggle /></div>
+				<label class="review-setting"
+					><input
+						type="checkbox"
+						checked={displayView.reviewTricks ?? false}
+						disabled={reviewBusy || !table.isConnected}
+						onchange={(event) =>
+							void reviewTrick({ action: 'set', enabled: event.currentTarget.checked })}
+					/><span
+						>Wait for me after each trick<small>Review the cards, then press Continue.</small></span
+					></label
+				>
+				<HandReview view={displayView} load={(handNo) => table.getHandReview(handNo)} />
+				<Hint view={displayView} {lastDecision} />
+				<a href="/new">Start a new game</a><a href="/">Back to home</a>
+				<a href="/games">Your saved games</a>
+				<details class="conversation">
+					<summary>Table talk</summary>
+					<div>
+						{#each store.chat as line (line.msgId)}<p>
+								<strong>{SEAT_NAME[line.seat] ?? 'Table'}</strong>
+								{line.text}
+							</p>{:else}<p>The conversation starts with the first call.</p>{/each}
+					</div>
+				</details>
+			</aside>
 		</div>
 	{/if}
 </main>
@@ -488,35 +506,6 @@
 		font-family: inherit;
 		background: transparent;
 		color: inherit;
-	}
-	.settings-handle {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		padding-bottom: 12px;
-	}
-	.settings-handle strong {
-		margin-right: auto;
-	}
-	.settings-handle button {
-		min-height: 44px;
-		padding: 8px;
-		border: 1px solid #bdc9ae;
-		border-radius: 6px;
-		background: #fffdf6;
-		color: #233e32;
-		cursor: pointer;
-	}
-	.menu-panel.pinned {
-		position: fixed;
-		right: auto;
-		z-index: 20;
-		max-height: calc(100dvh - 100px);
-		overflow-y: auto;
-	}
-	.pinned .settings-handle {
-		cursor: move;
-		touch-action: none;
 	}
 	.loading button {
 		min-height: 48px;
@@ -568,20 +557,6 @@
 	}
 	.settings-trigger::-webkit-details-marker {
 		display: none;
-	}
-	.menu-panel {
-		position: absolute;
-		right: 0;
-		top: calc(100% + 12px);
-		width: min(350px, calc(100vw - 32px));
-		padding: 20px;
-		background: #fffdf6;
-		border: 1px solid #cad3c1;
-		border-radius: 12px;
-		box-shadow: 0 18px 48px #203c2d30;
-		font-size: 17px;
-		max-height: 70dvh;
-		overflow: auto;
 	}
 	.menu-panel > a {
 		display: block;
@@ -1011,11 +986,6 @@
 		.hand-area.bidding .hand-heading {
 			display: none;
 		}
-		.menu-panel.pinned {
-			width: min(280px, calc(100vw - 24px));
-			max-height: 50dvh;
-			padding: 14px;
-		}
 	}
 	@media (max-width: 700px) and (max-height: 750px) and (orientation: portrait) {
 		.table-layout {
@@ -1093,6 +1063,178 @@
 		}
 		.hand-area.bidding .instruction {
 			grid-row: 2;
+		}
+	}
+	.table-page {
+		position: relative;
+		flex-direction: row;
+	}
+	.game-content {
+		flex: 1;
+		min-width: 0;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		container: game / inline-size;
+	}
+	.settings-rail {
+		flex: 0 0 auto;
+		width: 0;
+		height: 100%;
+		overflow: hidden;
+		background: #fffdf6;
+		transition: width 320ms cubic-bezier(0.22, 1, 0.36, 1);
+	}
+	.settings-open .settings-rail {
+		width: 340px;
+		border-left: 1px solid #d4dccb;
+	}
+	.menu-panel {
+		width: 340px;
+		height: 100%;
+		padding: 24px;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		color: #233e32;
+		font-size: 17px;
+		line-height: 1.5;
+		transform: translateX(32px);
+		opacity: 0;
+		transition:
+			transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+			opacity 180ms ease;
+	}
+	.settings-open .menu-panel {
+		transform: translateX(0);
+		opacity: 1;
+	}
+	.menu-panel :global(.toggle) {
+		min-height: 48px;
+		padding: 8px 0;
+		gap: 12px;
+		color: #233e32;
+		font-size: 17px;
+	}
+	.menu-panel :global(.toggle input) {
+		width: 24px;
+		height: 24px;
+		accent-color: #285641;
+	}
+	.menu-panel :global(.suggestion) {
+		max-width: none;
+		padding: 12px;
+		border-color: #cad3c1;
+		background: #e6eadc;
+		color: #233e32;
+		font-size: 16px;
+		line-height: 1.5;
+	}
+	.menu-panel :global(.suggestion strong) {
+		color: #285641;
+	}
+	.settings-heading {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 16px;
+		margin-bottom: 24px;
+	}
+	.settings-eyebrow {
+		font-size: 13px;
+		color: #69765f;
+	}
+	.settings-heading h2 {
+		font: 500 28px/1.2 var(--font-serif);
+		margin: 3px 0 0;
+	}
+	.settings-heading button {
+		min-width: 44px;
+		min-height: 44px;
+		border: 1px solid #cad3c1;
+		border-radius: 8px;
+		color: #233e32;
+		background: transparent;
+		font-size: 26px;
+		cursor: pointer;
+	}
+	.settings-backdrop {
+		display: none;
+	}
+	@container game (max-width: 850px) {
+		.game-header {
+			flex-wrap: wrap;
+			gap: 6px;
+			padding: 8px 16px;
+		}
+		.table-tools {
+			width: 100%;
+			justify-content: flex-end;
+		}
+	}
+	@media (max-width: 1199px) {
+		.game-content {
+			flex: 0 0 100%;
+			width: 100%;
+			transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+		}
+		.settings-open .game-content {
+			transform: translateX(-24px);
+		}
+		.settings-rail {
+			position: absolute;
+			right: 0;
+			top: 0;
+			z-index: 12;
+			width: min(340px, 100%);
+			transform: translateX(100%);
+			transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+		}
+		.settings-open .settings-rail {
+			width: min(340px, 100%);
+			transform: translateX(0);
+			box-shadow: -16px 0 48px #10251d30;
+		}
+		.menu-panel {
+			width: 100%;
+			padding: 20px max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom))
+				20px;
+		}
+		.settings-backdrop {
+			display: block;
+			position: absolute;
+			inset: 0;
+			z-index: 10;
+			background: #10251d55;
+			border: 0;
+			padding: 0;
+			visibility: hidden;
+			opacity: 0;
+			transition:
+				opacity 200ms ease,
+				visibility 200ms;
+		}
+		.settings-open .settings-backdrop {
+			visibility: visible;
+			opacity: 1;
+		}
+	}
+	@media (orientation: landscape) and (max-height: 500px) and (min-width: 600px) {
+		.game-header {
+			flex-wrap: nowrap;
+			gap: 12px;
+			padding: 4px 12px;
+		}
+		.table-tools {
+			width: auto;
+			flex-shrink: 0;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.settings-rail,
+		.menu-panel,
+		.game-content,
+		.settings-backdrop {
+			transition: none;
 		}
 	}
 </style>

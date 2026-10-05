@@ -77,7 +77,7 @@ async function fixture(trickIndex = 0) {
 		body: { ...envelope, action, enabled }
 	});
 	const tempo: Message = { name: 'tick', body: { ...envelope, kind: 'tempo' } };
-	return { context, state, run, review, tempo, turnId, sent };
+	return { context, state, run, review, tempo, turnId, sent, handle };
 }
 
 describe('durable trick review', () => {
@@ -129,6 +129,28 @@ describe('durable trick review', () => {
 		);
 		expect(review?.tricks).toHaveLength(5);
 		expect(review?.buried).toHaveLength(4);
+	});
+	it('finishes and archives the fifth trick even when AI lifecycle delivery hangs', async () => {
+		const f = await fixture(4);
+		await f.run(f.review('set', true), f.tempo);
+		vi.useFakeTimers();
+		try {
+			f.handle.send.mockImplementation(() => new Promise(() => {}));
+			const finished = f.run(f.review('continue'));
+			await vi.advanceTimersByTimeAsync(4000);
+			await finished;
+			expect(f.state.game.hand.phase).toBe('hand_score');
+			expect(f.state.handsPlayed).toBe(1);
+			const review = await euchreTable.config.actions!.getHandReview(
+				f.context as never,
+				f.state.game.hand.handNo
+			);
+			expect(review?.tricks).toHaveLength(5);
+			expect(review?.tricksWon).toEqual(f.state.game.hand.tricksWon);
+			expect(review?.delta).toEqual(f.state.game.hand.delta);
+		} finally {
+			vi.useRealTimers();
+		}
 	});
 	it('keeps buried cards inaccessible until the hand has finished and rejects non-player reads', async () => {
 		const f = await fixture();

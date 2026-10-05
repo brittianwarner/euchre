@@ -46,6 +46,21 @@ describe('partnership decision evidence', () => {
 			possibleOpponentBeaters: []
 		});
 	});
+	it('saves the right bower when a nine already wins from the last seat', () => {
+		const view = playView(
+			['JH', 'AH', '9H'],
+			[
+				{ seat: 3, card: 'KS' },
+				{ seat: 0, card: 'QS' },
+				{ seat: 1, card: 'AS' }
+			]
+		);
+		const decision = analyze(view);
+		expect(decision.context.opponentsAfterYou).toEqual([]);
+		expect(decision.options.find((option) => option.card === 'JH')).toMatchObject({
+			cheaperEquivalentCards: expect.arrayContaining(['9H', 'AH'])
+		});
+	});
 	it('identifies a cheaper equivalent without treating necessary cover as equivalent', () => {
 		expect(
 			analyze(partnershipCases[3].view).options.find((option) => option.card === 'JD')

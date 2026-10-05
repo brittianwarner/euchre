@@ -1,0 +1,91 @@
+diff --git a/dist/tsup/mod.cjs b/dist/tsup/mod.cjs
+index ff2618a089cb7096778fe4cda086a448570b90f9..de3feb69affe74ffb7fe325d72ed9433fa83c90e 100644
+--- a/dist/tsup/mod.cjs
++++ b/dist/tsup/mod.cjs
+@@ -3285,9 +3285,14 @@ function createWriteThroughProxy(value, commit, beforeChange) {
+   if (!value || typeof value !== "object") {
+     return value;
+   }
++  let needsRootUnwrap = false;
+   return _onchange2.default.call(void 0, 
+     value,
+     () => {
++      if (needsRootUnwrap) {
++        unwrapWriteThroughProxy(value);
++        needsRootUnwrap = false;
++      }
+       commit(value);
+     },
+     {
+@@ -3296,6 +3301,8 @@ function createWriteThroughProxy(value, commit, beforeChange) {
+       // if beforeChange did not throw.
+       onValidate(_path, newValue) {
+         beforeChange == null ? void 0 : beforeChange(newValue);
++        const unwrapped = unwrapWriteThroughProxy(newValue);
++        needsRootUnwrap ||= unwrapped !== newValue;
+         return true;
+       }
+     }
+diff --git a/dist/tsup/mod.js b/dist/tsup/mod.js
+index 0c90afab3b418138a7433018d876ee992819cf16..d5a219dd5f24f0f26734d83326cbfdc259b6c109 100644
+--- a/dist/tsup/mod.js
++++ b/dist/tsup/mod.js
+@@ -3285,9 +3285,14 @@ function createWriteThroughProxy(value, commit, beforeChange) {
+   if (!value || typeof value !== "object") {
+     return value;
+   }
++  let needsRootUnwrap = false;
+   return onChange(
+     value,
+     () => {
++      if (needsRootUnwrap) {
++        unwrapWriteThroughProxy(value);
++        needsRootUnwrap = false;
++      }
+       commit(value);
+     },
+     {
+@@ -3296,6 +3301,8 @@ function createWriteThroughProxy(value, commit, beforeChange) {
+       // if beforeChange did not throw.
+       onValidate(_path, newValue) {
+         beforeChange == null ? void 0 : beforeChange(newValue);
++        const unwrapped = unwrapWriteThroughProxy(newValue);
++        needsRootUnwrap ||= unwrapped !== newValue;
+         return true;
+       }
+     }
+diff --git a/src/registry/write-through-proxy.ts b/src/registry/write-through-proxy.ts
+index f636958837a03f5e087e54c3ae606cdd5f52e7b4..cc8681bcc7ea4b6570cdd8e61fed31eb20fc09d5 100644
+--- a/src/registry/write-through-proxy.ts
++++ b/src/registry/write-through-proxy.ts
+@@ -21,10 +21,18 @@ export function createWriteThroughProxy<T>(
+ 	if (!value || typeof value !== "object") {
+ 		return value;
+ 	}
++	let needsRootUnwrap = false;
+ 
+ 	return onChange(
+ 		value as T & Record<string, any>,
+ 		() => {
++			// on-change unwraps only proxies created by this watcher. A direct
++			// assignment from another actor callback can retain its root proxy;
++			// the validation hook cannot replace that root, so repair on commit.
++			if (needsRootUnwrap) {
++				unwrapWriteThroughProxy(value);
++				needsRootUnwrap = false;
++			}
+ 			commit(value);
+ 		},
+ 		{
+@@ -33,6 +41,11 @@ export function createWriteThroughProxy<T>(
+ 			// if beforeChange did not throw.
+ 			onValidate(_path: string, newValue: unknown) {
+ 				beforeChange?.(newValue);
++				// Validate first: rejected writes must not mutate their input or
++				// shared state. Then remove retained child proxies from nested
++				// spreads before the next callback wraps this subtree again.
++				const unwrapped = unwrapWriteThroughProxy(newValue);
++				needsRootUnwrap ||= unwrapped !== newValue;
+ 				return true;
+ 			},
+ 		},

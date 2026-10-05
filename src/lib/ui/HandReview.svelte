@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PublicGameView } from '#lib/protocol/index.ts';
 	import type { CompletedHandReview } from '#lib/protocol/hand-review.ts';
-	import { cardName } from '#lib/euchre/index.ts';
+	import { cardName, SUIT_NAME } from '#lib/euchre/index.ts';
 	import { seatName } from './table-presentation';
 	let {
 		view,
@@ -23,6 +23,12 @@
 	let error = $state('');
 	let requestNo = 0;
 	const tricks = $derived(archive?.tricks ?? (handNo === view.handNo ? view.trickLog : []));
+	const totals = $derived(
+		archive?.tricksWon ?? [
+			tricks.filter((trick) => trick.winnerSeat !== null && trick.winnerSeat % 2 === 0).length,
+			tricks.filter((trick) => trick.winnerSeat !== null && trick.winnerSeat % 2 === 1).length
+		]
+	);
 	async function choose(value: number) {
 		handNo = value;
 		archive = null;
@@ -43,25 +49,65 @@
 	}
 	function open() {
 		dialog?.showModal();
-		void choose(view.handNo);
+		void choose(
+			view.handNo > 0 && view.trickLog.length === 0 && !view.result ? view.handNo - 1 : view.handNo
+		);
 	}
 </script>
 
-<button type="button" onclick={open}>↶ Review tricks</button>
+<button type="button" onclick={open}>↶ Review hands</button>
 <dialog {@attach attachDialog} aria-labelledby="review-title">
 	<header>
-		<h2 id="review-title">The cards on the table</h2>
+		<h2 id="review-title">Review a hand</h2>
 		<button type="button" aria-label="Close trick review" onclick={() => dialog?.close()}>×</button>
 	</header>
 	<label
 		>Hand <select value={handNo} onchange={(e) => void choose(Number(e.currentTarget.value))}
 			>{#each Array.from({ length: view.handNo + 1 }, (_, i) => i) as number (number)}<option
-					value={number}>{number + 1}</option
+					value={number}>{number + 1}{number === view.handNo ? ' · Current' : ' · Finished'}</option
 				>{/each}</select
 		></label
 	>
 	{#if busy}<p role="status">Opening the hand…</p>{/if}
 	{#if error}<p role="alert">{error}</p>{/if}
+	{#if archive}
+		<div class="hand-summary">
+			{#if archive.result === 'throw_in' || (!archive.trump && !archive.tricks.length)}
+				<p>
+					<strong>Everyone passed. No points were scored.</strong> The deal moved to the next player.
+				</p>
+			{:else}
+				<p>
+					<strong>{archive.trump ? SUIT_NAME[archive.trump] : 'Unknown suit'} were trump.</strong>
+					{#if archive.makerSeat !== null}{seatName(archive.makerSeat, view.you)} named trump{archive.aloneSeat !==
+						null
+							? ' and went alone'
+							: ''}.{/if}
+				</p>
+				{#if tricks.length}<p>
+						Tricks: your team <strong>{totals[view.you % 2]}</strong> · other team
+						<strong>{totals[1 - (view.you % 2)]}</strong>.
+					</p>{/if}
+				{#if archive.delta}<p>
+						<strong
+							>{archive.delta[view.you % 2] > 0 ? 'Your team' : 'The other team'} scored {Math.max(
+								...archive.delta
+							)}
+							{Math.max(...archive.delta) === 1 ? 'point' : 'points'}{archive.result === 'euchre'
+								? ' — euchre'
+								: archive.result === 'march' || archive.result === 'lone_march'
+									? ' — all five tricks'
+									: ''}.</strong
+						>
+					</p>{/if}
+			{/if}
+			{#if archive.dealerSeat !== undefined}<p>
+					Dealer: {seatName(archive.dealerSeat, view.you)}.{archive.upCard
+						? ` Up card: ${cardName(archive.upCard)}.`
+						: ''}
+				</p>{/if}
+		</div>
+	{/if}
 	{#each tricks as trick (trick.index)}
 		<section>
 			<h3>
@@ -76,7 +122,9 @@
 					</figure>{/each}
 			</div>
 		</section>
-	{:else}<p>No completed tricks in this hand yet.</p>{/each}
+	{:else}{#if !archive}<p>
+				No completed tricks in this hand yet. Choose an earlier hand above to review it.
+			</p>{/if}{/each}
 	{#if archive}<section>
 			<h3>Buried cards</h3>
 			<div class="cards">

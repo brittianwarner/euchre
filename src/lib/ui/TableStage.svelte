@@ -325,9 +325,9 @@
 						<span class="eyebrow">A seat at the table</span>
 						<h2>
 							{view.phase === 'bid_round_2'
-								? 'A second chance to call.'
+								? `${seatName(view.dealerSeat, view.you)} turned down ${view.upCard ? cardName(view.upCard) : 'the up card'}.`
 								: view.phase === 'dealer_discard'
-									? 'Six cards. Keep your best five.'
+									? `${seatName(view.dealerSeat, view.you)} picked up ${view.upCard ? cardName(view.upCard) : 'the up card'}.`
 									: 'A fresh hand awaits.'}
 						</h2>
 						<p>
@@ -1319,7 +1319,7 @@
 
 		.played-slot {
 			width: 22%;
-			height: 62%;
+			height: 80%;
 		}
 		.played-slot:nth-child(1) {
 			left: 28%;
@@ -1327,8 +1327,8 @@
 			transform: translate(-50%, -50%) rotate(-7deg);
 		}
 		.played-slot:nth-child(2) {
-			left: 47%;
-			top: 27%;
+			left: 43%;
+			top: 35%;
 			transform: translate(-50%, -50%) rotate(3deg);
 		}
 		.played-slot:nth-child(3) {
@@ -1337,8 +1337,8 @@
 			transform: translate(-50%, -50%) rotate(7deg);
 		}
 		.played-slot:nth-child(4) {
-			left: 53%;
-			top: 70%;
+			left: 57%;
+			top: 68%;
 			transform: translate(-50%, -50%) rotate(-3deg);
 		}
 
@@ -1440,6 +1440,19 @@
 			display: block;
 			bottom: -13px;
 			font-size: 11px;
+		}
+	}
+	@container game (min-width: 701px) and (max-width: 1100px) {
+		.trick-score {
+			display: block;
+			text-align: right;
+		}
+		.trick-score strong {
+			display: block;
+			margin-top: 4px;
+		}
+		.seat:nth-child(2) {
+			top: 8px;
 		}
 	}
 </style>

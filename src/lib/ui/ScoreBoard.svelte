@@ -154,4 +154,52 @@
 			gap: 5px;
 		}
 	}
+	@container game (max-width: 1100px) {
+		.goal {
+			display: none;
+		}
+		.score {
+			gap: 16px;
+		}
+		.brand {
+			font-size: 30px;
+		}
+		.scoreline {
+			gap: 12px;
+			padding-left: 16px;
+		}
+		.scoreline div {
+			gap: 8px;
+		}
+	}
+	@container game (max-width: 850px) {
+		.score {
+			width: 100%;
+			flex: auto;
+		}
+		.scoreline {
+			margin-left: auto;
+		}
+	}
+	@container game (max-width: 700px) {
+		.brand {
+			display: none;
+		}
+		.scoreline {
+			width: 100%;
+			border: 0;
+			padding: 0;
+			justify-content: space-between;
+		}
+	}
+	@media (orientation: landscape) and (max-height: 500px) and (min-width: 600px) {
+		.score {
+			width: auto;
+			flex: 1;
+		}
+		.scoreline {
+			gap: 8px;
+			justify-content: center;
+		}
+	}
 </style>

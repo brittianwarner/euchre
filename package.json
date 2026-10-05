@@ -71,5 +71,8 @@
 	},
 	"workspaces": [
 		"rivetkit-svelte"
-	]
+	],
+	"patchedDependencies": {
+		"rivetkit@2.3.23": "patches/rivetkit@2.3.23.patch"
+	}
 }

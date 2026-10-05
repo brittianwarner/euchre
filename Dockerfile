@@ -2,6 +2,7 @@
 FROM oven/bun:1.4.2 AS build
 WORKDIR /app
 COPY package.json bun.lock ./
+COPY patches ./patches
 COPY rivetkit-svelte/package.json ./rivetkit-svelte/package.json
 RUN bun install --frozen-lockfile --ignore-scripts
 COPY . .
@@ -10,6 +11,7 @@ RUN bun run build
 FROM oven/bun:1.4.2 AS dependencies
 WORKDIR /app
 COPY package.json bun.lock ./
+COPY patches ./patches
 COPY rivetkit-svelte/package.json ./rivetkit-svelte/package.json
 RUN bun install --production --frozen-lockfile --ignore-scripts
 

@@ -30,6 +30,7 @@ export class TableStore {
 	submitting = $state(false);
 
 	#handle: TableActorHandle | null = null;
+	#resyncPromise: Promise<void> | null = null;
 
 	/** Remember the actor handle for snapshot / submit. */
 	bind(handle: TableActorHandle): void {
@@ -67,20 +68,35 @@ export class TableStore {
 	}
 
 	/** Hard resync after connect — snap, do not animate. */
-	async resync(): Promise<void> {
+	resync(): Promise<void> {
+		if (this.#resyncPromise) return this.#resyncPromise;
+		this.#resyncPromise = this.#fetchSnapshot().finally(() => {
+			this.#resyncPromise = null;
+		});
+		return this.#resyncPromise;
+	}
+
+	async #fetchSnapshot(): Promise<void> {
 		const handle = this.#handle;
 		if (!handle?.isConnected) return;
+		let timer: ReturnType<typeof setTimeout> | undefined;
 		try {
 			const snap = await Promise.race([
 				handle.snapshot(),
-				new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), 4000))
+				new Promise<never>((_, reject) => {
+					timer = setTimeout(() => reject(new Error('Snapshot timed out')), 4000);
+				})
 			]);
-			if (snap && (!this.view || snap.v >= this.view.v)) {
+			if (!snap) throw new Error('Snapshot unavailable');
+			if (!this.view || snap.v >= this.view.v) {
 				this.view = snap;
 				this.status = 'ready';
+				this.error = null;
 			}
 		} catch {
-			this.error = 'Could not reconnect yet. Your last table view is kept here. Please try again.';
+			this.error = 'Waiting for the table to reconnect. Your game is saved.';
+		} finally {
+			clearTimeout(timer);
 		}
 	}
 
@@ -111,6 +127,7 @@ export class TableStore {
 				this.error = 'The table could not confirm your move. Your game is saved. Please try again.';
 				return false;
 			}
+			if (!this.view || this.view.v < ack.v) await this.resync();
 			return true;
 		} catch (err) {
 			console.error('[table-store] play error', err);
