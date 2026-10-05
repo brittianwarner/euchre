@@ -835,7 +835,7 @@
 		margin: 0;
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
-		grid-template-rows: minmax(0, 1fr) clamp(280px, 46dvh, 420px);
+		grid-template-rows: minmax(0, 1fr) clamp(280px, 42dvh, 420px);
 		gap: 8px;
 		padding: 8px 24px max(8px, env(safe-area-inset-bottom));
 		background: #17452f;

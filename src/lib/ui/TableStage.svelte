@@ -86,7 +86,13 @@
 				: anchor
 					? anchor.left + anchor.width / 2 - rect.left - rect.width / 2
 					: 0;
-			const dy = fromHand ? fromHand.top - rect.top : seat === context.you ? 130 : -95;
+			const dy = fromHand
+				? fromHand.top - rect.top
+				: anchor
+					? anchor.top + anchor.height / 2 - rect.top - rect.height / 2
+					: seat === context.you
+						? 130
+						: -95;
 			const scale = fromHand ? fromHand.width / rect.width : 0.75;
 			animation = node.animate(
 				[
@@ -349,7 +355,15 @@
 									alt={`${seatName(seat, view.you)} played ${cardName(play.card)}${winner === seat ? ' — winning card' : ''}`}
 									draggable="false"
 								/>
-							{/key}{:else}<span class="empty-play"
+							{/key}<span class="played-owner" aria-hidden="true"
+								>{seat === view.you
+									? 'You'
+									: (seat - view.you + 4) % 4 === 2
+										? 'Partner'
+										: (seat - view.you + 4) % 4 === 1
+											? 'Left'
+											: 'Right'}</span
+							>{:else}<span class="empty-play"
 								>{view.sittingSeat === seat ? 'Sitting out' : ' '}</span
 							>{/if}
 					</div>
@@ -1293,32 +1307,41 @@
 			top: 38%;
 		}
 		.seat:nth-child(2) {
-			top: -22px;
+			top: -36px;
 		}
 		.seat:nth-child(4) {
 			width: 120px;
 			bottom: -12px;
 		}
+		.felt-content:has(.played-cards) .seat:nth-child(4) {
+			visibility: hidden;
+		}
+
 		.played-slot {
-			width: 15%;
-			height: 68%;
+			width: 22%;
+			height: 62%;
 		}
 		.played-slot:nth-child(1) {
-			left: 26%;
-			top: 45%;
+			left: 28%;
+			top: 50%;
+			transform: translate(-50%, -50%) rotate(-7deg);
 		}
 		.played-slot:nth-child(2) {
-			left: 42%;
-			top: 45%;
+			left: 47%;
+			top: 27%;
+			transform: translate(-50%, -50%) rotate(3deg);
 		}
 		.played-slot:nth-child(3) {
-			left: 58%;
-			top: 45%;
+			left: 72%;
+			top: 50%;
+			transform: translate(-50%, -50%) rotate(7deg);
 		}
 		.played-slot:nth-child(4) {
-			left: 74%;
-			top: 45%;
+			left: 53%;
+			top: 70%;
+			transform: translate(-50%, -50%) rotate(-3deg);
 		}
+
 		.bid-table {
 			flex-direction: row;
 			padding: 14px 0;
@@ -1391,6 +1414,32 @@
 		.bid-table p,
 		.bid-table .eyebrow {
 			display: none;
+		}
+	}
+
+	.played-owner {
+		display: none;
+		position: absolute;
+		bottom: -16px;
+		left: 50%;
+		transform: translateX(-50%);
+		font-size: 12px;
+		font-weight: 650;
+		line-height: 1;
+		color: #f3ead4;
+		white-space: nowrap;
+	}
+	@media (max-width: 700px), (max-height: 500px) {
+		.played-slot {
+			position: relative;
+		}
+		.played-cards {
+			padding-bottom: 16px;
+		}
+		.played-owner {
+			display: block;
+			bottom: -13px;
+			font-size: 11px;
 		}
 	}
 </style>
