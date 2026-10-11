@@ -106,7 +106,7 @@ describe('human table evidence', () => {
 			view.legal,
 			{ escalate: false, budgetMs: 4000 }
 		);
-		const state = decision.mock.calls[0][0].state;
+		const state = JSON.stringify(decision.mock.calls[0][0].state);
 		expect(state).toContain('human-observed');
 		expect(state).toContain('Computer timing');
 		expect(state).not.toMatch(/deckOrder|internalToken|dealerDiscard|"kitty"|seed=/);

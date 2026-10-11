@@ -193,7 +193,7 @@ export async function runLadder(
 	// There are at most five card plays. Let Jev compare all of them: pruning by
 	// the fallback's ranking can hide the only card that protects a partner.
 	const candidates =
-		req.kind === 'play'
+		req.kind === 'play' || req.kind === 'bid1' || req.kind === 'bid2'
 			? legal
 			: narrowByDifficulty(ranking, legal, deps.persona.difficulty, turnRng(req.turnId, req.seat));
 	const candidateSet = new Map<string, LegalMove>(candidates.map((m) => [m.id, m]));
@@ -221,6 +221,7 @@ export async function runLadder(
 		}
 
 		const input: LlmDecideInput = {
+			log: deps.log,
 			kind: req.kind,
 			seat: req.seat,
 			view: req.view,

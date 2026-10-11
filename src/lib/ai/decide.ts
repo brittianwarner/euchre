@@ -25,10 +25,7 @@ import { APICallError, NoObjectGeneratedError } from 'ai';
 import { JEV_MODEL } from './jev';
 import type { LegalMove, LegalMoveId, RankedMove } from '#lib/protocol/index.ts';
 import { allowsEscalation, isDeliberate, resolveBudget } from './config';
-import { encodeForLlm } from './notation';
-import { analyzePartnership } from './partnership';
-import { tableContext } from './table-context';
-import { buildLayers } from './prompt';
+import { buildDecisionQuestion, DECISION_PROMPT_VERSION } from './decision-context';
 import { idsOf } from './schema';
 import {
 	ZERO_USAGE,
@@ -84,36 +81,51 @@ export async function callModel(
 	if (remaining <= 0) throw new DOMException('Decision deadline expired', 'TimeoutError');
 	const timeout = AbortSignal.timeout(Math.max(1, Math.floor(remaining)));
 	const signal = deps.signal ? AbortSignal.any([deps.signal, timeout]) : timeout;
-	const partnership = analyzePartnership(req.view, allowed);
-	const layers = buildLayers({
-		kind: req.kind,
-		persona: deps.persona,
-		dossier: deps.dossier,
-		nonce: deps.nonce,
-		seat: req.seat,
-		body:
-			encodeForLlm(req.view, allowed, {
-				...(req.ranking === undefined ? {} : { ranking: req.ranking }),
-				...(deps.memoryLines === undefined ? {} : { notes: deps.memoryLines })
-			}) +
-			`\nTABLE_READ=${JSON.stringify(tableContext(req.view))}` +
-			(partnership ? `\nPARTNERSHIP=${JSON.stringify(partnership.context)}` : '')
-	});
-	// Opaque option labels avoid provider restrictions on punctuation in move ids.
-	const criteria = Object.fromEntries(
-		allowed.map((move, i) => [
-			`move_${i}`,
-			JSON.stringify({
-				...move.move,
-				label: move.label,
-				...partnership?.options.find((option) => option.id === move.id)
-			})
-		])
-	);
-	const out = await decision({ state: JSON.stringify(layers), criteria, signal });
-	const index = Object.keys(criteria).indexOf(out.choice);
-	const chosen = allowed[index];
+	const question = buildDecisionQuestion(req.view, allowed, deps.persona);
+	const { choices, aloneChoices, bidChecks, ...request } = question;
+	const out = await decision({ ...request, signal });
+	const criteria = question.criteria;
+	let chosenKey = out.choice;
+	if (bidChecks[chosenKey]) {
+		// Jev assesses each voluntary call independently. Compose those judgments
+		// with its preference distribution; no heuristic can veto or select a move.
+		const supported = Object.keys(criteria).filter((key) => {
+			const check = bidChecks[key];
+			if (!check) return true;
+			const answer = out.additionalAnswers?.[check];
+			if (!answer || !['pass', 'call'].includes(answer.choice))
+				throw new Error('Jev omitted the bid support decision');
+			return answer.choice === 'call';
+		});
+		if (!supported.includes(chosenKey)) {
+			if (!out.probabilities) throw new Error('Jev omitted the move distribution');
+			chosenKey = supported.reduce((best, key) =>
+				out.probabilities![key]! > out.probabilities![best]! ? key : best
+			);
+		}
+	}
+	const index = Object.keys(criteria).indexOf(chosenKey);
+	let chosen = choices[index];
 	if (!chosen) throw new Error('Jev returned a choice outside the legal set');
+	const loner = aloneChoices[chosenKey];
+	if (loner) {
+		const answer = out.additionalAnswers?.[loner.questionId];
+		if (!answer || !['partner', 'alone'].includes(answer.choice))
+			throw new Error('Jev omitted the applicable loner decision');
+		chosen = answer.choice === 'alone' ? loner.alone : loner.partner;
+	}
+	// Audit both primary and composed judgments, never the private hand/request.
+	deps.log?.('jev_decision', {
+		promptVersion: DECISION_PROMPT_VERSION,
+		kind: req.kind,
+		requestId: out.requestId,
+		modelSnapshot: out.modelSnapshot,
+		primaryChoice: out.choice,
+		resolvedChoice: chosenKey,
+		primaryConfidence: out.confidence,
+		probabilities: out.probabilities,
+		additionalAnswers: out.additionalAnswers
+	});
 	return {
 		moveId: chosen.id,
 		source: 'llm',

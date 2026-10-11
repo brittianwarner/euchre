@@ -264,8 +264,8 @@ describe('Jev integration', () => {
 			{ escalate: false, budgetMs: 5000 }
 		);
 		const sent = decision.mock.calls[0][0];
-		expect(JSON.parse(sent.state).user).toContain('"partnerTrickSecured":true');
-		expect(JSON.parse(sent.criteria.move_1)).toMatchObject({ card: 'TS', overtakesPartner: false });
+		expect(sent.state.partnership).toMatchObject({ partnerTrickSecured: true });
+		expect(sent.criteria.move_1).toMatchObject({ card: 'TS', overtakesPartner: false });
 		expect(outcome).toMatchObject({ moveId: 'play:AS', source: 'llm', modelId: JEV_MODEL });
 		expect(talk).not.toHaveBeenCalled();
 	});

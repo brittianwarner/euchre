@@ -44,6 +44,21 @@ import type {
  * Decisions and conversation expose different capabilities. A text model cannot
  * be substituted into the decision path.
  */
+/** JSON descriptions supported by the native Decisions API. */
+export type DecisionDescription =
+	string | Readonly<Record<string, unknown>> | readonly unknown[] | null;
+export interface JevChoiceQuestion {
+	readonly type: 'choice';
+	readonly instructions: DecisionDescription;
+	readonly criteria: Readonly<Record<string, DecisionDescription>>;
+}
+export interface JevChoiceAnswer {
+	readonly type: 'choice';
+	readonly choice: string;
+	readonly confidence: number;
+	readonly probabilities: Readonly<Record<string, number>>;
+}
+
 export interface ModelFactory {
 	/**
 	 * Which upstream this factory talks to. Carried on the factory rather than
@@ -54,10 +69,21 @@ export interface ModelFactory {
 	readonly provider: ProviderName;
 	/** Jev-only structured decisions. Text-only providers deliberately omit this. */
 	readonly decision?: (input: {
-		state: string;
-		criteria: Readonly<Record<string, string>>;
+		state: DecisionDescription;
+		instructions: DecisionDescription;
+		criteria: Readonly<Record<string, DecisionDescription>>;
+		additionalQuestions?: Readonly<Record<string, JevChoiceQuestion>>;
 		signal: AbortSignal;
-	}) => Promise<{ choice: string; confidence: number; usage: DecideUsage }>;
+	}) => Promise<{
+		choice: string;
+		confidence: number;
+		usage: DecideUsage;
+		/** Relative choice probabilities, not the probability of winning a hand. */
+		probabilities?: Readonly<Record<string, number>>;
+		requestId?: string;
+		modelSnapshot?: string;
+		additionalAnswers?: Readonly<Record<string, JevChoiceAnswer>>;
+	}>;
 
 	/**
 	 * The real upstream model id a canonical tier id resolves to.
@@ -145,6 +171,7 @@ export type AiLogEvent =
 	| 'ai_fatal'
 	| 'ai_error'
 	| 'ai_ok'
+	| 'jev_decision'
 	| 'banter_skipped'
 	| 'banter_screened'
 	| 'banter_error'

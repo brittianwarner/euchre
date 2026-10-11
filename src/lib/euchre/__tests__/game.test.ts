@@ -18,6 +18,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	DECK,
 	advance,
+	assertInvariants,
 	apply,
 	createGame,
 	cutterOf,
@@ -590,6 +591,7 @@ describe('a full match', () => {
 		for (let i = 0; i < 60; i++) {
 			const seed = `clamp-${i}`;
 			const report = playMatch(newGame(seed, { gameTo: 5 }), randomPicker(seed), false);
+			expect(() => assertInvariants(report.final)).not.toThrow();
 			expect(report.violations).toEqual([]);
 			expect(report.final.score[report.final.winnerTeam as Team]).toBe(5);
 			expect(report.final.score[1 - (report.final.winnerTeam as Team)]).toBeLessThan(5);

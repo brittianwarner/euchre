@@ -57,6 +57,7 @@ import {
 	type DecisionRequest,
 	type ModelFactory
 } from '#lib/ai/index.ts';
+import { JevDecisionError } from '#lib/ai/jev.ts';
 import type {
 	AIDecisionKind,
 	LegalMove,
@@ -79,6 +80,8 @@ export interface LlmUsage {
 
 /** Everything `$lib/ai` needs to make one constrained decision. Self-contained. */
 export interface LlmDecideInput {
+	/** Provider diagnostics only; never logs a private prompt or hand. */
+	readonly log?: (event: string, fields: Readonly<Record<string, unknown>>) => void;
 	readonly kind: AIDecisionKind;
 	readonly seat: Seat;
 	/** `project(state, seat)`. The redaction boundary; never widened. */
@@ -177,7 +180,13 @@ function factory(): ModelFactory | null {
  * bridge is not on the wire, so nothing here is ever logged or transmitted.
  */
 function toDecideDeps(input: LlmDecideInput, model: ModelFactory): DecideDeps {
-	return { factory: model, persona: input.persona, dossier: input.dossier, nonce: input.nonce };
+	return {
+		factory: model,
+		persona: input.persona,
+		dossier: input.dossier,
+		nonce: input.nonce,
+		log: input.log
+	};
 }
 
 function toDecisionRequest(input: LlmDecideInput): DecisionRequest {
@@ -325,7 +334,23 @@ export async function callDecider(
 	try {
 		const raw: unknown = await withDeadline(decider(input), input.budgetMs);
 		return parseDecideResult(raw, allowed);
-	} catch {
+	} catch (error) {
+		input.log?.('jev_failure', {
+			seat: input.seat,
+			kind: input.kind,
+			handNo: input.view.handNo,
+			reason:
+				error instanceof JevDecisionError
+					? error.reason
+					: error instanceof Error &&
+						  (error.name === 'TimeoutError' ||
+								error.name === 'AbortError' ||
+								error.message === 'llm_timeout')
+						? 'timeout'
+						: 'transport_or_adapter',
+			status: error instanceof JevDecisionError ? error.status : undefined,
+			...(error instanceof JevDecisionError ? error.diagnostic : {})
+		});
 		return null;
 	}
 }

@@ -64,7 +64,11 @@ export function assertInvariants(s: GameState): void {
 
 	/* V4 — alone. */
 	if (h.aloneSeat !== null) {
-		require_(h.aloneSeat === h.makerSeat, 'V4', `aloneSeat ${h.aloneSeat} !== makerSeat ${h.makerSeat}`);
+		require_(
+			h.aloneSeat === h.makerSeat,
+			'V4',
+			`aloneSeat ${h.aloneSeat} !== makerSeat ${h.makerSeat}`
+		);
 		require_(
 			h.sittingSeat === partnerOf(h.aloneSeat),
 			'V4',
@@ -128,7 +132,11 @@ export function assertInvariants(s: GameState): void {
 			...h.kitty,
 			...(h.dealerDiscard ? [h.dealerDiscard] : [])
 		]);
-		require_(universe.size === 24, 'V10', `${universe.size} distinct cards accounted for, expected 24`);
+		require_(
+			universe.size === 24,
+			'V10',
+			`${universe.size} distinct cards accounted for, expected 24`
+		);
 
 		// The up-card is the one legal alias: kitty[0] is immutable, so after a
 		// pickup the same CardId is legitimately in both kitty and a hand.
@@ -162,8 +170,15 @@ export function assertInvariants(s: GameState): void {
 			'V11',
 			`both teams scored in one hand: ${h.delta}`
 		);
-		for (const d of h.delta) {
-			require_([0, 1, 2, 4].includes(d), 'V11', `delta component ${d} is not a legal award`);
+		for (const [team, d] of h.delta.entries()) {
+			// A four-point loner at seven is clamped to the three points needed
+			// to finish. `delta` records the applied award, not the nominal award.
+			const clampedLoner = d === 3 && h.result === 'lone_march' && s.score[team] === s.cfg.gameTo;
+			require_(
+				[0, 1, 2, 4].includes(d) || clampedLoner,
+				'V11',
+				`delta component ${d} is not a legal award`
+			);
 		}
 	}
 
@@ -192,7 +207,9 @@ export function assertInvariants(s: GameState): void {
 		for (const suit of SUITS) {
 			if (suit === trump) continue;
 			const n = DECK.filter((c) => effectiveSuit(c, trump) === suit).length;
-			const isMate = suitOf(`J${suit}` as CardId) === suit && effectiveSuit(`J${suit}` as CardId, trump) === trump;
+			const isMate =
+				suitOf(`J${suit}` as CardId) === suit &&
+				effectiveSuit(`J${suit}` as CardId, trump) === trump;
 			require_(
 				n === (isMate ? 5 : 6),
 				'V16',
