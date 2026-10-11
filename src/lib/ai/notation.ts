@@ -106,7 +106,10 @@ export function encodeForLlm(
 	if (past.length > 0) {
 		L.push(
 			`PAST=${past
-				.map((t) => `${t.winnerSeat ?? '?'}<${t.plays.map((p) => p.card).join(' ')}`)
+				.map(
+					(t) =>
+						`trick${t.index + 1}:led=${t.ledSuit},winner=${t.winnerSeat ?? '?'}<${t.plays.map((p) => `${p.seat}:${p.card}`).join(' ')}`
+				)
 				.join(' | ')}`
 		);
 	}

@@ -103,6 +103,7 @@ import {
 	type PublicGameView,
 	type SubmitMoveRequest,
 	type SyncEvent,
+	type TableObservation,
 	type TableConnState,
 	type TableConnectParams,
 	type TableEventName
@@ -221,6 +222,9 @@ export interface TableState {
 	/** Optional for tables created before trick review was introduced. */
 	reviewTricks?: boolean;
 	reviewReadyTurnId?: string | null;
+	/** Bounded public observations for this hand; absent on pre-upgrade tables. */
+	observations?: readonly TableObservation[];
+	turnOpened?: { turnId: string; at: number; connected: boolean };
 	/** Same value as `game.gameId`; the id history is filed under. */
 	readonly matchId: string;
 	/** Empty until claimed. The authorization check in `createConnState`. */
@@ -449,6 +453,14 @@ function screenLine(text: unknown, max: number): string {
 function tableView(c: Pick<TableCtx, 'state'>, seat: Seat): PublicGameView {
 	return {
 		...project(c.state.game, seat),
+		players: c.state.personas.map(({ seat, persona }) => ({
+			seat,
+			name: persona.name,
+			blurb: persona.blurb,
+			style:
+				persona.risk >= 0.7 ? 'Bold bidder' : persona.risk <= 0.3 ? 'Card counter' : 'Steady player'
+		})),
+		observations: (c.state.observations ?? []).filter((o) => o.handNo === c.state.game.hand.handNo),
 		reviewTricks: c.state.reviewTricks ?? false,
 		rules: {
 			stickTheDealer: c.state.game.cfg.stickTheDealer,
@@ -533,6 +545,38 @@ function commit(c: TableCtx, state: GameState): void {
 /** Append to the current hand's replay journal, bounded at 40 entries. */
 function journal(c: TableCtx, action: PlayerAction): void {
 	c.state.journal = [...c.state.journal, action].slice(-40);
+}
+
+/** Only accepted public actions are recorded; discard/cut details remain private. */
+function observeMove(c: TableCtx, before: GameState, seat: Seat, move: LegalMove): void {
+	const kind = decisionKindFor(before.hand.phase);
+	if (!kind) return;
+	const opened = c.state.turnOpened;
+	const elapsed = opened?.turnId === before.turnId ? Date.now() - opened.at : null;
+	const human = seat === HUMAN_SEAT;
+	const reliable =
+		human && opened?.connected && elapsed !== null && elapsed >= 0 && elapsed <= 20_000;
+	const action =
+		move.move.t === 'play' || ['pass', 'orderUp', 'call'].includes(move.move.t)
+			? move.label
+			: kind === 'discard'
+				? 'Dealer discarded a private card'
+				: 'Cut decision';
+	c.state.observations = [
+		...(c.state.observations ?? []).filter((o) => o.handNo === before.hand.handNo),
+		{
+			handNo: before.hand.handNo,
+			seat,
+			kind,
+			action,
+			elapsedMs: reliable ? Math.round(elapsed / 250) * 250 : null,
+			timing: (human
+				? reliable
+					? 'human-observed'
+					: 'unreliable'
+				: 'computer-paced') as TableObservation['timing']
+		}
+	].slice(-32);
 }
 
 /** Remember a client's dedupe key. Ring buffer, cap 32 (V18). */
@@ -625,6 +669,12 @@ async function armTurn(c: TableCtx, steps: readonly Step[]): Promise<void> {
 
 	const seat = game.hand.turnSeat;
 	if (seat === null) return;
+	if (c.state.turnOpened?.turnId !== game.turnId)
+		c.state.turnOpened = {
+			turnId: game.turnId,
+			at: Date.now(),
+			connected: [...c.conns.values()].some((conn) => conn.state.role === 'player')
+		};
 	if (seat === HUMAN_SEAT) {
 		await armHumanLadder(c);
 		return;
@@ -749,7 +799,7 @@ async function dispatchAi(c: TableCtx, seat: Seat): Promise<void> {
 
 	const now = Date.now();
 	const revealAt = now + thinkFloorMs(kind, game.turnId);
-	const view = project(game, seat);
+	const view = tableView(c, seat);
 	const forced = legal.length === 1;
 	const fallbackId = forced ? legal[0]!.id : (topMove(view, view.hand, legal) ?? legal[0]!.id);
 	const turnId = game.turnId;
@@ -760,7 +810,8 @@ async function dispatchAi(c: TableCtx, seat: Seat): Promise<void> {
 		requestedAt: now,
 		revealAt,
 		decision: fallbackId,
-		source: forced ? 'forced' : 'fallback'
+		source: forced ? 'forced' : 'fallback',
+		answered: forced
 	};
 	const deadlineAt = now + TEMPO.aiHardCapMs;
 	game.turnDeadlineAt = deadlineAt;
@@ -869,6 +920,7 @@ async function applyMove(
 
 	commit(c, out.state);
 	c.state.game.pending = null;
+	observeMove(c, before, seat, move);
 	journal(c, { seat, id: move.id, move: move.move, ...attribution });
 
 	const steps = settle(c, [...out.steps]);
@@ -1164,6 +1216,7 @@ async function applyMoveAsHuman(
 	commit(c, out.state);
 	c.state.game.appliedSeq = body.seq;
 	c.state.game.pending = null;
+	observeMove(c, before, seat, move);
 	rememberMoveId(c, body.clientMoveId);
 	journal(c, { seat, id: move.id, move: move.move, kind: 'human' });
 
@@ -1216,7 +1269,11 @@ async function onAiDecision(c: TableCtx, body: AIDecision): Promise<void> {
 
 	const pending = game.pending;
 	if (pending === null || pending.turnId !== game.turnId) return; // nothing outstanding
-	if (pending.decision !== null) return; // duplicate reply; first one wins
+	if (pending.answered === true || pending.source === 'forced') return; // first accepted answer wins
+	if (Date.now() >= (game.turnDeadlineAt ?? pending.requestedAt + TEMPO.aiHardCapMs)) {
+		await releasePending(c, true);
+		return;
+	}
 
 	const legal = legalMoves(game, seat);
 	const chosen = legal.find((m) => m.id === body.moveId);
@@ -1235,6 +1292,8 @@ async function onAiDecision(c: TableCtx, body: AIDecision): Promise<void> {
 
 	pending.decision = move.id;
 	pending.source = source;
+	pending.answered = true;
+	c.log.info('AI decision accepted', { seat, source, kind: decisionKindFor(game.hand.phase) });
 
 	const wait = pending.revealAt - Date.now();
 	if (wait > 0) {
@@ -1250,10 +1309,20 @@ async function onAiDecision(c: TableCtx, body: AIDecision): Promise<void> {
 }
 
 /** Play a parked decision now that its pacing floor has elapsed. */
-async function releasePending(c: TableCtx): Promise<void> {
+async function releasePending(c: TableCtx, force = false): Promise<void> {
 	const game = c.state.game;
 	const pending = game.pending;
 	if (pending === null || pending.turnId !== game.turnId || pending.decision === null) return;
+	// The think floor is presentation, not an inference deadline. Keep waiting
+	// for Jev until its answer or the durable watchdog; never play the placeholder early.
+	if (
+		!force &&
+		!pending.answered &&
+		pending.source !== 'forced' &&
+		personaFor(c, pending.seat) &&
+		Date.now() < (game.turnDeadlineAt ?? pending.requestedAt + TEMPO.aiHardCapMs)
+	)
+		return;
 
 	const seat = game.hand.turnSeat;
 	if (seat === null || seat !== pending.seat) {
@@ -1284,7 +1353,8 @@ function onAiSay(c: TableCtx, body: AiSayMsg): void {
 	}
 	if (body.gameId !== game.gameId) return;
 	if (!isAiSeat(body.seat)) return;
-	if (body.turnId !== game.turnId) return; // a line for a turn that has passed
+	if (body.handNo === undefined ? body.turnId !== game.turnId : body.handNo !== game.hand.handNo)
+		return;
 
 	if (body.final) {
 		emitChat(c, body.seat, 'banter', body.text ?? '', body.msgId);
@@ -1389,7 +1459,10 @@ async function onTick(c: TableCtx, body: TickMsg): Promise<void> {
 			if (seat === null || !isAiSeat(seat)) return;
 			if (body.seat !== undefined && body.seat !== seat) return;
 			c.broadcast('thinking', { seat, on: false, extended: false });
-			await autoPlay(c, seat, 'ai_timeout');
+			if (game.pending?.turnId === game.turnId && game.pending.decision !== null) {
+				c.log.warn('AI deadline reached; releasing parked safety move', { seat });
+				await releasePending(c, true);
+			} else await autoPlay(c, seat, 'ai_timeout');
 			return;
 		}
 		case 'nudge':
@@ -1429,6 +1502,21 @@ async function reconcile(c: TableCtx): Promise<void> {
 
 	const pending = game.pending;
 	if (pending !== null && pending.turnId === game.turnId && pending.decision !== null) {
+		if (!pending.answered && pending.source !== 'forced' && personaFor(c, pending.seat)) {
+			const remaining =
+				(game.turnDeadlineAt ?? pending.requestedAt + TEMPO.aiHardCapMs) - Date.now();
+			if (remaining <= 0) await releasePending(c, true);
+			else {
+				game.watchdogId = await c.schedule.after(
+					remaining,
+					'onAiTimeout',
+					game.turnId,
+					pending.seat
+				);
+				await c.saveState({ immediate: true });
+			}
+			return;
+		}
 		const wait = pending.revealAt - Date.now();
 		if (wait <= 0) {
 			await releasePending(c);
@@ -1512,6 +1600,7 @@ export const euchreTable = actor({
 			game,
 			personas: input?.personas ?? [],
 			journal: [],
+			observations: [],
 			stats: emptyStats(),
 			handsPlayed: 0,
 			lastJournaledHandNo: -1,
@@ -1627,6 +1716,7 @@ export const euchreTable = actor({
 
 	onDisconnect: (c, conn): void => {
 		if (conn.state.role !== 'player') return;
+		if (c.state.turnOpened) c.state.turnOpened.connected = false;
 		c.broadcast('presence', { seat: conn.state.seat, online: false });
 	},
 

@@ -27,6 +27,18 @@ export interface PersonaPreset {
 
 export const PERSONA_PRESETS: readonly PersonaPreset[] = [
 	{
+		id: 'grandpa',
+		label: 'Grandpa',
+		hint: 'Experienced, warm, takes a calculated chance.',
+		blurb: 'Takes a chance. Enjoys the story.',
+		prompt:
+			'You are a seasoned kitchen-table player with a mischievous streak. Take plausible close calls and well-supported loners, then play sound partnership euchre. Never deliberately misplay, waste secured winners, coach, or hint at your cards. Your humour is warm and understated, like an old friend.',
+		difficulty: 'expert',
+		aggression: 0.8,
+		risk: 0.8,
+		chattiness: 0.65
+	},
+	{
 		id: 'counter',
 		label: 'The Counter',
 		hint: 'Precise, patient, plays it by the book.',

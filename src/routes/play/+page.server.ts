@@ -7,9 +7,9 @@ import * as env from '$app/env/private';
 import { redirect } from '@sveltejs/kit';
 import { guestIdentity } from '#lib/server/guest.ts';
 import { getRivetClient } from '#lib/server/rivet.ts';
-import { defaultPersonas } from '#lib/server/personas.ts';
+import { defaultPersonas, personasFromSettings } from '#lib/server/personas.ts';
 import { rememberTable } from '#lib/server/recent-tables.ts';
-import { readIdentity } from '../games/_lib/session.server';
+import { connectProfile, readIdentity } from '../games/_lib/session.server';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ fetch, cookies, url }) => {
@@ -20,13 +20,30 @@ export const load: PageServerLoad = async ({ fetch, cookies, url }) => {
 	}
 	const gameId = crypto.randomUUID();
 	const client = getRivetClient();
+	const identity = await readIdentity(cookies);
+	let personas = defaultPersonas();
+	if (identity) {
+		let timer: ReturnType<typeof setTimeout> | undefined;
+		try {
+			const settings = await Promise.race([
+				connectProfile(identity).then((profile) => profile.getSettings()),
+				new Promise<never>((_, reject) => {
+					timer = setTimeout(() => reject(new Error('Persona settings timed out')), 2000);
+				})
+			]);
+			personas = personasFromSettings(settings);
+		} catch {
+			console.warn('Persona settings unavailable; starting with kitchen-table players');
+		} finally {
+			clearTimeout(timer);
+		}
+	}
 
 	await client.euchreTable.create(['table', gameId], {
 		input: {
 			ownerUserId: await guestIdentity(cookies),
-			seed: gameId.replace(/-/g, '').slice(0, 32),
-			personas: defaultPersonas(),
-			profileUserId: (await readIdentity(cookies))?.userId,
+			personas,
+			profileUserId: identity?.userId,
 			// Standard euchre match.
 			cfg: {
 				gameTo: 10,

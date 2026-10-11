@@ -383,6 +383,8 @@ export interface PendingDecision {
 	readonly revealAt: number;
 	decision: LegalMoveId | null;
 	source: AIDecisionSource | null;
+	/** A parked safety move is not an answer. Older tables omit this flag. */
+	answered?: boolean;
 }
 
 /**
@@ -432,8 +434,25 @@ export interface GameState {
 /* Projection                                                                  */
 /* -------------------------------------------------------------------------- */
 
+/** Public action timing includes human/network delays, never hidden AI reasoning. */
+export interface TableObservation {
+	readonly handNo: number;
+	readonly seat: Seat;
+	readonly kind: 'cut' | 'bid1' | 'bid2' | 'discard' | 'play';
+	readonly action: string;
+	readonly elapsedMs: number | null;
+	readonly timing: 'human-observed' | 'computer-paced' | 'unreliable';
+}
+
+export interface TablePlayer {
+	readonly seat: Seat;
+	readonly name: string;
+	readonly blurb: string;
+	readonly style: string;
+}
+
 /**
- * The **only** shape ever sent to a client, produced solely by `project(state, seat)`.
+ * The client view, built by `project(state, seat)` with optional public actor metadata.
  *
  * Redaction here is structural, not procedural: there is no field capable of
  * holding a foreign hand, a buried kitty card, or the dealer's discard, so a leak
@@ -441,6 +460,9 @@ export interface GameState {
  * exists, never of which card it was (V13), and `upCard` is never nulled (V14).
  */
 export interface PublicGameView {
+	/** Actor-authored public metadata. No prompts, private memories or hidden cards. */
+	readonly players?: readonly TablePlayer[];
+	readonly observations?: readonly TableObservation[];
 	/** Actor-owned accessibility preference; omitted by the pure rules projection. */
 	readonly reviewTricks?: boolean;
 	readonly rules?: { readonly stickTheDealer: boolean; readonly requireNaturalTrump: boolean };

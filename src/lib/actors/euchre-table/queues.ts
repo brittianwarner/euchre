@@ -182,6 +182,8 @@ export interface AiSayMsg extends InternalEnvelope {
 	readonly msgId: string;
 	/** The turn this line belongs to; a stale line is dropped rather than spoken late. */
 	readonly turnId: string;
+	/** Modern post-move chatter may arrive during the next turn of the same hand. */
+	readonly handNo?: number;
 	readonly delta?: string;
 	readonly text?: string;
 	readonly final: boolean;

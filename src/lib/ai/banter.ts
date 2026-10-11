@@ -92,6 +92,7 @@ export async function generateBanter(deps: DecideDeps, req: BanterRequest): Prom
 	const modelId = deps.persona.modelId;
 	const layers = buildLayers({
 		kind: 'play',
+		conversation: true,
 		persona: deps.persona,
 		dossier: deps.dossier,
 		nonce: deps.nonce,

@@ -402,6 +402,7 @@ async function onDecide(c: SeatCtx, body: AIDecideRequest): Promise<void> {
 						gameId: state.gameId,
 						seat: state.seat,
 						turnId: body.turnId,
+						handNo: body.view.handNo,
 						msgId: `${body.turnId}:talk:${state.seat}`,
 						text,
 						final: true

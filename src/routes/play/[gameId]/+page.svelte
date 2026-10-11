@@ -8,7 +8,7 @@
 	import GameFeedback from '#lib/ui/GameFeedback.svelte';
 	import TableStage, { type CardOrigin } from '#lib/ui/TableStage.svelte';
 	import { cardName } from '#lib/euchre/index.ts';
-	import { turnInstruction } from '#lib/ui/table-presentation.ts';
+	import { turnInstruction, playerName, seatName } from '#lib/ui/table-presentation.ts';
 	import BidPanel from '#lib/ui/BidPanel.svelte';
 	import CardRack from '#lib/ui/CardRack.svelte';
 	import Hint from '#lib/ui/Hint.svelte';
@@ -35,12 +35,12 @@
 	});
 
 	/** Compass names for the spoken log. Seat 0 is the player. */
-	const SEAT_NAME = ['You', 'Left opponent', 'Your partner', 'Right opponent'] as const;
 	import type {
 		CardId,
 		LegalMoveId,
 		PublicGameView,
 		Step,
+		Seat,
 		SyncEvent
 	} from '#lib/protocol/index.ts';
 
@@ -53,6 +53,11 @@
 		getActorId
 	} = createGameRivet(untrack(() => data.gameId));
 	const store = new TableStore();
+	let tableTalk = $state<{ seat: Seat; text: string; msgId: string; handNo: number | null } | null>(
+		null
+	);
+	let talkTimer: ReturnType<typeof setTimeout> | undefined;
+	onDestroy(() => clearTimeout(talkTimer));
 
 	let actorId = $state<string>();
 	let connectionError = $state<string>();
@@ -85,6 +90,18 @@
 	// here beside `sync` because onEvent must run during component init.
 	table.onEvent('chat', (payload: { msgId: string; seat: number; kind: string; text: string }) => {
 		store.applyChat(payload);
+		if (payload.kind === 'banter' && payload.seat >= 0 && payload.seat <= 3) {
+			tableTalk = {
+				seat: payload.seat as Seat,
+				text: payload.text,
+				msgId: payload.msgId,
+				handNo: store.view?.handNo ?? null
+			};
+			clearTimeout(talkTimer);
+			talkTimer = setTimeout(() => {
+				tableTalk = null;
+			}, 6500);
+		}
 	});
 
 	/**
@@ -375,6 +392,7 @@
 					</p>{/if}
 				{#if reviewError}<p class="err" role="alert">{reviewError}</p>{/if}
 				<TableStage
+					talk={tableTalk?.handNo === displayView.handNo ? tableTalk : null}
 					view={displayView}
 					origin={flightOrigin}
 					connected={table.isConnected}
@@ -485,13 +503,35 @@
 				>
 				<HandReview view={displayView} load={(handNo) => table.getHandReview(handNo)} />
 				<Hint view={displayView} {lastDecision} />
+				{#if displayView.players?.length}<section
+						class="table-players"
+						aria-label="Players at this table"
+					>
+						<h3>Around the table</h3>
+						{#each displayView.players as player (player.seat)}<div>
+								<span class="player-initial" aria-hidden="true">{player.name.slice(0, 1)}</span>
+								<p>
+									<strong
+										>{player.name}<small
+											>{seatName(player.seat, displayView.you)} · {player.style}</small
+										></strong
+									><span>{player.blurb}</span>
+								</p>
+							</div>{/each}
+						<a href="/settings">Choose player personalities <span aria-hidden="true">→</span></a>
+						<small>Changes apply to your next game.</small>
+					</section>{/if}
 				<a href="/new">Start a new game</a><a href="/">Back to home</a>
 				<a href="/games">Your saved games</a>
 				<details class="conversation">
 					<summary>Table talk</summary>
 					<div>
 						{#each store.chat as line (line.msgId)}<p>
-								<strong>{SEAT_NAME[line.seat] ?? 'Table'}</strong>
+								<strong
+									>{line.seat >= 0 && line.seat <= 3
+										? playerName(displayView, line.seat as Seat)
+										: 'Table'}</strong
+								>
 								{line.text}
 							</p>{:else}<p>The conversation starts with the first call.</p>{/each}
 					</div>
@@ -502,6 +542,54 @@
 </main>
 
 <style>
+	.table-players {
+		padding-block: 8px 18px;
+		border-bottom: 1px solid #244b3526;
+	}
+	.table-players h3 {
+		margin: 6px 0 16px;
+		font: 500 24px var(--font-serif);
+	}
+	.table-players > div {
+		display: flex;
+		gap: 12px;
+		margin-block: 16px;
+		align-items: flex-start;
+	}
+	.player-initial {
+		display: grid;
+		place-items: center;
+		width: 36px;
+		height: 36px;
+		flex: 0 0 36px;
+		border-radius: 50%;
+		background: #285641;
+		color: #fff5d9;
+		font: 500 20px var(--font-serif);
+	}
+	.table-players p {
+		margin: 0;
+		font-size: 15px;
+		line-height: 1.45;
+	}
+	.table-players strong {
+		display: block;
+		font-size: 17px;
+	}
+	.table-players strong small {
+		display: block;
+		font: 400 13px/1.5 var(--font-sans);
+		color: #58695b;
+	}
+	.table-players p > span {
+		display: block;
+		margin-top: 4px;
+	}
+	.table-players > small {
+		display: block;
+		font-size: 13px;
+		color: #58695b;
+	}
 	.settings-trigger {
 		font-family: inherit;
 		background: transparent;

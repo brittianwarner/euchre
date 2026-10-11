@@ -7,6 +7,12 @@ export function seatName(seat: Seat, you: Seat): string {
 	return ['You', 'Left opponent', 'Your partner', 'Right opponent'][(seat - you + 4) % 4]!;
 }
 
+export function playerName(view: PublicGameView, seat: Seat): string {
+	return seat === view.you
+		? 'You'
+		: view.players?.find((player) => player.seat === seat)?.name || seatName(seat, view.you);
+}
+
 export interface HandSlots {
 	handNo: number;
 	cards: readonly CardId[];

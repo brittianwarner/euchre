@@ -4,7 +4,7 @@
 	import type { CardId, PublicGameView, Seat } from '#lib/protocol/index.ts';
 	import { reducedMotion } from '#lib/three/layout/reducedMotion.svelte.ts';
 	import { playPlace, playTrickTake } from './sound';
-	import { TABLE_MOTION, seatName } from './table-presentation';
+	import { TABLE_MOTION, seatName, playerName } from './table-presentation';
 
 	export interface CardOrigin {
 		card: CardId;
@@ -15,11 +15,13 @@
 		view,
 		origin = null,
 		connected = true,
+		talk = null,
 		onContinue
 	}: {
 		view: PublicGameView;
 		origin?: CardOrigin | null;
 		connected?: boolean;
+		talk?: { seat: Seat; text: string; msgId: string } | null;
 		onContinue: (turnId: string) => Promise<boolean>;
 	} = $props();
 	let surface: HTMLElement | undefined;
@@ -246,6 +248,7 @@
 		</div>
 		<div class="seats">
 			{#each seats as seat (seat)}
+				{@const player = view.players?.find((player) => player.seat === seat)}
 				<div
 					class="seat"
 					class:active={view.turnSeat === seat}
@@ -259,15 +262,22 @@
 							width="28"
 							height="28"
 							aria-hidden="true"
-							><circle cx="16" cy="16" r="15" fill="currentColor" opacity=".18" /><circle
-								cx="16"
-								cy="11"
-								r="5"
+							><circle cx="16" cy="16" r="15" fill="currentColor" opacity=".18" />
+							<text
+								x="16"
+								y="21"
+								text-anchor="middle"
 								fill="currentColor"
-							/><path d="M6 27c0-8 4-11 10-11s10 3 10 11" fill="currentColor" /></svg
-						><span class="full-seat-name">{seatName(seat, view.you)}</span><span
-							class="short-seat-name"
-							>{['You', 'Left', 'Partner', 'Right'][(seat - view.you + 4) % 4]}</span
+								font-size="16"
+								font-weight="600">{playerName(view, seat).slice(0, 1)}</text
+							></svg
+						><span
+							class="full-seat-name"
+							title={`${playerName(view, seat)}${player?.blurb ? ` — ${player.blurb}` : ''}`}
+							>{playerName(view, seat)}</span
+						><span class="short-seat-name" title={player?.name}
+							>{player?.name ||
+								['You', 'Left', 'Partner', 'Right'][(seat - view.you + 4) % 4]}</span
 						>
 						{#if seat === view.makerSeat && view.trump}<span
 								class="maker-marker"
@@ -282,7 +292,9 @@
 							>{/if}</span
 					>
 					<span class="seat-detail"
-						>{view.sittingSeat === seat
+						>{#if player}<span class="seat-role"
+								>{['You', 'Left', 'Partner', 'Right'][(seat - view.you + 4) % 4]} ·
+							</span>{/if}{view.sittingSeat === seat
 							? 'Sitting out · partner alone'
 							: view.turnSeat === seat
 								? seat === view.you
@@ -389,6 +401,9 @@
 						onclick={continueTrick}
 						>{collecting ? 'Collecting…' : 'Continue'} <span aria-hidden="true">→</span></button
 					>{/if}
+			{:else if talk}<span class="table-quip" role="status" aria-live="polite">
+					<strong>{playerName(view, talk.seat)}</strong><span>“{talk.text}”</span>
+				</span>
 			{:else if view.aloneSeat !== null}<span
 					>{seatName(view.aloneSeat, view.you)}
 					{view.aloneSeat === view.you ? 'are' : 'is'} going alone.</span
@@ -402,8 +417,59 @@
 </section>
 
 <style>
+	.table-quip {
+		display: flex;
+		align-items: baseline;
+		justify-content: center;
+		gap: 10px;
+		max-width: 680px;
+		font-size: 16px;
+		line-height: 1.4;
+		text-wrap: pretty;
+		animation: quip-arrive 180ms ease-out both;
+	}
+	@keyframes quip-arrive {
+		from {
+			opacity: 0;
+			transform: translateY(4px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.table-quip {
+			animation: none;
+		}
+	}
+	.table-quip strong {
+		color: #e9d79f;
+		font-weight: 600;
+		flex-shrink: 0;
+	}
+	.table-quip > span {
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+	.seat-role {
+		opacity: 0.75;
+	}
+	.seat.active .player-marker {
+		color: #edd79a;
+	}
+	@media (max-width: 700px) {
+		.table-quip {
+			font-size: 14px;
+			gap: 6px;
+		}
+	}
 	.player-marker {
 		display: inline-block;
+		flex-shrink: 0;
 		color: #b9d2c1;
 		font-size: 16px;
 	}
@@ -415,6 +481,7 @@
 		color: #243d31;
 		border-radius: 50%;
 		padding: 2px 6px;
+		flex-shrink: 0;
 	}
 	.loner-marker {
 		font-weight: 700;
@@ -1240,6 +1307,20 @@
 	.short-seat-name {
 		display: none;
 	}
+	.full-seat-name,
+	.short-seat-name {
+		min-width: 0;
+		max-width: 130px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	@media (max-width: 700px) {
+		.full-seat-name,
+		.short-seat-name {
+			max-width: 100%;
+		}
+	}
 	@media (max-width: 360px) {
 		.full-seat-name,
 		.next-lead {
@@ -1450,9 +1531,6 @@
 		.trick-score strong {
 			display: block;
 			margin-top: 4px;
-		}
-		.seat:nth-child(2) {
-			top: 8px;
 		}
 	}
 </style>

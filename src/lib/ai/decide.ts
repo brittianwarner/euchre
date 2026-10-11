@@ -27,6 +27,7 @@ import type { LegalMove, LegalMoveId, RankedMove } from '#lib/protocol/index.ts'
 import { allowsEscalation, isDeliberate, resolveBudget } from './config';
 import { encodeForLlm } from './notation';
 import { analyzePartnership } from './partnership';
+import { tableContext } from './table-context';
 import { buildLayers } from './prompt';
 import { idsOf } from './schema';
 import {
@@ -94,7 +95,9 @@ export async function callModel(
 			encodeForLlm(req.view, allowed, {
 				...(req.ranking === undefined ? {} : { ranking: req.ranking }),
 				...(deps.memoryLines === undefined ? {} : { notes: deps.memoryLines })
-			}) + (partnership ? `\nPARTNERSHIP=${JSON.stringify(partnership.context)}` : '')
+			}) +
+			`\nTABLE_READ=${JSON.stringify(tableContext(req.view))}` +
+			(partnership ? `\nPARTNERSHIP=${JSON.stringify(partnership.context)}` : '')
 	});
 	// Opaque option labels avoid provider restrictions on punctuation in move ids.
 	const criteria = Object.fromEntries(

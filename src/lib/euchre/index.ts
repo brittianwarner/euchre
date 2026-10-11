@@ -59,6 +59,8 @@ export type {
 	PlayerAction,
 	PublicGameView,
 	Rank,
+	TableObservation,
+	TablePlayer,
 	RuleCode,
 	Seat,
 	SeatRole,
