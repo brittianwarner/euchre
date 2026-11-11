@@ -1,0 +1,462 @@
+{
+	"tableView": {
+		"v": 77,
+		"you": 0,
+		"status": "active",
+		"phase": "trick_play",
+		"handNo": 3,
+		"dealerSeat": 2,
+		"turnSeat": 0,
+		"turnId": "i3koe7idka36",
+		"score": [
+			3,
+			0
+		],
+		"trump": "C",
+		"makerSeat": 3,
+		"aloneSeat": 3,
+		"sittingSeat": 1,
+		"upCard": "QC",
+		"upCardTurnedDown": false,
+		"turnedDownSuit": null,
+		"hand": [
+			"JS",
+			"TD",
+			"JC"
+		],
+		"handCounts": [
+			3,
+			0,
+			3,
+			3
+		],
+		"kittyCount": 4,
+		"trick": {
+			"index": 2,
+			"ledSuit": null,
+			"plays": [],
+			"winnerSeat": null
+		},
+		"trickLog": [
+			{
+				"index": 0,
+				"ledSuit": "H",
+				"plays": [
+					{
+						"seat": 3,
+						"card": "TH"
+					},
+					{
+						"seat": 0,
+						"card": "9H"
+					},
+					{
+						"seat": 2,
+						"card": "JH"
+					}
+				],
+				"winnerSeat": 2
+			},
+			{
+				"index": 1,
+				"ledSuit": "S",
+				"plays": [
+					{
+						"seat": 2,
+						"card": "TS"
+					},
+					{
+						"seat": 3,
+						"card": "9S"
+					},
+					{
+						"seat": 0,
+						"card": "TC"
+					}
+				],
+				"winnerSeat": 0
+			}
+		],
+		"tricksWon": [
+			2,
+			0
+		],
+		"passes": 0,
+		"bids": [
+			{
+				"seat": 3,
+				"move": {
+					"t": "orderUp",
+					"alone": true
+				},
+				"say": "Order it up. Alone."
+			}
+		],
+		"legal": [
+			{
+				"id": "play:JS",
+				"move": {
+					"t": "play",
+					"card": "JS"
+				},
+				"label": "Jack of spades"
+			},
+			{
+				"id": "play:TD",
+				"move": {
+					"t": "play",
+					"card": "TD"
+				},
+				"label": "Ten of diamonds"
+			},
+			{
+				"id": "play:JC",
+				"move": {
+					"t": "play",
+					"card": "JC"
+				},
+				"label": "Jack of clubs"
+			}
+		],
+		"result": null,
+		"delta": null,
+		"winnerTeam": null,
+		"players": [
+			{
+				"seat": 1,
+				"name": "Rita",
+				"blurb": "Patient. Remembers every trump.",
+				"style": "Card counter"
+			},
+			{
+				"seat": 2,
+				"name": "Ned",
+				"blurb": "Your steady, encouraging partner.",
+				"style": "Steady player"
+			},
+			{
+				"seat": 3,
+				"name": "Grandpa",
+				"blurb": "Takes a chance. Enjoys the story.",
+				"style": "Bold bidder"
+			}
+		],
+		"observations": [
+			{
+				"handNo": 3,
+				"seat": 1,
+				"kind": "cut",
+				"action": "Cut decision",
+				"elapsedMs": null,
+				"timing": "computer-paced"
+			},
+			{
+				"handNo": 3,
+				"seat": 3,
+				"kind": "bid1",
+				"action": "Order it up, alone",
+				"elapsedMs": null,
+				"timing": "computer-paced"
+			},
+			{
+				"handNo": 3,
+				"seat": 2,
+				"kind": "discard",
+				"action": "Dealer discarded a private card",
+				"elapsedMs": null,
+				"timing": "computer-paced"
+			},
+			{
+				"handNo": 3,
+				"seat": 3,
+				"kind": "play",
+				"action": "Ten of hearts",
+				"elapsedMs": null,
+				"timing": "computer-paced"
+			},
+			{
+				"handNo": 3,
+				"seat": 0,
+				"kind": "play",
+				"action": "Nine of hearts",
+				"elapsedMs": 1750,
+				"timing": "human-observed"
+			},
+			{
+				"handNo": 3,
+				"seat": 2,
+				"kind": "play",
+				"action": "Jack of hearts",
+				"elapsedMs": null,
+				"timing": "computer-paced"
+			},
+			{
+				"handNo": 3,
+				"seat": 2,
+				"kind": "play",
+				"action": "Ten of spades",
+				"elapsedMs": null,
+				"timing": "computer-paced"
+			},
+			{
+				"handNo": 3,
+				"seat": 3,
+				"kind": "play",
+				"action": "Nine of spades",
+				"elapsedMs": null,
+				"timing": "computer-paced"
+			},
+			{
+				"handNo": 3,
+				"seat": 0,
+				"kind": "play",
+				"action": "Ten of clubs",
+				"elapsedMs": 1750,
+				"timing": "human-observed"
+			}
+		],
+		"reviewTricks": false,
+		"rules": {
+			"stickTheDealer": false,
+			"requireNaturalTrump": false
+		},
+		"awaitingTrickReview": false
+	},
+	"pureProject": {
+		"v": 263,
+		"you": 0,
+		"status": "complete",
+		"phase": "game_over",
+		"handNo": 9,
+		"dealerSeat": 0,
+		"turnSeat": null,
+		"turnId": "1is1i541jm0b81",
+		"score": [
+			10,
+			5
+		],
+		"trump": "H",
+		"makerSeat": 1,
+		"aloneSeat": null,
+		"sittingSeat": null,
+		"upCard": "KH",
+		"upCardTurnedDown": false,
+		"turnedDownSuit": null,
+		"hand": [],
+		"handCounts": [
+			0,
+			0,
+			0,
+			0
+		],
+		"kittyCount": 4,
+		"trick": {
+			"index": 4,
+			"ledSuit": "C",
+			"plays": [
+				{
+					"seat": 0,
+					"card": "QC"
+				},
+				{
+					"seat": 1,
+					"card": "AC"
+				},
+				{
+					"seat": 2,
+					"card": "JC"
+				},
+				{
+					"seat": 3,
+					"card": "TC"
+				}
+			],
+			"winnerSeat": 1
+		},
+		"trickLog": [
+			{
+				"index": 0,
+				"ledSuit": "H",
+				"plays": [
+					{
+						"seat": 1,
+						"card": "TH"
+					},
+					{
+						"seat": 2,
+						"card": "JD"
+					},
+					{
+						"seat": 3,
+						"card": "KD"
+					},
+					{
+						"seat": 0,
+						"card": "AH"
+					}
+				],
+				"winnerSeat": 2
+			},
+			{
+				"index": 1,
+				"ledSuit": "D",
+				"plays": [
+					{
+						"seat": 2,
+						"card": "AD"
+					},
+					{
+						"seat": 3,
+						"card": "KS"
+					},
+					{
+						"seat": 0,
+						"card": "9D"
+					},
+					{
+						"seat": 1,
+						"card": "QD"
+					}
+				],
+				"winnerSeat": 2
+			},
+			{
+				"index": 2,
+				"ledSuit": "S",
+				"plays": [
+					{
+						"seat": 2,
+						"card": "AS"
+					},
+					{
+						"seat": 3,
+						"card": "9S"
+					},
+					{
+						"seat": 0,
+						"card": "TS"
+					},
+					{
+						"seat": 1,
+						"card": "QH"
+					}
+				],
+				"winnerSeat": 1
+			},
+			{
+				"index": 3,
+				"ledSuit": "H",
+				"plays": [
+					{
+						"seat": 1,
+						"card": "9H"
+					},
+					{
+						"seat": 2,
+						"card": "JS"
+					},
+					{
+						"seat": 3,
+						"card": "9C"
+					},
+					{
+						"seat": 0,
+						"card": "KH"
+					}
+				],
+				"winnerSeat": 0
+			},
+			{
+				"index": 4,
+				"ledSuit": "C",
+				"plays": [
+					{
+						"seat": 0,
+						"card": "QC"
+					},
+					{
+						"seat": 1,
+						"card": "AC"
+					},
+					{
+						"seat": 2,
+						"card": "JC"
+					},
+					{
+						"seat": 3,
+						"card": "TC"
+					}
+				],
+				"winnerSeat": 1
+			}
+		],
+		"tricksWon": [
+			3,
+			2
+		],
+		"passes": 0,
+		"bids": [
+			{
+				"seat": 1,
+				"move": {
+					"t": "orderUp",
+					"alone": false
+				},
+				"say": "Order it up."
+			}
+		],
+		"legal": [],
+		"result": "euchre",
+		"delta": [
+			2,
+			0
+		],
+		"winnerTeam": 0
+	},
+	"storeTest": {
+		"v": 0,
+		"you": 0,
+		"status": "active",
+		"phase": "lobby",
+		"handNo": 0,
+		"dealerSeat": 0,
+		"turnSeat": null,
+		"turnId": "e9tcfr",
+		"score": [
+			0,
+			0
+		],
+		"trump": null,
+		"makerSeat": null,
+		"aloneSeat": null,
+		"sittingSeat": null,
+		"upCard": null,
+		"upCardTurnedDown": false,
+		"turnedDownSuit": null,
+		"hand": [],
+		"handCounts": [
+			0,
+			0,
+			0,
+			0
+		],
+		"kittyCount": 3,
+		"trick": {
+			"index": 0,
+			"ledSuit": null,
+			"plays": [],
+			"winnerSeat": null
+		},
+		"trickLog": [],
+		"tricksWon": [
+			0,
+			0
+		],
+		"passes": 0,
+		"bids": [],
+		"legal": [],
+		"result": null,
+		"delta": null,
+		"winnerTeam": null
+	}
+}

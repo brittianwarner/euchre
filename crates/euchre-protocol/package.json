@@ -1,0 +1,15 @@
+{
+	"name": "@euchre/protocol",
+	"private": true,
+	"version": "0.1.0",
+	"scripts": {
+		"build": "cargo build -p euchre-protocol",
+		"check": "cargo clippy -p euchre-protocol --all-targets -- -D warnings",
+		"test": "cargo test -p euchre-protocol",
+		"lint": "cargo fmt -p euchre-protocol --check",
+		"format": "cargo fmt -p euchre-protocol"
+	},
+	"dependencies": {
+		"@euchre/engine": "workspace:*"
+	}
+}

@@ -1,0 +1,42 @@
+# What `railway up` leaves out of its upload (docs/DEPLOY.md section 9).
+#
+# The CLI reads this file on top of .gitignore, and this file wins where they
+# disagree. It skips `.git` and `node_modules` on its own. .gitignore only counts
+# inside a git checkout: uploaded from a copy with no `.git`, this file is the
+# only filter, so it repeats what the image build never reads (the .dockerignore
+# set). Gitignore syntax: a leading `/` anchors a pattern at the repo root, and
+# a later line wins over an earlier one.
+
+# Desktop release files: they live in the euchre-downloads bucket, never in the
+# image (docs/DEPLOY.md section 9).
+/downloads/
+
+# Agent tooling
+/.claude
+/.codex
+/.agents
+/.mcp.json
+
+# Rust and JS build output (the image builds its own)
+target/
+/.cargo-targets/
+.turbo/
+.svelte-kit/
+build/
+dist/
+/.vercel
+/coverage
+
+# Secrets and local runtime state
+.env
+.env.*
+.rivet
+.rivetkit
+*.db
+
+# Docs, art sources and scratch (root `assets` only; apps/desktop/assets stays)
+/docs/
+/assets/
+*.blend1
+*.log
+.DS_Store

@@ -1,0 +1,12 @@
+{
+	"name": "@euchre/ai-seat",
+	"private": true,
+	"version": "0.1.0",
+	"scripts": {
+		"build": "cargo build -p euchre-ai-seat",
+		"check": "cargo clippy -p euchre-ai-seat --all-targets -- -D warnings",
+		"test": "cargo test -p euchre-ai-seat",
+		"lint": "cargo fmt -p euchre-ai-seat --check",
+		"format": "cargo fmt -p euchre-ai-seat"
+	}
+}

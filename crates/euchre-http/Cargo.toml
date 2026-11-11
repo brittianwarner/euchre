@@ -1,0 +1,45 @@
+[package]
+name = "euchre-http"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+description = "The axum JSON API (05 §11), the /rivet/** gateway (05 §12.2) and the engine namespace bootstrap (05 §5.4)."
+
+[dependencies]
+euchre-protocol = { workspace = true }
+euchre-server-core = { workspace = true }
+euchre-profile-model = { workspace = true }
+rivetkit-client = { workspace = true }
+axum = { workspace = true }
+tower = { workspace = true }
+tower-http = { workspace = true }
+http = { workspace = true }
+bytes = { workspace = true }
+url = { workspace = true }
+cookie = { workspace = true }
+tokio-tungstenite = { workspace = true }
+reqwest = { workspace = true }
+jsonwebtoken = { workspace = true }
+hmac = { workspace = true }
+sha2 = { workspace = true }
+subtle = { workspace = true }
+parking_lot = { workspace = true }
+futures = { workspace = true }
+thiserror = { workspace = true }
+regex = { workspace = true }
+uuid = { workspace = true }
+anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+
+[dev-dependencies]
+rivetkit = { workspace = true }
+async-trait = { workspace = true }
+wiremock = { workspace = true }
+tempfile = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+[lints]
+workspace = true

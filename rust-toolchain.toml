@@ -1,0 +1,6 @@
+[toolchain]
+# Rune pins this toolchain; the whole workspace builds on it.
+channel = "1.99.1"
+components = ["clippy", "rustfmt"]
+# The desktop app's browser build (apps/desktop, `src/web.rs`).
+targets = ["wasm32-unknown-unknown"]

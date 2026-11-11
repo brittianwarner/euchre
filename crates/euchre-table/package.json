@@ -1,0 +1,12 @@
+{
+	"name": "@euchre/table",
+	"private": true,
+	"version": "0.1.0",
+	"scripts": {
+		"build": "cargo build -p euchre-table",
+		"check": "cargo clippy -p euchre-table --all-targets -- -D warnings",
+		"test": "cargo test -p euchre-table",
+		"lint": "cargo fmt -p euchre-table --check",
+		"format": "cargo fmt -p euchre-table"
+	}
+}

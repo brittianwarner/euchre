@@ -1,0 +1,291 @@
+════════════════════════════════════════════════════════════════
+NARRATED GAME — seed "demo-7", random-but-legal play
+════════════════════════════════════════════════════════════════
+
+┌─ Hand 1 ── dealer South(you) ── up-card K♣ ── score 0–0 ─┐
+│ South(you) J♥ Q♣ K♥ Q♥ 10♠
+│ West       Q♦ K♠ J♠ 9♠ 9♦
+│ North      J♦ A♣ 10♦ A♠ A♦
+│ East       Q♠ A♥ K♦ 9♣ 10♣
+│   West       "Order it up, alone"
+│ ▸ ♣ is trump, called by West  ALONE — East sits out
+│   South(you) picks up, discards face down.
+│     T1 West       K♠  (leads)
+│        North      A♠
+│        South(you) Q♥
+        → North takes it.
+│     T2 North      10♦  (leads)
+│        South(you) Q♣
+│        West       9♦
+        → South(you) takes it.
+│     T3 South(you) K♥  (leads)
+│        West       Q♦
+│        North      J♦
+        → South(you) takes it.
+│     T4 South(you) J♥  (leads)
+│        West       J♠
+│        North      A♦
+        → West takes it.
+│     T5 West       9♠  (leads)
+│        North      A♣
+│        South(you) K♣
+        → North takes it.
+│ ═ EUCHRE     tricks 4–1  →  score 2–0
+└──────────────────────────────────────────────────────────────
+
+┌─ Hand 2 ── dealer West ── up-card Q♦ ── score 2–0 ─┐
+│ South(you) A♠ 9♥ Q♠ K♦ 9♦
+│ West       A♦ J♠ Q♥ A♣ J♥
+│ North      10♣ 9♣ 10♥ K♥ 10♠
+│ East       9♠ K♠ J♣ K♣ A♥
+│   North      "Order it up, alone"
+│ ▸ ♦ is trump, called by North  ALONE — South(you) sits out
+│   West       picks up, discards face down.
+│     T1 North      10♥  (leads)
+│        East       A♥
+│        West       Q♥
+│     T2 East       K♣  (leads)
+│        West       A♣
+│        North      10♣
+│     T3 West       J♥  (leads)
+│        North      10♠
+│        East       K♠
+│     T4 West       J♠  (leads)
+│        North      K♥
+│        East       9♠
+│     T5 West       A♦  (leads)
+│        North      9♣
+│        East       J♣
+│ ═ EUCHRE     tricks 0–5  →  score 2–2
+└──────────────────────────────────────────────────────────────
+
+┌─ Hand 3 ── dealer North ── up-card A♠ ── score 2–2 ─┐
+│ South(you) 10♦ Q♣ J♠ 9♣ K♠
+│ West       9♠ J♦ A♦ K♣ 10♠
+│ North      K♦ J♥ A♥ 9♥ Q♥
+│ East       Q♦ 10♥ 9♦ Q♠ K♥
+│   East       "Order it up, alone"
+│ ▸ ♠ is trump, called by East  ALONE — West sits out
+│   North      picks up, discards face down.
+│     T1 East       Q♦  (leads)
+│        South(you) 10♦
+│        North      K♦
+│     T2 North      Q♥  (leads)
+│        East       10♥
+│        South(you) 9♣
+│     T3 North      9♥  (leads)
+│        East       K♥
+│        South(you) K♠
+│     T4 South(you) Q♣  (leads)
+│        North      J♥
+│        East       9♦
+│     T5 South(you) J♠  (leads)
+│        North      A♠
+│        East       Q♠
+│ ═ EUCHRE     tricks 5–0  →  score 4–2
+└──────────────────────────────────────────────────────────────
+
+┌─ Hand 4 ── dealer East ── up-card Q♠ ── score 4–2 ─┐
+│ South(you) 10♣ A♠ K♠ 9♠ 9♦
+│ West       10♦ J♠ A♦ K♦ Q♥
+│ North      J♣ K♣ 10♠ 10♥ J♦
+│ East       J♥ K♥ 9♥ 9♣ A♣
+│   South(you) "Order it up, alone"
+│ ▸ ♠ is trump, called by South(you)  ALONE — North sits out
+│   East       picks up, discards face down.
+│     T1 South(you) 10♣  (leads)
+│        West       A♦
+│        East       A♣
+│     T2 East       K♥  (leads)
+│        South(you) 9♦
+│        West       Q♥
+│     T3 East       9♥  (leads)
+│        South(you) K♠
+│        West       10♦
+│     T4 South(you) 9♠  (leads)
+│        West       J♠
+│        East       9♣
+│     T5 West       K♦  (leads)
+│        East       J♥
+│        South(you) A♠
+│ ═ EUCHRE     tricks 2–3  →  score 4–4
+└──────────────────────────────────────────────────────────────
+
+┌─ Hand 5 ── dealer South(you) ── up-card 10♠ ── score 4–4 ─┐
+│ South(you) J♣ A♣ 10♥ Q♠ J♠
+│ West       9♣ 9♠ K♣ J♥ K♦
+│ North      A♦ 9♦ 10♦ Q♦ Q♥
+│ East       K♥ A♠ K♠ 9♥ J♦
+│   West       "Pass."
+│   North      "I assist"
+│ ▸ ♠ is trump, called by North
+│   South(you) picks up, discards face down.
+│     T1 West       9♣  (leads)
+│        North      10♦
+│        East       K♠
+│        South(you) 10♥
+│     T2 East       A♠  (leads)
+│        South(you) J♠
+│        West       9♠
+│        North      A♦
+│     T3 South(you) 10♠  (leads)
+│        West       K♦
+│        North      9♦
+│        East       K♥
+│     T4 South(you) Q♠  (leads)
+│        West       J♥
+│        North      Q♦
+│        East       9♥
+│     T5 South(you) J♣  (leads)
+│        West       K♣
+│        North      Q♥
+│        East       J♦
+│ ═ POINT      tricks 4–1  →  score 5–4
+└──────────────────────────────────────────────────────────────
+
+┌─ Hand 6 ── dealer West ── up-card K♣ ── score 5–4 ─┐
+│ South(you) A♣ 10♦ 9♦ Q♦ Q♥
+│ West       Q♠ 9♥ 10♣ A♥ J♥
+│ North      J♠ K♦ Q♣ J♦ J♣
+│ East       10♠ K♥ A♦ K♠ A♠
+│   North      "Order it up, alone"
+│ ▸ ♣ is trump, called by North  ALONE — South(you) sits out
+│   West       picks up, discards face down.
+│     T1 North      J♣  (leads)
+│        East       K♠
+│        West       10♣
+│     T2 North      Q♣  (leads)
+│        East       A♠
+│        West       A♥
+│     T3 North      J♠  (leads)
+│        East       A♦
+│        West       9♥
+│     T4 North      J♦  (leads)
+│        East       K♥
+│        West       Q♠
+│     T5 North      K♦  (leads)
+│        East       10♠
+│        West       J♥
+│ ═ LONE_MARCH tricks 5–0  →  score 9–4
+└──────────────────────────────────────────────────────────────
+
+┌─ Hand 7 ── dealer North ── up-card 10♠ ── score 9–4 ─┐
+│ South(you) A♠ J♦ J♥ A♦ 10♦
+│ West       Q♥ 9♣ Q♠ K♣ J♣
+│ North      K♦ Q♣ K♥ K♠ 10♣
+│ East       J♠ 9♥ A♣ A♥ 10♥
+│   East       "Pass."
+│   South(you) "I assist"
+│ ▸ ♠ is trump, called by South(you)
+│   North      picks up, discards face down.
+│     T1 East       J♠  (leads)
+│        South(you) A♠
+│        West       Q♠
+│        North      10♠
+│     T2 East       A♣  (leads)
+│        South(you) A♦
+│        West       K♣
+│        North      Q♣
+│     T3 East       A♥  (leads)
+│        South(you) J♥
+│        West       Q♥
+│        North      K♥
+│     T4 East       10♥  (leads)
+│        South(you) J♦
+│        West       9♣
+│        North      K♦
+│     T5 East       9♥  (leads)
+│        South(you) 10♦
+│        West       J♣
+│        North      K♠
+│ ═ EUCHRE     tricks 0–5  →  score 9–6
+└──────────────────────────────────────────────────────────────
+
+┌─ Hand 8 ── dealer East ── up-card A♠ ── score 9–6 ─┐
+│ South(you) K♣ J♠ 10♠ 9♣ 10♣
+│ West       J♦ K♥ J♣ K♦ A♣
+│ North      10♦ Q♣ 10♥ K♠ Q♦
+│ East       A♥ 9♠ Q♥ 9♥ 9♦
+│   South(you) "Order it up"
+│ ▸ ♠ is trump, called by South(you)
+│   East       picks up, discards face down.
+│     T1 South(you) 10♠  (leads)
+│        West       J♣
+│        North      K♠
+│        East       9♠
+│     T2 West       J♦  (leads)
+│        North      Q♦
+│        East       9♦
+│        South(you) J♠
+│     T3 South(you) K♣  (leads)
+│        West       A♣
+│        North      Q♣
+│        East       Q♥
+│     T4 West       K♥  (leads)
+│        North      10♥
+│        East       A♥
+│        South(you) 9♣
+│     T5 East       A♠  (leads)
+│        South(you) 10♣
+│        West       K♦
+│        North      10♦
+│ ═ EUCHRE     tricks 1–4  →  score 9–8
+└──────────────────────────────────────────────────────────────
+
+┌─ Hand 9 ── dealer South(you) ── up-card A♦ ── score 9–8 ─┐
+│ South(you) 10♣ A♥ Q♣ 9♦ 9♠
+│ West       A♣ J♥ J♠ 10♥ Q♠
+│ North      10♠ 9♥ Q♥ K♣ J♦
+│ East       K♠ 10♦ 9♣ Q♦ J♣
+│   West       "Pass."
+│   North      "Pass."
+│   East       "Order it up, alone"
+│ ▸ ♦ is trump, called by East  ALONE — West sits out
+│   South(you) picks up, discards face down.
+│     T1 North      Q♥  (leads)
+│        East       J♣
+│        South(you) A♥
+│     T2 South(you) 10♣  (leads)
+│        North      K♣
+│        East       9♣
+│     T3 North      J♦  (leads)
+│        East       Q♦
+│        South(you) A♦
+│     T4 North      9♥  (leads)
+│        East       10♦
+│        South(you) Q♣
+│     T5 East       K♠  (leads)
+│        South(you) 9♠
+│        North      10♠
+│ ═ EUCHRE     tricks 3–2  →  score 10–8
+└──────────────────────────────────────────────────────────────
+
+FINAL 10–8 — team 0 wins after 9 hands, 7 euchres, 6 loner calls.
+
+════════════════════════════════════════════════════════════════
+FUZZ — 20 complete games, every invariant checked at every step
+════════════════════════════════════════════════════════════════
+games            20
+hands            184  (avg 9.2/game)
+engine steps     4974
+loner calls      89
+euchres          122
+phases exercised bid_round_1, bid_round_2, cutting, dealer_discard, game_over, hand_score, lobby, trick_play, trick_resolve
+distinct moves   55
+hand results     point=34  lone_point=23  euchre=122  march=5
+
+════════════════════════════════════════════════════════════════
+✓ ALL INVARIANTS HELD
+  · no secret card ever appeared in any seat's projected view
+  · all 24 cards conserved in every reachable state
+  · hand sizes correct for every seat at every trick
+  · follow-suit re-derived from replayed holdings, never violated
+  · trick winners recomputed independently, always agreed
+  · recorded ledSuit always the effective suit of the lead
+  · loner hands had exactly 3 plays/trick, sitting seat never played
+  · scores monotonic, only +1/+2/+4, never both teams in one hand
+  · illegal moves rejected without mutating state
+  · off-turn seats never had legal moves
+  · exactly one seat could act at any moment
+  · every game terminated with exactly one team at the target
+  · identical seed reproduced an identical game

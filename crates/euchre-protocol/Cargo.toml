@@ -1,0 +1,15 @@
+[package]
+name = "euchre-protocol"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+description = "Euchre wire protocol: shared JSON types, constants, the hand-review builder and the pure client TableStore."
+
+[dependencies]
+euchre-engine.workspace = true
+serde.workspace = true
+# `raw_value` lets `js_f64` write JS number text (`0.0000015`) verbatim.
+serde_json = { workspace = true, features = ["raw_value"] }
+
+[lints]
+workspace = true

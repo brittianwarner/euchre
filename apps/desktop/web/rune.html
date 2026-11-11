@@ -1,0 +1,273 @@
+<!doctype html>
+<!--
+	The Rune loader (docs/port/10-web-rune-plan.md 3.4 and 12; docs/DEPLOY.md, "Two shells").
+
+	euchre-server sends this page for the app routes (/new, /play, /play/<id>, /games,
+	/games/<id>, /settings and any other extensionless path but /) unless the euchre_ui cookie
+	starts with "classic". apps/desktop/scripts/web-build.sh fills __RUNE_HASH__ and
+	__ART_BASE__ and writes it as rune.html; this file is the template.
+
+	The script below checks that this browser can draw the table before it fetches the game.
+	When it cannot, euchreFallback(why) marks the browser classic and reloads, so the server
+	sends the Svelte site at the same URL:
+	- viewport under 720x520 CSS px        -> classic-small (session cookie)
+	- no navigator.gpu, no adapter, a fallback (software) adapter, the game failed to start,
+	  no first frame 10 s after it loaded, or Rune's lost-device / no-adapter error -> classic-auto (7 days)
+	- euchreFallback("chosen") (Rune Settings, Classic table) -> classic (400 days)
+	Cookies blocked, or a second automatic fallback in this tab session: the Svelte page is
+	swapped in here instead of reloading, so there is never a reload loop. ?rune=1 skips the
+	size and fallback-adapter gates (tests only).
+-->
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta
+			name="viewport"
+			content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"
+		/>
+		<title>Euchre</title>
+		<meta
+			name="description"
+			content="Classic four-player euchre against computer opponents, in your browser or on your desktop."
+		/>
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content="Euchre" />
+		<meta property="og:title" content="Euchre" />
+		<meta
+			property="og:description"
+			content="Classic four-player euchre against computer opponents, in your browser or on your desktop."
+		/>
+		<meta property="og:image" content="https://euchre.sh/art/euchre-og.jpg" />
+		<meta property="og:image:type" content="image/jpeg" />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta
+			property="og:image:alt"
+			content="Classic playing cards and a dealer button on a green felt table"
+		/>
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content="Euchre" />
+		<meta
+			name="twitter:description"
+			content="Classic four-player euchre against computer opponents, in your browser or on your desktop."
+		/>
+		<meta name="twitter:image" content="https://euchre.sh/art/euchre-og.jpg" />
+		<meta
+			name="twitter:image:alt"
+			content="Classic playing cards and a dealer button on a green felt table"
+		/>
+		<style>
+			:root {
+				/* The fonts the game draws with, for Rune's DOM mirror. */
+				--rune-sans: 'DM Sans', system-ui, sans-serif;
+				--rune-mono: 'IBM Plex Mono', ui-monospace, monospace;
+			}
+			html,
+			body {
+				margin: 0;
+				width: 100%;
+				height: 100%;
+				overflow: hidden;
+				overscroll-behavior: none;
+				touch-action: none;
+			}
+			/* The home page's felt, so Play now lands on the same colour. */
+			html {
+				background: #305342;
+			}
+			body {
+				background: radial-gradient(ellipse 100% 100% at 50% 50%, #305342 60%, #213e30 100%);
+			}
+			#euchre-boot {
+				position: fixed;
+				inset: 0;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				gap: 20px;
+				padding: 16px;
+				color: #f4f3e9;
+				font: 400 14px/21px 'DM Sans', system-ui, sans-serif;
+				text-align: center;
+			}
+			#euchre-boot .mark {
+				display: flex;
+				align-items: baseline;
+				gap: 0.17em;
+				margin: 0;
+				font:
+					600 clamp(40px, 7vmin, 88px) / 1 'Source Serif 4',
+					'Iowan Old Style',
+					Georgia,
+					serif;
+				white-space: nowrap;
+			}
+			#euchre-boot .word {
+				letter-spacing: -0.07em;
+			}
+			#euchre-boot .club {
+				font-size: 0.62em;
+				color: #d4ed9b;
+			}
+			#euchre-boot .note {
+				max-width: 34rem;
+				margin: 0;
+			}
+			#euchre-boot .note a {
+				color: inherit;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="euchre-boot">
+			<p class="mark">
+				<span class="word">euchre</span><span class="club" aria-hidden="true">♣</span>
+			</p>
+			<noscript>
+				<p class="note">
+					Playing in the browser needs JavaScript. <a href="/">The home page</a> has the
+					desktop downloads.
+				</p>
+			</noscript>
+		</div>
+		<script>
+			(function () {
+				var COOKIE = 'euchre_ui';
+				// Set when this tab session already reloaded once for a fallback.
+				var GUARD = 'euchre:ui-fallback';
+				var forced = new URLSearchParams(location.search).get('rune') === '1';
+				var settled = false;
+				var presented = false;
+
+				function hasCookie(value) {
+					try {
+						return new RegExp('(?:^|;\\s*)' + COOKIE + '=' + value).test(document.cookie);
+					} catch (e) {
+						return false;
+					}
+				}
+
+				// The Svelte page in place of this one. /index.html by name never depends on the
+				// cookie; its router renders this URL.
+				function swap() {
+					fetch('/index.html', { credentials: 'same-origin', cache: 'no-store' })
+						.then(function (res) {
+							if (!res.ok) throw new Error('index.html ' + res.status);
+							return res.text();
+						})
+						.then(function (html) {
+							document.open();
+							document.write(html);
+							document.close();
+						})
+						.catch(function () {
+							var boot = document.getElementById('euchre-boot');
+							if (boot) boot.textContent = 'Euchre could not load. Reload the page to try again.';
+						});
+				}
+
+				function fallback(why) {
+					var chosen = why === 'chosen';
+					if (settled && !chosen) return;
+					settled = true;
+					var value = chosen ? 'classic' : why === 'small' ? 'classic-small' : 'classic-auto';
+					var age = chosen ? '; Max-Age=34560000' : value === 'classic-auto' ? '; Max-Age=604800' : '';
+					var secure = location.protocol === 'https:' ? '; Secure' : '';
+					try {
+						document.cookie = COOKIE + '=' + value + '; Path=/; SameSite=Lax' + age + secure;
+					} catch (e) {}
+					if (!hasCookie(value)) return swap();
+					if (!chosen) {
+						var again = true;
+						try {
+							again = sessionStorage.getItem(GUARD) !== null;
+							sessionStorage.setItem(GUARD, why);
+						} catch (e) {}
+						if (again) return swap();
+					}
+					location.reload();
+				}
+
+				// Rune's own error line (crates/rune/src/platform/web.rs `error`): the device went
+				// away, or no adapter. Body children only: the DOM mirror changes every frame.
+				function watchErrors() {
+					var lost = /The GPU device was lost|WebGPU adapter unavailable/;
+					new MutationObserver(function (records) {
+						for (var i = 0; i < records.length; i++) {
+							var added = records[i].addedNodes;
+							for (var j = 0; j < added.length; j++) {
+								var node = added[j];
+								if (node.nodeName === 'PRE' && lost.test(node.textContent || '')) {
+									node.style.display = 'none';
+									fallback('lost');
+								}
+							}
+						}
+					}).observe(document.body, { childList: true });
+				}
+
+				function start() {
+					document.addEventListener(
+						'runepresent',
+						function () {
+							presented = true;
+							var boot = document.getElementById('euchre-boot');
+							if (boot) boot.remove();
+							try {
+								sessionStorage.removeItem(GUARD);
+							} catch (e) {}
+						},
+						{ once: true }
+					);
+					watchErrors();
+					import('/_rune/immutable/__RUNE_HASH__/app.js')
+						.then(function (app) {
+							return app.default();
+						})
+						.then(
+							function () {
+								setTimeout(function () {
+									if (!presented) fallback('timeout');
+								}, 10000);
+							},
+							function (error) {
+								console.error(error);
+								fallback('start');
+							}
+						);
+				}
+
+				window.euchreFallback = fallback;
+				// S2: the art base the game reads once (web::asset_base).
+				window.__EUCHRE_RUNE__ = { art: '__ART_BASE__' };
+
+				// Served the loader although this browser is marked classic (a cache that
+				// ignored Vary): show the Svelte page, never reload.
+				if (hasCookie('classic')) return swap();
+				if (!forced && (innerWidth < 720 || innerHeight < 520)) return fallback('small');
+				var gpu = navigator.gpu;
+				if (!gpu) return fallback('no-gpu');
+				var adapter;
+				try {
+					adapter = gpu.requestAdapter();
+				} catch (e) {
+					return fallback('adapter-error');
+				}
+				Promise.resolve(adapter).then(
+					function (found) {
+						if (!found) return fallback('no-adapter');
+						var info = found.info || {};
+						if (!forced && (info.isFallbackAdapter || found.isFallbackAdapter)) {
+							return fallback('fallback-adapter');
+						}
+						start();
+					},
+					function () {
+						fallback('adapter-error');
+					}
+				);
+			})();
+		</script>
+	</body>
+</html>

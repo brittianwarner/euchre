@@ -1,3 +1,8 @@
+> **TS-era design document.** It describes the original TypeScript build, which the Rust port
+> replaced (`apps/server`, `crates/`, the static SPA in `apps/web`). Where it disagrees with the
+> port, the port wins: read [`port/ARCHITECTURE.md`](./port/ARCHITECTURE.md) first. Kept as the
+> record of the original design and the rules the port had to match.
+
 # 06 — Revised Architecture (Architecture Decision Record)
 
 **Status:** binding, and superior in authority to `00-OVERVIEW.md` and `01-ARCHITECTURE.md` on every

@@ -37,3 +37,20 @@ vite.config.ts.timestamp-*
 
 # Blender backup copies
 *.blend1
+
+# Rust
+/target/
+
+# Turborepo
+.turbo/
+
+# Per-agent cargo target dirs (APFS clones of target/)
+.cargo-targets/
+
+# Desktop release files for euchre.sh/download (docs/DEPLOY.md section 9). Never
+# committed; `.railwayignore` uploads them with `railway up` anyway.
+/downloads/
+
+# Rune web app: the bundled rivetkit bridge and the web build output (apps/desktop/scripts/web-build.sh)
+apps/desktop/js/
+apps/desktop/build/

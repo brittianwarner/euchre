@@ -1,0 +1,23 @@
+{
+	"name": "@euchre/server",
+	"private": true,
+	"version": "0.1.0",
+	"scripts": {
+		"build": "cargo build -p euchre-server --release",
+		"dev": "sh scripts/dev.sh",
+		"check": "cargo clippy -p euchre-server --all-targets -- -D warnings",
+		"test": "cargo test -p euchre-server",
+		"lint": "cargo fmt -p euchre-server --check",
+		"format": "cargo fmt -p euchre-server"
+	},
+	"dependencies": {
+		"@euchre/server-core": "workspace:*",
+		"@euchre/table": "workspace:*",
+		"@euchre/ai-seat": "workspace:*",
+		"@euchre/profile": "workspace:*",
+		"@euchre/http": "workspace:*"
+	},
+	"devDependencies": {
+		"@rivetkit/engine-cli": "3.1.0"
+	}
+}

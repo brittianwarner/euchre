@@ -1,0 +1,4 @@
+[
+  { "t": 0.3, "type": "move", "key": "hand-JS" },
+  { "t": 0.3, "type": "mark", "name": "hover" }
+]

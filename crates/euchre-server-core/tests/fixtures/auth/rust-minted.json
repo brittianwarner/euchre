@@ -1,0 +1,53 @@
+{
+  "generated_by": "crates/euchre-server-core/tests/foundation_auth.rs (EUCHRE_WRITE_RUST_TOKENS=1)",
+  "now_secs": 1800000000,
+  "guest": [
+    {
+      "user_id": "guest-0b0c3f6e-7d1a-4c2b-9e8f-1a2b3c4d5e6f",
+      "aud": "euchre-session",
+      "iat": 1800000000,
+      "token": "eyJhbGciOiJIUzI1NiJ9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC0wYjBjM2Y2ZS03ZDFhLTRjMmItOWU4Zi0xYTJiM2M0ZDVlNmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtc2Vzc2lvbiIsImlhdCI6MTgwMDAwMDAwMCwiZXhwIjoxODM0NTYwMDAwfQ.x6P9pq1R9hrfAQ7VElNtbyI9QVtNub35OVJ2uVflcRY"
+    },
+    {
+      "user_id": "guest-0b0c3f6e-7d1a-4c2b-9e8f-1a2b3c4d5e6f",
+      "aud": "euchre-actors",
+      "iat": 1800000000,
+      "token": "eyJhbGciOiJIUzI1NiJ9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC0wYjBjM2Y2ZS03ZDFhLTRjMmItOWU4Zi0xYTJiM2M0ZDVlNmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiaWF0IjoxODAwMDAwMDAwLCJleHAiOjE4MDAwMDcyMDB9.6en1jhGGl0LqjPLb7dV1he39oKwQUnObTnaqWb0HgE0"
+    },
+    {
+      "user_id": "guest-0b0c3f6e-7d1a-4c2b-9e8f-1a2b3c4d5e6f",
+      "aud": "euchre-session",
+      "iat": 1800000100,
+      "token": "eyJhbGciOiJIUzI1NiJ9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC0wYjBjM2Y2ZS03ZDFhLTRjMmItOWU4Zi0xYTJiM2M0ZDVlNmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtc2Vzc2lvbiIsImlhdCI6MTgwMDAwMDEwMCwiZXhwIjoxODM0NTYwMTAwfQ.zC6Fb8k_hqDpcOTTUvl_W4dMgNcXqwplYC4AZa9w5-o",
+      "note": "device refresh of the first token"
+    }
+  ],
+  "profile": [
+    {
+      "user_id": "4f2a9c1e",
+      "iat": 1800000000,
+      "issuer": null,
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZjJhOWMxZSIsImF1ZCI6ImV1Y2hyZS1hY3RvcnMiLCJpYXQiOjE4MDAwMDAwMDAsImV4cCI6MTgwMDAwMTgwMH0.fXCgATBSO-9E8YJLtcAYHvgUFbzOSFur0jeGzf1B18s"
+    },
+    {
+      "user_id": "4f2a9c1e",
+      "iat": 1800000000,
+      "issuer": "euchre-test",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZjJhOWMxZSIsImF1ZCI6ImV1Y2hyZS1hY3RvcnMiLCJpYXQiOjE4MDAwMDAwMDAsImV4cCI6MTgwMDAwMTgwMCwiaXNzIjoiZXVjaHJlLXRlc3QifQ.2IjaCs0rKOtTRqmOnZuq2M2XnI1QRom-yYOs4qr48CI"
+    },
+    {
+      "user_id": "🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡",
+      "iat": 1800000000,
+      "issuer": null,
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiLwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4KhIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyIsImlhdCI6MTgwMDAwMDAwMCwiZXhwIjoxODAwMDAxODAwfQ.0-Y3Zp6FmgvrWn_XHM2Ux0GGmi1R-jyf2Lu88O8wo2A"
+    }
+  ],
+  "identity": [
+    {
+      "email": "ann@example.com",
+      "user_id": "71d4f55f72fa128dfb468a1a3901507c804b74316488744d769d7f4b16696476",
+      "iat": 1800000000,
+      "token": "eyJhbGciOiJIUzI1NiJ9.eyJraW5kIjoiZW1haWwtbmljayIsInN1YiI6IjcxZDRmNTVmNzJmYTEyOGRmYjQ2OGExYTM5MDE1MDdjODA0Yjc0MzE2NDg4NzQ0ZDc2OWQ3ZjRiMTY2OTY0NzYiLCJlbSI6ImFubkBleGFtcGxlLmNvbSIsImlzcyI6ImV1Y2hyZS1pZGVudGl0eSIsImF1ZCI6ImV1Y2hyZS1pZGVudGl0eSIsImlhdCI6MTgwMDAwMDAwMCwiZXhwIjoxODM0NTYwMDAwfQ.3OGBD-GiS-4HgBwzcu1MfswN9kEAIdRbpsML6yFMbzc"
+    }
+  ]
+}

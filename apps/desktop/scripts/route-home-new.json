@@ -1,0 +1,4 @@
+[
+  { "t": 0.3, "type": "click", "key": "home-nav-play" },
+  { "t": 0.3, "type": "mark", "name": "go" }
+]

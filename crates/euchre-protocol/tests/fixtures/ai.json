@@ -1,0 +1,557 @@
+{
+	"decideRequest": {
+		"internalToken": "1c6f0a52-8d3e-4b7a-9f21-6e5d4c3b2a10",
+		"gameId": "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b",
+		"seat": 1,
+		"turnId": "1r3hqsc1rxgjv9",
+		"kind": "play",
+		"view": {
+			"v": 13,
+			"you": 1,
+			"status": "active",
+			"phase": "trick_play",
+			"handNo": 1,
+			"dealerSeat": 0,
+			"turnSeat": 1,
+			"turnId": "1r3hqsc1rxgjv9",
+			"score": [
+				0,
+				0
+			],
+			"trump": "C",
+			"makerSeat": 1,
+			"aloneSeat": null,
+			"sittingSeat": null,
+			"upCard": "9C",
+			"upCardTurnedDown": false,
+			"turnedDownSuit": null,
+			"hand": [
+				"QD",
+				"KC",
+				"KS",
+				"KD",
+				"AH"
+			],
+			"handCounts": [
+				5,
+				5,
+				5,
+				5
+			],
+			"kittyCount": 4,
+			"trick": {
+				"index": 0,
+				"ledSuit": null,
+				"plays": [],
+				"winnerSeat": null
+			},
+			"trickLog": [],
+			"tricksWon": [
+				0,
+				0
+			],
+			"passes": 0,
+			"bids": [
+				{
+					"seat": 1,
+					"move": {
+						"t": "orderUp",
+						"alone": false
+					},
+					"say": "Order it up."
+				}
+			],
+			"legal": [
+				{
+					"id": "play:QD",
+					"move": {
+						"t": "play",
+						"card": "QD"
+					},
+					"label": "Queen of diamonds"
+				},
+				{
+					"id": "play:KC",
+					"move": {
+						"t": "play",
+						"card": "KC"
+					},
+					"label": "King of clubs"
+				},
+				{
+					"id": "play:KS",
+					"move": {
+						"t": "play",
+						"card": "KS"
+					},
+					"label": "King of spades"
+				},
+				{
+					"id": "play:KD",
+					"move": {
+						"t": "play",
+						"card": "KD"
+					},
+					"label": "King of diamonds"
+				},
+				{
+					"id": "play:AH",
+					"move": {
+						"t": "play",
+						"card": "AH"
+					},
+					"label": "Ace of hearts"
+				}
+			],
+			"result": null,
+			"delta": null,
+			"winnerTeam": null,
+			"players": [
+				{
+					"seat": 1,
+					"name": "Rita",
+					"blurb": "Patient. Remembers every trump.",
+					"style": "Card counter"
+				},
+				{
+					"seat": 2,
+					"name": "Ned",
+					"blurb": "Your steady, encouraging partner.",
+					"style": "Steady player"
+				},
+				{
+					"seat": 3,
+					"name": "Grandpa",
+					"blurb": "Takes a chance. Enjoys the story.",
+					"style": "Bold bidder"
+				}
+			],
+			"observations": [
+				{
+					"handNo": 1,
+					"seat": 3,
+					"kind": "cut",
+					"action": "Cut decision",
+					"elapsedMs": null,
+					"timing": "computer-paced"
+				},
+				{
+					"handNo": 1,
+					"seat": 1,
+					"kind": "bid1",
+					"action": "Order it up",
+					"elapsedMs": null,
+					"timing": "computer-paced"
+				},
+				{
+					"handNo": 1,
+					"seat": 0,
+					"kind": "discard",
+					"action": "Dealer discarded a private card",
+					"elapsedMs": 1750,
+					"timing": "human-observed"
+				}
+			],
+			"reviewTricks": false,
+			"rules": {
+				"stickTheDealer": false,
+				"requireNaturalTrump": false
+			},
+			"awaitingTrickReview": false
+		},
+		"legal": [
+			{
+				"id": "play:QD",
+				"move": {
+					"t": "play",
+					"card": "QD"
+				},
+				"label": "Queen of diamonds"
+			},
+			{
+				"id": "play:KC",
+				"move": {
+					"t": "play",
+					"card": "KC"
+				},
+				"label": "King of clubs"
+			},
+			{
+				"id": "play:KS",
+				"move": {
+					"t": "play",
+					"card": "KS"
+				},
+				"label": "King of spades"
+			},
+			{
+				"id": "play:KD",
+				"move": {
+					"t": "play",
+					"card": "KD"
+				},
+				"label": "King of diamonds"
+			},
+			{
+				"id": "play:AH",
+				"move": {
+					"t": "play",
+					"card": "AH"
+				},
+				"label": "Ace of hearts"
+			}
+		],
+		"deadlineAt": 1767996004000
+	},
+	"decideRequestRanked": {
+		"internalToken": "1c6f0a52-8d3e-4b7a-9f21-6e5d4c3b2a10",
+		"gameId": "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b",
+		"seat": 1,
+		"turnId": "1r3hqsc1rxgjv9",
+		"kind": "play",
+		"view": {
+			"v": 13,
+			"you": 1,
+			"status": "active",
+			"phase": "trick_play",
+			"handNo": 1,
+			"dealerSeat": 0,
+			"turnSeat": 1,
+			"turnId": "1r3hqsc1rxgjv9",
+			"score": [
+				0,
+				0
+			],
+			"trump": "C",
+			"makerSeat": 1,
+			"aloneSeat": null,
+			"sittingSeat": null,
+			"upCard": "9C",
+			"upCardTurnedDown": false,
+			"turnedDownSuit": null,
+			"hand": [
+				"QD",
+				"KC",
+				"KS",
+				"KD",
+				"AH"
+			],
+			"handCounts": [
+				5,
+				5,
+				5,
+				5
+			],
+			"kittyCount": 4,
+			"trick": {
+				"index": 0,
+				"ledSuit": null,
+				"plays": [],
+				"winnerSeat": null
+			},
+			"trickLog": [],
+			"tricksWon": [
+				0,
+				0
+			],
+			"passes": 0,
+			"bids": [
+				{
+					"seat": 1,
+					"move": {
+						"t": "orderUp",
+						"alone": false
+					},
+					"say": "Order it up."
+				}
+			],
+			"legal": [
+				{
+					"id": "play:QD",
+					"move": {
+						"t": "play",
+						"card": "QD"
+					},
+					"label": "Queen of diamonds"
+				},
+				{
+					"id": "play:KC",
+					"move": {
+						"t": "play",
+						"card": "KC"
+					},
+					"label": "King of clubs"
+				},
+				{
+					"id": "play:KS",
+					"move": {
+						"t": "play",
+						"card": "KS"
+					},
+					"label": "King of spades"
+				},
+				{
+					"id": "play:KD",
+					"move": {
+						"t": "play",
+						"card": "KD"
+					},
+					"label": "King of diamonds"
+				},
+				{
+					"id": "play:AH",
+					"move": {
+						"t": "play",
+						"card": "AH"
+					},
+					"label": "Ace of hearts"
+				}
+			],
+			"result": null,
+			"delta": null,
+			"winnerTeam": null,
+			"players": [
+				{
+					"seat": 1,
+					"name": "Rita",
+					"blurb": "Patient. Remembers every trump.",
+					"style": "Card counter"
+				},
+				{
+					"seat": 2,
+					"name": "Ned",
+					"blurb": "Your steady, encouraging partner.",
+					"style": "Steady player"
+				},
+				{
+					"seat": 3,
+					"name": "Grandpa",
+					"blurb": "Takes a chance. Enjoys the story.",
+					"style": "Bold bidder"
+				}
+			],
+			"observations": [
+				{
+					"handNo": 1,
+					"seat": 3,
+					"kind": "cut",
+					"action": "Cut decision",
+					"elapsedMs": null,
+					"timing": "computer-paced"
+				},
+				{
+					"handNo": 1,
+					"seat": 1,
+					"kind": "bid1",
+					"action": "Order it up",
+					"elapsedMs": null,
+					"timing": "computer-paced"
+				},
+				{
+					"handNo": 1,
+					"seat": 0,
+					"kind": "discard",
+					"action": "Dealer discarded a private card",
+					"elapsedMs": 1750,
+					"timing": "human-observed"
+				}
+			],
+			"reviewTricks": false,
+			"rules": {
+				"stickTheDealer": false,
+				"requireNaturalTrump": false
+			},
+			"awaitingTrickReview": false
+		},
+		"legal": [
+			{
+				"id": "play:QD",
+				"move": {
+					"t": "play",
+					"card": "QD"
+				},
+				"label": "Queen of diamonds"
+			},
+			{
+				"id": "play:KC",
+				"move": {
+					"t": "play",
+					"card": "KC"
+				},
+				"label": "King of clubs"
+			},
+			{
+				"id": "play:KS",
+				"move": {
+					"t": "play",
+					"card": "KS"
+				},
+				"label": "King of spades"
+			},
+			{
+				"id": "play:KD",
+				"move": {
+					"t": "play",
+					"card": "KD"
+				},
+				"label": "King of diamonds"
+			},
+			{
+				"id": "play:AH",
+				"move": {
+					"t": "play",
+					"card": "AH"
+				},
+				"label": "Ace of hearts"
+			}
+		],
+		"ranking": [
+			{
+				"id": "play:QD",
+				"score": 12,
+				"why": "Takes the trick with the lowest winner."
+			},
+			{
+				"id": "play:KC",
+				"score": 2.25,
+				"why": "Saves a winner."
+			},
+			{
+				"id": "play:KS",
+				"score": 1.25,
+				"why": "Saves a winner."
+			},
+			{
+				"id": "play:KD",
+				"score": 0.25,
+				"why": "Saves a winner."
+			},
+			{
+				"id": "play:AH",
+				"score": -0.75,
+				"why": "Saves a winner."
+			}
+		],
+		"deadlineAt": 1767996004000
+	},
+	"decision": {
+		"internalToken": "1c6f0a52-8d3e-4b7a-9f21-6e5d4c3b2a10",
+		"gameId": "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b",
+		"seat": 1,
+		"turnId": "1r3hqsc1rxgjv9",
+		"moveId": "play:QD",
+		"source": "llm",
+		"rationale": "Low trump keeps the bower for later.",
+		"latencyMs": 812
+	},
+	"decisionFull": {
+		"internalToken": "1c6f0a52-8d3e-4b7a-9f21-6e5d4c3b2a10",
+		"gameId": "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b",
+		"seat": 1,
+		"turnId": "1r3hqsc1rxgjv9",
+		"moveId": "play:QD",
+		"source": "fallback",
+		"banter": "Your lead.",
+		"rationale": "Heuristic.",
+		"latencyMs": 0
+	},
+	"sayFinal": {
+		"internalToken": "1c6f0a52-8d3e-4b7a-9f21-6e5d4c3b2a10",
+		"gameId": "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b",
+		"seat": 2,
+		"turnId": "1r3hqsc1rxgjv9",
+		"handNo": 3,
+		"msgId": "1r3hqsc1rxgjv9:talk:2",
+		"text": "Nice lead.",
+		"final": true
+	},
+	"sayDelta": {
+		"internalToken": "1c6f0a52-8d3e-4b7a-9f21-6e5d4c3b2a10",
+		"gameId": "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b",
+		"seat": 2,
+		"turnId": "1r3hqsc1rxgjv9",
+		"msgId": "1r3hqsc1rxgjv9:talk:2",
+		"delta": "Nice ",
+		"final": false
+	},
+	"lifecycleResetHand": {
+		"internalToken": "1c6f0a52-8d3e-4b7a-9f21-6e5d4c3b2a10",
+		"gameId": "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b",
+		"kind": "resetHand",
+		"handNo": 4
+	},
+	"lifecycleGameEnd": {
+		"internalToken": "1c6f0a52-8d3e-4b7a-9f21-6e5d4c3b2a10",
+		"gameId": "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b",
+		"kind": "gameEnd"
+	},
+	"personas": [
+		{
+			"seat": 1,
+			"persona": {
+				"id": "west-rita",
+				"version": 1,
+				"name": "Rita",
+				"blurb": "Patient. Remembers every trump.",
+				"prompt": "You have played euchre for forty years. Count public cards carefully, favour a dependable point over a speculative loner, and preserve partner winners. Your humour is understated: a raised eyebrow in a few words. Never claim to know hidden cards.",
+				"housePrompt": "A friendly kitchen-table euchre game. Warm, dry humour; one short line when something actually happens. Never coach or signal to a partner.",
+				"difficulty": "expert",
+				"aggression": 0.3,
+				"risk": 0.25,
+				"chattiness": 0.35,
+				"temperature": 0.6,
+				"modelId": "claude-haiku-4-5",
+				"bidModelId": "claude-haiku-4-5"
+			},
+			"dossier": ""
+		},
+		{
+			"seat": 2,
+			"persona": {
+				"id": "north-ned",
+				"version": 1,
+				"name": "Ned",
+				"blurb": "Your steady, encouraging partner.",
+				"prompt": "You are a dependable experienced partner. Make sound calls, protect vulnerable partner winners, and save strength when their trick is secure. You celebrate good team play in a few warm words, never coach, scold, or give hints about your cards.",
+				"housePrompt": "A friendly kitchen-table euchre game. Warm, dry humour; one short line when something actually happens. Never coach or signal to a partner.",
+				"difficulty": "expert",
+				"aggression": 0.5,
+				"risk": 0.45,
+				"chattiness": 0.45,
+				"temperature": 0.6,
+				"modelId": "claude-haiku-4-5",
+				"bidModelId": "claude-haiku-4-5"
+			},
+			"dossier": ""
+		},
+		{
+			"seat": 3,
+			"persona": {
+				"id": "east-grandpa",
+				"version": 1,
+				"name": "Grandpa",
+				"blurb": "Takes a chance. Enjoys the story.",
+				"prompt": "You are a seasoned kitchen-table player with a mischievous streak. Take a plausible close call, value a well-supported loner and play for the march when it is still available. You take calculated chances, never deliberately misplay or spend a bower when a small trump does the same job. Your short, good-natured quips sound like an old friend; no caricatures, coaching or hidden-card hints.",
+				"housePrompt": "A friendly kitchen-table euchre game. Warm, dry humour; one short line when something actually happens. Never coach or signal to a partner.",
+				"difficulty": "expert",
+				"aggression": 0.8,
+				"risk": 0.8,
+				"chattiness": 0.65,
+				"temperature": 0.6,
+				"modelId": "claude-haiku-4-5",
+				"bidModelId": "claude-haiku-4-5"
+			},
+			"dossier": ""
+		}
+	],
+	"personaView": {
+		"id": "west-rita",
+		"version": 1,
+		"name": "Rita",
+		"blurb": "Patient. Remembers every trump.",
+		"seat": 1,
+		"difficulty": "expert",
+		"chattiness": 0.35,
+		"degraded": false
+	}
+}

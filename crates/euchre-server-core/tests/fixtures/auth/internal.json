@@ -1,0 +1,81 @@
+{
+	"generated_by": "crates/euchre-server-core/scripts/gen-auth-fixtures.ts",
+	"actor_secret": "fixture-actor-secret-0123456789abcdef-guest",
+	"internal_token": "fixture-internal-token-0123456789abcdef",
+	"identity_secret": "fixture-identity-secret-0123456789abcdef",
+	"now_secs": 1800000000,
+	"cases": [
+		{
+			"name": "internal_exact",
+			"token": "fixture-internal-token-0123456789abcdef",
+			"ok": true
+		},
+		{
+			"name": "internal_wrong",
+			"token": "fixture-internal-token-0123456789abcdeX",
+			"ok": false,
+			"error": "internal token rejected"
+		},
+		{
+			"name": "internal_prefix",
+			"token": "fixture-in",
+			"ok": false,
+			"error": "internal token rejected"
+		},
+		{
+			"name": "internal_longer",
+			"token": "fixture-internal-token-0123456789abcdefx",
+			"ok": false,
+			"error": "internal token rejected"
+		},
+		{
+			"name": "internal_empty",
+			"token": "",
+			"ok": false,
+			"error": "internal token missing"
+		},
+		{
+			"name": "internal_absent",
+			"token": null,
+			"ok": false,
+			"error": "internal token missing"
+		}
+	],
+	"match_cases": [
+		{
+			"expected": "2c5ea4c0-4067-4f1a-9c4c-6b1a3d1f8e2a",
+			"got": "2c5ea4c0-4067-4f1a-9c4c-6b1a3d1f8e2a",
+			"ok": true
+		},
+		{
+			"expected": "2c5ea4c0-4067-4f1a-9c4c-6b1a3d1f8e2a",
+			"got": "2C5EA4C0-4067-4F1A-9C4C-6B1A3D1F8E2A",
+			"ok": false
+		},
+		{
+			"expected": "2c5ea4c0-4067-4f1a-9c4c-6b1a3d1f8e2a",
+			"got": "2c5ea4c0-4067-4f1a-9c4c-6b1a3d1f8e2",
+			"ok": false
+		},
+		{
+			"expected": "2c5ea4c0-4067-4f1a-9c4c-6b1a3d1f8e2a",
+			"got": null,
+			"ok": false
+		},
+		{
+			"expected": "",
+			"got": "",
+			"ok": false
+		},
+		{
+			"expected": "été",
+			"got": "été",
+			"ok": true
+		},
+		{
+			"expected": "é",
+			"got": "e",
+			"ok": false
+		}
+	]
+}

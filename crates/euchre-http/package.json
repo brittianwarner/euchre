@@ -1,0 +1,12 @@
+{
+	"name": "@euchre/http",
+	"private": true,
+	"version": "0.1.0",
+	"scripts": {
+		"build": "cargo build -p euchre-http",
+		"check": "cargo clippy -p euchre-http --all-targets -- -D warnings",
+		"test": "cargo test -p euchre-http",
+		"lint": "cargo fmt -p euchre-http --check",
+		"format": "cargo fmt -p euchre-http"
+	}
+}

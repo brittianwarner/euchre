@@ -1,0 +1,9 @@
+{
+	"tableMotion": {
+		"play": 700,
+		"read": 1500,
+		"collect": 780,
+		"stagger": 45
+	},
+	"trickPresentationMs": 3300
+}

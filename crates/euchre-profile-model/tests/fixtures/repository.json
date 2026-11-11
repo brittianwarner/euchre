@@ -1,0 +1,3660 @@
+{
+	"owner": "user_7f3a",
+	"migrationIds": [
+		"0001_initial"
+	],
+	"writes": [
+		{
+			"kind": "match",
+			"raw": {
+				"schema": 1,
+				"matchId": "m_alpha",
+				"userId": "user_7f3a",
+				"seed": "seed-base",
+				"cfg": {
+					"deckVariant": "24",
+					"gameTo": 10,
+					"stickTheDealer": true,
+					"requireNaturalTrump": false,
+					"loner": "makerOnly",
+					"defendAlone": false,
+					"superEuchre": false,
+					"farmersHand": "off",
+					"railroading": false,
+					"dealerMustHoldTrump": false,
+					"misdealLimit": 3
+				},
+				"firstDealer": 1,
+				"startedAt": 1761955200000,
+				"endedAt": 1761957000000,
+				"status": "complete",
+				"outcome": "won",
+				"score": [
+					10,
+					7
+				],
+				"winnerTeam": 0,
+				"handsPlayed": 9,
+				"personas": [
+					{
+						"seat": 1,
+						"persona": {
+							"id": "marge",
+							"version": 1,
+							"name": "Marge",
+							"blurb": "Counts every card and lets you know it.",
+							"prompt": "You have played in this kitchen for thirty years. You are precise, patient, and faintly amused by anybody who bids on three small trump. You speak in short sentences.",
+							"housePrompt": "This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.",
+							"difficulty": "expert",
+							"aggression": 0.35,
+							"risk": 0.25,
+							"chattiness": 0.4,
+							"temperature": 0.5,
+							"modelId": "claude-haiku-4-5",
+							"bidModelId": "claude-opus-5"
+						},
+						"dossier": ""
+					},
+					{
+						"seat": 2,
+						"persona": {
+							"id": "dutch",
+							"version": 1,
+							"name": "Dutch",
+							"blurb": "Your partner. Steady, and slightly deaf.",
+							"prompt": "You are the player’s partner. You are steady, encouraging and never second-guess a call out loud. When you are pleased you say so in four words or fewer.",
+							"housePrompt": "This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.",
+							"difficulty": "casual",
+							"aggression": 0.5,
+							"risk": 0.45,
+							"chattiness": 0.5,
+							"temperature": 0.6,
+							"modelId": "claude-haiku-4-5",
+							"bidModelId": "claude-opus-5"
+						},
+						"dossier": ""
+					},
+					{
+						"seat": 3,
+						"persona": {
+							"id": "verna",
+							"version": 1,
+							"name": "Verna",
+							"blurb": "Orders it up on anything red.",
+							"prompt": "You bid too often and enjoy it. You are cheerful about being euchred and insufferable about a march. You never explain your reasoning.",
+							"housePrompt": "This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.",
+							"difficulty": "casual",
+							"aggression": 0.8,
+							"risk": 0.75,
+							"chattiness": 0.75,
+							"temperature": 0.7,
+							"modelId": "claude-haiku-4-5",
+							"bidModelId": "claude-opus-5"
+						},
+						"dossier": ""
+					}
+				],
+				"stats": {
+					"euchresFor": 2,
+					"euchresAgainst": 1,
+					"lonersAttempted": 1,
+					"lonersMade": 1,
+					"marches": 2,
+					"throwIns": 0,
+					"tricks": {
+						"0": 27,
+						"1": 18
+					}
+				},
+				"tokens": {
+					"tokensIn": 12000,
+					"tokensOut": 3400,
+					"cacheReadTokens": 50000,
+					"calls": 61
+				}
+			},
+			"now": 1762819200000,
+			"record": "{\"schema\":1,\"matchId\":\"m_alpha\",\"userId\":\"user_7f3a\",\"seed\":\"seed-base\",\"cfg\":{\"deckVariant\":\"24\",\"gameTo\":10,\"stickTheDealer\":true,\"requireNaturalTrump\":false,\"loner\":\"makerOnly\",\"defendAlone\":false,\"superEuchre\":false,\"farmersHand\":\"off\",\"railroading\":false,\"dealerMustHoldTrump\":false,\"misdealLimit\":3},\"firstDealer\":1,\"startedAt\":1761955200000,\"endedAt\":1761957000000,\"status\":\"complete\",\"outcome\":\"won\",\"score\":[10,7],\"winnerTeam\":0,\"handsPlayed\":9,\"personas\":[{\"seat\":1,\"persona\":{\"id\":\"marge\",\"version\":1,\"name\":\"Marge\",\"blurb\":\"Counts every card and lets you know it.\",\"prompt\":\"You have played in this kitchen for thirty years. You are precise, patient, and faintly amused by anybody who bids on three small trump. You speak in short sentences.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"expert\",\"aggression\":0.35,\"risk\":0.25,\"chattiness\":0.4,\"temperature\":0.5,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":2,\"persona\":{\"id\":\"dutch\",\"version\":1,\"name\":\"Dutch\",\"blurb\":\"Your partner. Steady, and slightly deaf.\",\"prompt\":\"You are the player’s partner. You are steady, encouraging and never second-guess a call out loud. When you are pleased you say so in four words or fewer.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.5,\"risk\":0.45,\"chattiness\":0.5,\"temperature\":0.6,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":3,\"persona\":{\"id\":\"verna\",\"version\":1,\"name\":\"Verna\",\"blurb\":\"Orders it up on anything red.\",\"prompt\":\"You bid too often and enjoy it. You are cheerful about being euchred and insufferable about a march. You never explain your reasoning.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.8,\"risk\":0.75,\"chattiness\":0.75,\"temperature\":0.7,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"}],\"stats\":{\"euchresFor\":2,\"euchresAgainst\":1,\"lonersAttempted\":1,\"lonersMade\":1,\"marches\":2,\"throwIns\":0,\"tricks\":[27,18]},\"tokens\":{\"tokensIn\":12000,\"tokensOut\":3400,\"cacheReadTokens\":50000,\"calls\":61}}",
+			"outcome": "{\"matchId\":\"m_alpha\",\"inserted\":true,\"updated\":false}",
+			"calls": [
+				{
+					"sql": "SELECT ended_at FROM matches WHERE match_id = ? LIMIT 1",
+					"args": [
+						"m_alpha"
+					],
+					"rows": []
+				},
+				{
+					"sql": "INSERT INTO matches (match_id, schema, user_id, seed, cfg_json, first_dealer, started_at, ended_at, played_at, status, outcome, score_us, score_them, winner_team, hands_played, personas_json, opponents_json, euchres_for, euchres_against, loners_attempted, loners_made, marches, throw_ins, tricks_us, tricks_them, tokens_in, tokens_out, cache_read_tokens, llm_calls, recorded_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n\t\t\t\tON CONFLICT(match_id) DO NOTHING",
+					"args": [
+						"m_alpha",
+						1,
+						"user_7f3a",
+						"seed-base",
+						"{\"deckVariant\":\"24\",\"gameTo\":10,\"stickTheDealer\":true,\"requireNaturalTrump\":false,\"loner\":\"makerOnly\",\"defendAlone\":false,\"superEuchre\":false,\"farmersHand\":\"off\",\"railroading\":false,\"dealerMustHoldTrump\":false,\"misdealLimit\":3}",
+						1,
+						1761955200000,
+						1761957000000,
+						1761957000000,
+						"complete",
+						"won",
+						10,
+						7,
+						0,
+						9,
+						"[{\"seat\":1,\"persona\":{\"id\":\"marge\",\"version\":1,\"name\":\"Marge\",\"blurb\":\"Counts every card and lets you know it.\",\"prompt\":\"You have played in this kitchen for thirty years. You are precise, patient, and faintly amused by anybody who bids on three small trump. You speak in short sentences.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"expert\",\"aggression\":0.35,\"risk\":0.25,\"chattiness\":0.4,\"temperature\":0.5,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":2,\"persona\":{\"id\":\"dutch\",\"version\":1,\"name\":\"Dutch\",\"blurb\":\"Your partner. Steady, and slightly deaf.\",\"prompt\":\"You are the player’s partner. You are steady, encouraging and never second-guess a call out loud. When you are pleased you say so in four words or fewer.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.5,\"risk\":0.45,\"chattiness\":0.5,\"temperature\":0.6,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":3,\"persona\":{\"id\":\"verna\",\"version\":1,\"name\":\"Verna\",\"blurb\":\"Orders it up on anything red.\",\"prompt\":\"You bid too often and enjoy it. You are cheerful about being euchred and insufferable about a march. You never explain your reasoning.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.8,\"risk\":0.75,\"chattiness\":0.75,\"temperature\":0.7,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"}]",
+						"[\"Marge\",\"Dutch\",\"Verna\"]",
+						2,
+						1,
+						1,
+						1,
+						2,
+						0,
+						27,
+						18,
+						12000,
+						3400,
+						50000,
+						61,
+						1762819200000,
+						1762819200000
+					],
+					"rows": []
+				}
+			]
+		},
+		{
+			"kind": "match",
+			"raw": {
+				"schema": 1,
+				"matchId": "m_bravo",
+				"userId": "user_7f3a",
+				"seed": "seed-base",
+				"cfg": {
+					"deckVariant": "24",
+					"gameTo": 10,
+					"stickTheDealer": true,
+					"requireNaturalTrump": false,
+					"loner": "makerOnly",
+					"defendAlone": false,
+					"superEuchre": false,
+					"farmersHand": "off",
+					"railroading": false,
+					"dealerMustHoldTrump": false,
+					"misdealLimit": 3
+				},
+				"firstDealer": 1,
+				"startedAt": 1762128000000,
+				"endedAt": 1762130000000,
+				"status": "complete",
+				"outcome": "lost",
+				"score": [
+					6,
+					10
+				],
+				"winnerTeam": 1,
+				"handsPlayed": 9,
+				"personas": [
+					{
+						"seat": 1,
+						"persona": {
+							"id": "marge",
+							"version": 1,
+							"name": "Marge",
+							"blurb": "Counts every card and lets you know it.",
+							"prompt": "You have played in this kitchen for thirty years. You are precise, patient, and faintly amused by anybody who bids on three small trump. You speak in short sentences.",
+							"housePrompt": "This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.",
+							"difficulty": "expert",
+							"aggression": 0.35,
+							"risk": 0.25,
+							"chattiness": 0.4,
+							"temperature": 0.5,
+							"modelId": "claude-haiku-4-5",
+							"bidModelId": "claude-opus-5"
+						},
+						"dossier": ""
+					},
+					{
+						"seat": 2,
+						"persona": {
+							"id": "dutch",
+							"version": 1,
+							"name": "  Dutch​\u0007  the   Elder  ",
+							"blurb": "Your partner. Steady, and slightly deaf.",
+							"prompt": "You are the player’s partner. You are steady, encouraging and never second-guess a call out loud. When you are pleased you say so in four words or fewer.",
+							"housePrompt": "This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.",
+							"difficulty": "casual",
+							"aggression": 0.5,
+							"risk": 0.45,
+							"chattiness": 0.5,
+							"temperature": 0.6,
+							"modelId": "claude-haiku-4-5",
+							"bidModelId": "claude-opus-5"
+						},
+						"dossier": ""
+					},
+					{
+						"seat": 3,
+						"persona": {
+							"name": "Verna"
+						},
+						"dossier": "x"
+					},
+					{
+						"seat": 1,
+						"persona": {
+							"name": "Shadow"
+						}
+					}
+				],
+				"stats": {
+					"euchresFor": 0,
+					"euchresAgainst": 3,
+					"lonersAttempted": 2,
+					"lonersMade": 0,
+					"marches": 1,
+					"throwIns": 2,
+					"tricks": [
+						20,
+						25
+					]
+				},
+				"tokens": {
+					"tokensIn": 9000.7,
+					"tokensOut": "120",
+					"cacheReadTokens": -5,
+					"calls": null
+				}
+			},
+			"now": 1762819200000,
+			"record": "{\"schema\":1,\"matchId\":\"m_bravo\",\"userId\":\"user_7f3a\",\"seed\":\"seed-base\",\"cfg\":{\"deckVariant\":\"24\",\"gameTo\":10,\"stickTheDealer\":true,\"requireNaturalTrump\":false,\"loner\":\"makerOnly\",\"defendAlone\":false,\"superEuchre\":false,\"farmersHand\":\"off\",\"railroading\":false,\"dealerMustHoldTrump\":false,\"misdealLimit\":3},\"firstDealer\":1,\"startedAt\":1762128000000,\"endedAt\":1762130000000,\"status\":\"complete\",\"outcome\":\"lost\",\"score\":[6,10],\"winnerTeam\":1,\"handsPlayed\":9,\"personas\":[{\"seat\":1,\"persona\":{\"id\":\"marge\",\"version\":1,\"name\":\"Marge\",\"blurb\":\"Counts every card and lets you know it.\",\"prompt\":\"You have played in this kitchen for thirty years. You are precise, patient, and faintly amused by anybody who bids on three small trump. You speak in short sentences.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"expert\",\"aggression\":0.35,\"risk\":0.25,\"chattiness\":0.4,\"temperature\":0.5,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":2,\"persona\":{\"id\":\"dutch\",\"version\":1,\"name\":\"  Dutch​\\u0007  the   Elder  \",\"blurb\":\"Your partner. Steady, and slightly deaf.\",\"prompt\":\"You are the player’s partner. You are steady, encouraging and never second-guess a call out loud. When you are pleased you say so in four words or fewer.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.5,\"risk\":0.45,\"chattiness\":0.5,\"temperature\":0.6,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":3,\"persona\":{\"name\":\"Verna\"},\"dossier\":\"x\"}],\"stats\":{\"euchresFor\":0,\"euchresAgainst\":3,\"lonersAttempted\":2,\"lonersMade\":0,\"marches\":1,\"throwIns\":2,\"tricks\":[0,0]},\"tokens\":{\"tokensIn\":9000,\"tokensOut\":120,\"cacheReadTokens\":0,\"calls\":0}}",
+			"outcome": "{\"matchId\":\"m_bravo\",\"inserted\":true,\"updated\":false}",
+			"calls": [
+				{
+					"sql": "SELECT ended_at FROM matches WHERE match_id = ? LIMIT 1",
+					"args": [
+						"m_bravo"
+					],
+					"rows": []
+				},
+				{
+					"sql": "INSERT INTO matches (match_id, schema, user_id, seed, cfg_json, first_dealer, started_at, ended_at, played_at, status, outcome, score_us, score_them, winner_team, hands_played, personas_json, opponents_json, euchres_for, euchres_against, loners_attempted, loners_made, marches, throw_ins, tricks_us, tricks_them, tokens_in, tokens_out, cache_read_tokens, llm_calls, recorded_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n\t\t\t\tON CONFLICT(match_id) DO NOTHING",
+					"args": [
+						"m_bravo",
+						1,
+						"user_7f3a",
+						"seed-base",
+						"{\"deckVariant\":\"24\",\"gameTo\":10,\"stickTheDealer\":true,\"requireNaturalTrump\":false,\"loner\":\"makerOnly\",\"defendAlone\":false,\"superEuchre\":false,\"farmersHand\":\"off\",\"railroading\":false,\"dealerMustHoldTrump\":false,\"misdealLimit\":3}",
+						1,
+						1762128000000,
+						1762130000000,
+						1762130000000,
+						"complete",
+						"lost",
+						6,
+						10,
+						1,
+						9,
+						"[{\"seat\":1,\"persona\":{\"id\":\"marge\",\"version\":1,\"name\":\"Marge\",\"blurb\":\"Counts every card and lets you know it.\",\"prompt\":\"You have played in this kitchen for thirty years. You are precise, patient, and faintly amused by anybody who bids on three small trump. You speak in short sentences.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"expert\",\"aggression\":0.35,\"risk\":0.25,\"chattiness\":0.4,\"temperature\":0.5,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":2,\"persona\":{\"id\":\"dutch\",\"version\":1,\"name\":\"  Dutch​\\u0007  the   Elder  \",\"blurb\":\"Your partner. Steady, and slightly deaf.\",\"prompt\":\"You are the player’s partner. You are steady, encouraging and never second-guess a call out loud. When you are pleased you say so in four words or fewer.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.5,\"risk\":0.45,\"chattiness\":0.5,\"temperature\":0.6,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":3,\"persona\":{\"name\":\"Verna\"},\"dossier\":\"x\"}]",
+						"[\"Marge\",\"Dutch the Elder\",\"Verna\"]",
+						0,
+						3,
+						2,
+						0,
+						1,
+						2,
+						0,
+						0,
+						9000,
+						120,
+						0,
+						0,
+						1762819200000,
+						1762819200000
+					],
+					"rows": []
+				}
+			]
+		},
+		{
+			"kind": "match",
+			"raw": {
+				"schema": 1,
+				"matchId": "m_charlie",
+				"userId": "user_7f3a",
+				"seed": "seed-base",
+				"cfg": {
+					"2": "two",
+					"10": "ten",
+					"gameTo": 5,
+					"stickTheDealer": false,
+					"custom": {
+						"b": 1.5,
+						"a": 1
+					}
+				},
+				"firstDealer": 1,
+				"startedAt": 1762387200000,
+				"endedAt": 1762388200000,
+				"status": "complete",
+				"outcome": "won",
+				"score": [
+					10,
+					7
+				],
+				"winnerTeam": 0,
+				"handsPlayed": 9,
+				"personas": [
+					{
+						"seat": 1,
+						"persona": {
+							"id": "marge",
+							"version": 1,
+							"name": "Marge",
+							"blurb": "Counts every card and lets you know it.",
+							"prompt": "You have played in this kitchen for thirty years. You are precise, patient, and faintly amused by anybody who bids on three small trump. You speak in short sentences.",
+							"housePrompt": "This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.",
+							"difficulty": "expert",
+							"aggression": 0.35,
+							"risk": 0.25,
+							"chattiness": 0.4,
+							"temperature": 0.5,
+							"modelId": "claude-haiku-4-5",
+							"bidModelId": "claude-opus-5"
+						},
+						"dossier": ""
+					},
+					{
+						"seat": 2,
+						"persona": {
+							"id": "dutch",
+							"version": 1,
+							"name": "Dutch",
+							"blurb": "Your partner. Steady, and slightly deaf.",
+							"prompt": "You are the player’s partner. You are steady, encouraging and never second-guess a call out loud. When you are pleased you say so in four words or fewer.",
+							"housePrompt": "This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.",
+							"difficulty": "casual",
+							"aggression": 0.5,
+							"risk": 0.45,
+							"chattiness": 0.5,
+							"temperature": 0.6,
+							"modelId": "claude-haiku-4-5",
+							"bidModelId": "claude-opus-5"
+						},
+						"dossier": ""
+					},
+					{
+						"seat": 3,
+						"persona": {
+							"id": "verna",
+							"version": 1,
+							"name": "Verna",
+							"blurb": "Orders it up on anything red.",
+							"prompt": "You bid too often and enjoy it. You are cheerful about being euchred and insufferable about a march. You never explain your reasoning.",
+							"housePrompt": "This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.",
+							"difficulty": "casual",
+							"aggression": 0.8,
+							"risk": 0.75,
+							"chattiness": 0.75,
+							"temperature": 0.7,
+							"modelId": "claude-haiku-4-5",
+							"bidModelId": "claude-opus-5"
+						},
+						"dossier": ""
+					}
+				],
+				"stats": {
+					"euchresFor": 2,
+					"euchresAgainst": 1,
+					"lonersAttempted": 1,
+					"lonersMade": 1,
+					"marches": 2,
+					"throwIns": 0,
+					"tricks": {
+						"0": 27,
+						"1": 18
+					}
+				},
+				"tokens": {
+					"tokensIn": 12000,
+					"tokensOut": 3400,
+					"cacheReadTokens": 50000,
+					"calls": 61
+				}
+			},
+			"now": 1762819200000,
+			"record": "{\"schema\":1,\"matchId\":\"m_charlie\",\"userId\":\"user_7f3a\",\"seed\":\"seed-base\",\"cfg\":{\"2\":\"two\",\"10\":\"ten\",\"gameTo\":5,\"stickTheDealer\":false,\"custom\":{\"b\":1.5,\"a\":1}},\"firstDealer\":1,\"startedAt\":1762387200000,\"endedAt\":1762388200000,\"status\":\"complete\",\"outcome\":\"won\",\"score\":[10,7],\"winnerTeam\":0,\"handsPlayed\":9,\"personas\":[{\"seat\":1,\"persona\":{\"id\":\"marge\",\"version\":1,\"name\":\"Marge\",\"blurb\":\"Counts every card and lets you know it.\",\"prompt\":\"You have played in this kitchen for thirty years. You are precise, patient, and faintly amused by anybody who bids on three small trump. You speak in short sentences.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"expert\",\"aggression\":0.35,\"risk\":0.25,\"chattiness\":0.4,\"temperature\":0.5,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":2,\"persona\":{\"id\":\"dutch\",\"version\":1,\"name\":\"Dutch\",\"blurb\":\"Your partner. Steady, and slightly deaf.\",\"prompt\":\"You are the player’s partner. You are steady, encouraging and never second-guess a call out loud. When you are pleased you say so in four words or fewer.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.5,\"risk\":0.45,\"chattiness\":0.5,\"temperature\":0.6,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":3,\"persona\":{\"id\":\"verna\",\"version\":1,\"name\":\"Verna\",\"blurb\":\"Orders it up on anything red.\",\"prompt\":\"You bid too often and enjoy it. You are cheerful about being euchred and insufferable about a march. You never explain your reasoning.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.8,\"risk\":0.75,\"chattiness\":0.75,\"temperature\":0.7,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"}],\"stats\":{\"euchresFor\":2,\"euchresAgainst\":1,\"lonersAttempted\":1,\"lonersMade\":1,\"marches\":2,\"throwIns\":0,\"tricks\":[27,18]},\"tokens\":{\"tokensIn\":12000,\"tokensOut\":3400,\"cacheReadTokens\":50000,\"calls\":61}}",
+			"outcome": "{\"matchId\":\"m_charlie\",\"inserted\":true,\"updated\":false}",
+			"calls": [
+				{
+					"sql": "SELECT ended_at FROM matches WHERE match_id = ? LIMIT 1",
+					"args": [
+						"m_charlie"
+					],
+					"rows": []
+				},
+				{
+					"sql": "INSERT INTO matches (match_id, schema, user_id, seed, cfg_json, first_dealer, started_at, ended_at, played_at, status, outcome, score_us, score_them, winner_team, hands_played, personas_json, opponents_json, euchres_for, euchres_against, loners_attempted, loners_made, marches, throw_ins, tricks_us, tricks_them, tokens_in, tokens_out, cache_read_tokens, llm_calls, recorded_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n\t\t\t\tON CONFLICT(match_id) DO NOTHING",
+					"args": [
+						"m_charlie",
+						1,
+						"user_7f3a",
+						"seed-base",
+						"{\"2\":\"two\",\"10\":\"ten\",\"gameTo\":5,\"stickTheDealer\":false,\"custom\":{\"b\":1.5,\"a\":1}}",
+						1,
+						1762387200000,
+						1762388200000,
+						1762388200000,
+						"complete",
+						"won",
+						10,
+						7,
+						0,
+						9,
+						"[{\"seat\":1,\"persona\":{\"id\":\"marge\",\"version\":1,\"name\":\"Marge\",\"blurb\":\"Counts every card and lets you know it.\",\"prompt\":\"You have played in this kitchen for thirty years. You are precise, patient, and faintly amused by anybody who bids on three small trump. You speak in short sentences.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"expert\",\"aggression\":0.35,\"risk\":0.25,\"chattiness\":0.4,\"temperature\":0.5,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":2,\"persona\":{\"id\":\"dutch\",\"version\":1,\"name\":\"Dutch\",\"blurb\":\"Your partner. Steady, and slightly deaf.\",\"prompt\":\"You are the player’s partner. You are steady, encouraging and never second-guess a call out loud. When you are pleased you say so in four words or fewer.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.5,\"risk\":0.45,\"chattiness\":0.5,\"temperature\":0.6,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":3,\"persona\":{\"id\":\"verna\",\"version\":1,\"name\":\"Verna\",\"blurb\":\"Orders it up on anything red.\",\"prompt\":\"You bid too often and enjoy it. You are cheerful about being euchred and insufferable about a march. You never explain your reasoning.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.8,\"risk\":0.75,\"chattiness\":0.75,\"temperature\":0.7,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"}]",
+						"[\"Marge\",\"Dutch\",\"Verna\"]",
+						2,
+						1,
+						1,
+						1,
+						2,
+						0,
+						27,
+						18,
+						12000,
+						3400,
+						50000,
+						61,
+						1762819200000,
+						1762819200000
+					],
+					"rows": []
+				}
+			]
+		},
+		{
+			"kind": "match",
+			"raw": {
+				"schema": 1,
+				"matchId": "m_delta",
+				"userId": "user_7f3a",
+				"seed": "seed-base",
+				"cfg": "not-a-record",
+				"startedAt": 1762387200000,
+				"endedAt": null,
+				"status": "active",
+				"outcome": "abandoned",
+				"score": [
+					3,
+					4
+				],
+				"winnerTeam": null,
+				"handsPlayed": 4,
+				"personas": [
+					{
+						"seat": 1,
+						"persona": {
+							"id": "marge",
+							"version": 1,
+							"name": "Marge",
+							"blurb": "Counts every card and lets you know it.",
+							"prompt": "You have played in this kitchen for thirty years. You are precise, patient, and faintly amused by anybody who bids on three small trump. You speak in short sentences.",
+							"housePrompt": "This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.",
+							"difficulty": "expert",
+							"aggression": 0.35,
+							"risk": 0.25,
+							"chattiness": 0.4,
+							"temperature": 0.5,
+							"modelId": "claude-haiku-4-5",
+							"bidModelId": "claude-opus-5"
+						},
+						"dossier": ""
+					},
+					{
+						"seat": 2,
+						"persona": {
+							"id": "dutch",
+							"version": 1,
+							"name": "Dutch",
+							"blurb": "Your partner. Steady, and slightly deaf.",
+							"prompt": "You are the player’s partner. You are steady, encouraging and never second-guess a call out loud. When you are pleased you say so in four words or fewer.",
+							"housePrompt": "This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.",
+							"difficulty": "casual",
+							"aggression": 0.5,
+							"risk": 0.45,
+							"chattiness": 0.5,
+							"temperature": 0.6,
+							"modelId": "claude-haiku-4-5",
+							"bidModelId": "claude-opus-5"
+						},
+						"dossier": ""
+					},
+					{
+						"seat": 3,
+						"persona": {
+							"id": "verna",
+							"version": 1,
+							"name": "Verna",
+							"blurb": "Orders it up on anything red.",
+							"prompt": "You bid too often and enjoy it. You are cheerful about being euchred and insufferable about a march. You never explain your reasoning.",
+							"housePrompt": "This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.",
+							"difficulty": "casual",
+							"aggression": 0.8,
+							"risk": 0.75,
+							"chattiness": 0.75,
+							"temperature": 0.7,
+							"modelId": "claude-haiku-4-5",
+							"bidModelId": "claude-opus-5"
+						},
+						"dossier": ""
+					}
+				]
+			},
+			"now": 1762819200000,
+			"record": "{\"schema\":1,\"matchId\":\"m_delta\",\"userId\":\"user_7f3a\",\"seed\":\"seed-base\",\"cfg\":{\"deckVariant\":\"24\",\"gameTo\":10,\"stickTheDealer\":true,\"requireNaturalTrump\":false,\"loner\":\"makerOnly\",\"defendAlone\":false,\"superEuchre\":false,\"farmersHand\":\"off\",\"railroading\":false,\"dealerMustHoldTrump\":false,\"misdealLimit\":3},\"firstDealer\":0,\"startedAt\":1762387200000,\"endedAt\":null,\"status\":\"active\",\"outcome\":\"abandoned\",\"score\":[3,4],\"winnerTeam\":null,\"handsPlayed\":4,\"personas\":[{\"seat\":1,\"persona\":{\"id\":\"marge\",\"version\":1,\"name\":\"Marge\",\"blurb\":\"Counts every card and lets you know it.\",\"prompt\":\"You have played in this kitchen for thirty years. You are precise, patient, and faintly amused by anybody who bids on three small trump. You speak in short sentences.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"expert\",\"aggression\":0.35,\"risk\":0.25,\"chattiness\":0.4,\"temperature\":0.5,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":2,\"persona\":{\"id\":\"dutch\",\"version\":1,\"name\":\"Dutch\",\"blurb\":\"Your partner. Steady, and slightly deaf.\",\"prompt\":\"You are the player’s partner. You are steady, encouraging and never second-guess a call out loud. When you are pleased you say so in four words or fewer.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.5,\"risk\":0.45,\"chattiness\":0.5,\"temperature\":0.6,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":3,\"persona\":{\"id\":\"verna\",\"version\":1,\"name\":\"Verna\",\"blurb\":\"Orders it up on anything red.\",\"prompt\":\"You bid too often and enjoy it. You are cheerful about being euchred and insufferable about a march. You never explain your reasoning.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.8,\"risk\":0.75,\"chattiness\":0.75,\"temperature\":0.7,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"}],\"stats\":{\"euchresFor\":0,\"euchresAgainst\":0,\"lonersAttempted\":0,\"lonersMade\":0,\"marches\":0,\"throwIns\":0,\"tricks\":[0,0]},\"tokens\":{\"tokensIn\":0,\"tokensOut\":0,\"cacheReadTokens\":0,\"calls\":0}}",
+			"outcome": "{\"matchId\":\"m_delta\",\"inserted\":true,\"updated\":false}",
+			"calls": [
+				{
+					"sql": "SELECT ended_at FROM matches WHERE match_id = ? LIMIT 1",
+					"args": [
+						"m_delta"
+					],
+					"rows": []
+				},
+				{
+					"sql": "INSERT INTO matches (match_id, schema, user_id, seed, cfg_json, first_dealer, started_at, ended_at, played_at, status, outcome, score_us, score_them, winner_team, hands_played, personas_json, opponents_json, euchres_for, euchres_against, loners_attempted, loners_made, marches, throw_ins, tricks_us, tricks_them, tokens_in, tokens_out, cache_read_tokens, llm_calls, recorded_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n\t\t\t\tON CONFLICT(match_id) DO NOTHING",
+					"args": [
+						"m_delta",
+						1,
+						"user_7f3a",
+						"seed-base",
+						"{\"deckVariant\":\"24\",\"gameTo\":10,\"stickTheDealer\":true,\"requireNaturalTrump\":false,\"loner\":\"makerOnly\",\"defendAlone\":false,\"superEuchre\":false,\"farmersHand\":\"off\",\"railroading\":false,\"dealerMustHoldTrump\":false,\"misdealLimit\":3}",
+						0,
+						1762387200000,
+						null,
+						1762387200000,
+						"active",
+						"abandoned",
+						3,
+						4,
+						null,
+						4,
+						"[{\"seat\":1,\"persona\":{\"id\":\"marge\",\"version\":1,\"name\":\"Marge\",\"blurb\":\"Counts every card and lets you know it.\",\"prompt\":\"You have played in this kitchen for thirty years. You are precise, patient, and faintly amused by anybody who bids on three small trump. You speak in short sentences.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"expert\",\"aggression\":0.35,\"risk\":0.25,\"chattiness\":0.4,\"temperature\":0.5,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":2,\"persona\":{\"id\":\"dutch\",\"version\":1,\"name\":\"Dutch\",\"blurb\":\"Your partner. Steady, and slightly deaf.\",\"prompt\":\"You are the player’s partner. You are steady, encouraging and never second-guess a call out loud. When you are pleased you say so in four words or fewer.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.5,\"risk\":0.45,\"chattiness\":0.5,\"temperature\":0.6,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":3,\"persona\":{\"id\":\"verna\",\"version\":1,\"name\":\"Verna\",\"blurb\":\"Orders it up on anything red.\",\"prompt\":\"You bid too often and enjoy it. You are cheerful about being euchred and insufferable about a march. You never explain your reasoning.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.8,\"risk\":0.75,\"chattiness\":0.75,\"temperature\":0.7,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"}]",
+						"[\"Marge\",\"Dutch\",\"Verna\"]",
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						0,
+						1762819200000,
+						1762819200000
+					],
+					"rows": []
+				}
+			]
+		},
+		{
+			"kind": "match",
+			"raw": {
+				"schema": 1,
+				"matchId": "m_echo",
+				"userId": "user_7f3a",
+				"seed": "seed-base",
+				"cfg": {
+					"deckVariant": "24",
+					"gameTo": 10,
+					"stickTheDealer": true,
+					"requireNaturalTrump": false,
+					"loner": "makerOnly",
+					"defendAlone": false,
+					"superEuchre": false,
+					"farmersHand": "off",
+					"railroading": false,
+					"dealerMustHoldTrump": false,
+					"misdealLimit": 3
+				},
+				"firstDealer": 1,
+				"startedAt": 1762387200000,
+				"endedAt": 1762388200000,
+				"status": "complete",
+				"outcome": "lost",
+				"score": [
+					0,
+					10
+				],
+				"winnerTeam": 1,
+				"handsPlayed": 6,
+				"personas": [
+					{
+						"seat": 1,
+						"persona": {
+							"id": "marge",
+							"version": 1,
+							"name": "Marge",
+							"blurb": "Counts every card and lets you know it.",
+							"prompt": "You have played in this kitchen for thirty years. You are precise, patient, and faintly amused by anybody who bids on three small trump. You speak in short sentences.",
+							"housePrompt": "This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.",
+							"difficulty": "expert",
+							"aggression": 0.35,
+							"risk": 0.25,
+							"chattiness": 0.4,
+							"temperature": 0.5,
+							"modelId": "claude-haiku-4-5",
+							"bidModelId": "claude-opus-5"
+						},
+						"dossier": ""
+					},
+					{
+						"seat": 2,
+						"persona": {
+							"id": "dutch",
+							"version": 1,
+							"name": "Dutch",
+							"blurb": "Your partner. Steady, and slightly deaf.",
+							"prompt": "You are the player’s partner. You are steady, encouraging and never second-guess a call out loud. When you are pleased you say so in four words or fewer.",
+							"housePrompt": "This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.",
+							"difficulty": "casual",
+							"aggression": 0.5,
+							"risk": 0.45,
+							"chattiness": 0.5,
+							"temperature": 0.6,
+							"modelId": "claude-haiku-4-5",
+							"bidModelId": "claude-opus-5"
+						},
+						"dossier": ""
+					},
+					{
+						"seat": 3,
+						"persona": {
+							"id": "verna",
+							"version": 1,
+							"name": "Verna",
+							"blurb": "Orders it up on anything red.",
+							"prompt": "You bid too often and enjoy it. You are cheerful about being euchred and insufferable about a march. You never explain your reasoning.",
+							"housePrompt": "This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.",
+							"difficulty": "casual",
+							"aggression": 0.8,
+							"risk": 0.75,
+							"chattiness": 0.75,
+							"temperature": 0.7,
+							"modelId": "claude-haiku-4-5",
+							"bidModelId": "claude-opus-5"
+						},
+						"dossier": ""
+					}
+				],
+				"stats": {
+					"euchresFor": 2,
+					"euchresAgainst": 1,
+					"lonersAttempted": 1,
+					"lonersMade": 1,
+					"marches": 2,
+					"throwIns": 0,
+					"tricks": {
+						"0": 27,
+						"1": 18
+					}
+				},
+				"tokens": {
+					"tokensIn": 12000,
+					"tokensOut": 3400,
+					"cacheReadTokens": 50000,
+					"calls": 61
+				}
+			},
+			"now": 1762819200000,
+			"record": "{\"schema\":1,\"matchId\":\"m_echo\",\"userId\":\"user_7f3a\",\"seed\":\"seed-base\",\"cfg\":{\"deckVariant\":\"24\",\"gameTo\":10,\"stickTheDealer\":true,\"requireNaturalTrump\":false,\"loner\":\"makerOnly\",\"defendAlone\":false,\"superEuchre\":false,\"farmersHand\":\"off\",\"railroading\":false,\"dealerMustHoldTrump\":false,\"misdealLimit\":3},\"firstDealer\":1,\"startedAt\":1762387200000,\"endedAt\":1762388200000,\"status\":\"complete\",\"outcome\":\"lost\",\"score\":[0,10],\"winnerTeam\":1,\"handsPlayed\":6,\"personas\":[{\"seat\":1,\"persona\":{\"id\":\"marge\",\"version\":1,\"name\":\"Marge\",\"blurb\":\"Counts every card and lets you know it.\",\"prompt\":\"You have played in this kitchen for thirty years. You are precise, patient, and faintly amused by anybody who bids on three small trump. You speak in short sentences.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"expert\",\"aggression\":0.35,\"risk\":0.25,\"chattiness\":0.4,\"temperature\":0.5,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":2,\"persona\":{\"id\":\"dutch\",\"version\":1,\"name\":\"Dutch\",\"blurb\":\"Your partner. Steady, and slightly deaf.\",\"prompt\":\"You are the player’s partner. You are steady, encouraging and never second-guess a call out loud. When you are pleased you say so in four words or fewer.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.5,\"risk\":0.45,\"chattiness\":0.5,\"temperature\":0.6,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":3,\"persona\":{\"id\":\"verna\",\"version\":1,\"name\":\"Verna\",\"blurb\":\"Orders it up on anything red.\",\"prompt\":\"You bid too often and enjoy it. You are cheerful about being euchred and insufferable about a march. You never explain your reasoning.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.8,\"risk\":0.75,\"chattiness\":0.75,\"temperature\":0.7,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"}],\"stats\":{\"euchresFor\":2,\"euchresAgainst\":1,\"lonersAttempted\":1,\"lonersMade\":1,\"marches\":2,\"throwIns\":0,\"tricks\":[27,18]},\"tokens\":{\"tokensIn\":12000,\"tokensOut\":3400,\"cacheReadTokens\":50000,\"calls\":61}}",
+			"outcome": "{\"matchId\":\"m_echo\",\"inserted\":true,\"updated\":false}",
+			"calls": [
+				{
+					"sql": "SELECT ended_at FROM matches WHERE match_id = ? LIMIT 1",
+					"args": [
+						"m_echo"
+					],
+					"rows": []
+				},
+				{
+					"sql": "INSERT INTO matches (match_id, schema, user_id, seed, cfg_json, first_dealer, started_at, ended_at, played_at, status, outcome, score_us, score_them, winner_team, hands_played, personas_json, opponents_json, euchres_for, euchres_against, loners_attempted, loners_made, marches, throw_ins, tricks_us, tricks_them, tokens_in, tokens_out, cache_read_tokens, llm_calls, recorded_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n\t\t\t\tON CONFLICT(match_id) DO NOTHING",
+					"args": [
+						"m_echo",
+						1,
+						"user_7f3a",
+						"seed-base",
+						"{\"deckVariant\":\"24\",\"gameTo\":10,\"stickTheDealer\":true,\"requireNaturalTrump\":false,\"loner\":\"makerOnly\",\"defendAlone\":false,\"superEuchre\":false,\"farmersHand\":\"off\",\"railroading\":false,\"dealerMustHoldTrump\":false,\"misdealLimit\":3}",
+						1,
+						1762387200000,
+						1762388200000,
+						1762388200000,
+						"complete",
+						"lost",
+						0,
+						10,
+						1,
+						6,
+						"[{\"seat\":1,\"persona\":{\"id\":\"marge\",\"version\":1,\"name\":\"Marge\",\"blurb\":\"Counts every card and lets you know it.\",\"prompt\":\"You have played in this kitchen for thirty years. You are precise, patient, and faintly amused by anybody who bids on three small trump. You speak in short sentences.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"expert\",\"aggression\":0.35,\"risk\":0.25,\"chattiness\":0.4,\"temperature\":0.5,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":2,\"persona\":{\"id\":\"dutch\",\"version\":1,\"name\":\"Dutch\",\"blurb\":\"Your partner. Steady, and slightly deaf.\",\"prompt\":\"You are the player’s partner. You are steady, encouraging and never second-guess a call out loud. When you are pleased you say so in four words or fewer.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.5,\"risk\":0.45,\"chattiness\":0.5,\"temperature\":0.6,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":3,\"persona\":{\"id\":\"verna\",\"version\":1,\"name\":\"Verna\",\"blurb\":\"Orders it up on anything red.\",\"prompt\":\"You bid too often and enjoy it. You are cheerful about being euchred and insufferable about a march. You never explain your reasoning.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.8,\"risk\":0.75,\"chattiness\":0.75,\"temperature\":0.7,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"}]",
+						"[\"Marge\",\"Dutch\",\"Verna\"]",
+						2,
+						1,
+						1,
+						1,
+						2,
+						0,
+						27,
+						18,
+						12000,
+						3400,
+						50000,
+						61,
+						1762819200000,
+						1762819200000
+					],
+					"rows": []
+				}
+			]
+		},
+		{
+			"kind": "match",
+			"raw": {
+				"schema": 1,
+				"matchId": "m_foxtrot",
+				"userId": "user_7f3a",
+				"seed": "seed-base",
+				"cfg": {
+					"deckVariant": "24",
+					"gameTo": 10,
+					"stickTheDealer": true,
+					"requireNaturalTrump": false,
+					"loner": "makerOnly",
+					"defendAlone": false,
+					"superEuchre": false,
+					"farmersHand": "off",
+					"railroading": false,
+					"dealerMustHoldTrump": false,
+					"misdealLimit": 3
+				},
+				"firstDealer": 1,
+				"startedAt": 1762732800000,
+				"endedAt": 1762732860000,
+				"status": "abandoned",
+				"outcome": "abandoned",
+				"score": [
+					2,
+					0
+				],
+				"winnerTeam": null,
+				"handsPlayed": 1,
+				"personas": [],
+				"stats": {
+					"euchresFor": 2,
+					"euchresAgainst": 1,
+					"lonersAttempted": 1,
+					"lonersMade": 1,
+					"marches": 2,
+					"throwIns": 0,
+					"tricks": {
+						"0": 27,
+						"1": 18
+					}
+				},
+				"tokens": {
+					"tokensIn": 12000,
+					"tokensOut": 3400,
+					"cacheReadTokens": 50000,
+					"calls": 61
+				}
+			},
+			"now": 1762819200000,
+			"record": "{\"schema\":1,\"matchId\":\"m_foxtrot\",\"userId\":\"user_7f3a\",\"seed\":\"seed-base\",\"cfg\":{\"deckVariant\":\"24\",\"gameTo\":10,\"stickTheDealer\":true,\"requireNaturalTrump\":false,\"loner\":\"makerOnly\",\"defendAlone\":false,\"superEuchre\":false,\"farmersHand\":\"off\",\"railroading\":false,\"dealerMustHoldTrump\":false,\"misdealLimit\":3},\"firstDealer\":1,\"startedAt\":1762732800000,\"endedAt\":1762732860000,\"status\":\"abandoned\",\"outcome\":\"abandoned\",\"score\":[2,0],\"winnerTeam\":null,\"handsPlayed\":1,\"personas\":[],\"stats\":{\"euchresFor\":2,\"euchresAgainst\":1,\"lonersAttempted\":1,\"lonersMade\":1,\"marches\":2,\"throwIns\":0,\"tricks\":[27,18]},\"tokens\":{\"tokensIn\":12000,\"tokensOut\":3400,\"cacheReadTokens\":50000,\"calls\":61}}",
+			"outcome": "{\"matchId\":\"m_foxtrot\",\"inserted\":true,\"updated\":false}",
+			"calls": [
+				{
+					"sql": "SELECT ended_at FROM matches WHERE match_id = ? LIMIT 1",
+					"args": [
+						"m_foxtrot"
+					],
+					"rows": []
+				},
+				{
+					"sql": "INSERT INTO matches (match_id, schema, user_id, seed, cfg_json, first_dealer, started_at, ended_at, played_at, status, outcome, score_us, score_them, winner_team, hands_played, personas_json, opponents_json, euchres_for, euchres_against, loners_attempted, loners_made, marches, throw_ins, tricks_us, tricks_them, tokens_in, tokens_out, cache_read_tokens, llm_calls, recorded_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n\t\t\t\tON CONFLICT(match_id) DO NOTHING",
+					"args": [
+						"m_foxtrot",
+						1,
+						"user_7f3a",
+						"seed-base",
+						"{\"deckVariant\":\"24\",\"gameTo\":10,\"stickTheDealer\":true,\"requireNaturalTrump\":false,\"loner\":\"makerOnly\",\"defendAlone\":false,\"superEuchre\":false,\"farmersHand\":\"off\",\"railroading\":false,\"dealerMustHoldTrump\":false,\"misdealLimit\":3}",
+						1,
+						1762732800000,
+						1762732860000,
+						1762732860000,
+						"abandoned",
+						"abandoned",
+						2,
+						0,
+						null,
+						1,
+						"[]",
+						"[\"\",\"\",\"\"]",
+						2,
+						1,
+						1,
+						1,
+						2,
+						0,
+						27,
+						18,
+						12000,
+						3400,
+						50000,
+						61,
+						1762819200000,
+						1762819200000
+					],
+					"rows": []
+				}
+			]
+		},
+		{
+			"kind": "match",
+			"raw": {
+				"schema": 1,
+				"matchId": "m_golf",
+				"userId": "user_7f3a",
+				"seed": "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss",
+				"cfg": {
+					"deckVariant": "24",
+					"gameTo": 10,
+					"stickTheDealer": true,
+					"requireNaturalTrump": false,
+					"loner": "makerOnly",
+					"defendAlone": false,
+					"superEuchre": false,
+					"farmersHand": "off",
+					"railroading": false,
+					"dealerMustHoldTrump": false,
+					"misdealLimit": 3
+				},
+				"firstDealer": 1,
+				"startedAt": 1762646400000,
+				"endedAt": 1762646400000,
+				"status": "complete",
+				"outcome": "won",
+				"score": [
+					10,
+					9
+				],
+				"winnerTeam": 0,
+				"handsPlayed": 12,
+				"personas": [
+					{
+						"seat": 1,
+						"persona": {
+							"id": "marge",
+							"version": 1,
+							"name": "Marge",
+							"blurb": "Counts every card and lets you know it.",
+							"prompt": "You have played in this kitchen for thirty years. You are precise, patient, and faintly amused by anybody who bids on three small trump. You speak in short sentences.",
+							"housePrompt": "This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.",
+							"difficulty": "expert",
+							"aggression": 0.35,
+							"risk": 0.25,
+							"chattiness": 0.4,
+							"temperature": 0.5,
+							"modelId": "claude-haiku-4-5",
+							"bidModelId": "claude-opus-5"
+						},
+						"dossier": ""
+					},
+					{
+						"seat": 2,
+						"persona": {
+							"id": "dutch",
+							"version": 1,
+							"name": "Dutch",
+							"blurb": "Your partner. Steady, and slightly deaf.",
+							"prompt": "You are the player’s partner. You are steady, encouraging and never second-guess a call out loud. When you are pleased you say so in four words or fewer.",
+							"housePrompt": "This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.",
+							"difficulty": "casual",
+							"aggression": 0.5,
+							"risk": 0.45,
+							"chattiness": 0.5,
+							"temperature": 0.6,
+							"modelId": "claude-haiku-4-5",
+							"bidModelId": "claude-opus-5"
+						},
+						"dossier": ""
+					},
+					{
+						"seat": 3,
+						"persona": {
+							"id": "verna",
+							"version": 1,
+							"name": "Verna",
+							"blurb": "Orders it up on anything red.",
+							"prompt": "You bid too often and enjoy it. You are cheerful about being euchred and insufferable about a march. You never explain your reasoning.",
+							"housePrompt": "This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.",
+							"difficulty": "casual",
+							"aggression": 0.8,
+							"risk": 0.75,
+							"chattiness": 0.75,
+							"temperature": 0.7,
+							"modelId": "claude-haiku-4-5",
+							"bidModelId": "claude-opus-5"
+						},
+						"dossier": ""
+					}
+				],
+				"stats": {
+					"euchresFor": 2,
+					"euchresAgainst": 1,
+					"lonersAttempted": 1,
+					"lonersMade": 1,
+					"marches": 2,
+					"throwIns": 0,
+					"tricks": {
+						"0": 27,
+						"1": 18
+					}
+				},
+				"tokens": {
+					"tokensIn": 12000,
+					"tokensOut": 3400,
+					"cacheReadTokens": 50000,
+					"calls": 61
+				}
+			},
+			"now": 1762819200000,
+			"record": "{\"schema\":1,\"matchId\":\"m_golf\",\"userId\":\"user_7f3a\",\"seed\":\"ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss\",\"cfg\":{\"deckVariant\":\"24\",\"gameTo\":10,\"stickTheDealer\":true,\"requireNaturalTrump\":false,\"loner\":\"makerOnly\",\"defendAlone\":false,\"superEuchre\":false,\"farmersHand\":\"off\",\"railroading\":false,\"dealerMustHoldTrump\":false,\"misdealLimit\":3},\"firstDealer\":1,\"startedAt\":1762646400000,\"endedAt\":1762646400000,\"status\":\"complete\",\"outcome\":\"won\",\"score\":[10,9],\"winnerTeam\":0,\"handsPlayed\":12,\"personas\":[{\"seat\":1,\"persona\":{\"id\":\"marge\",\"version\":1,\"name\":\"Marge\",\"blurb\":\"Counts every card and lets you know it.\",\"prompt\":\"You have played in this kitchen for thirty years. You are precise, patient, and faintly amused by anybody who bids on three small trump. You speak in short sentences.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"expert\",\"aggression\":0.35,\"risk\":0.25,\"chattiness\":0.4,\"temperature\":0.5,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":2,\"persona\":{\"id\":\"dutch\",\"version\":1,\"name\":\"Dutch\",\"blurb\":\"Your partner. Steady, and slightly deaf.\",\"prompt\":\"You are the player’s partner. You are steady, encouraging and never second-guess a call out loud. When you are pleased you say so in four words or fewer.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.5,\"risk\":0.45,\"chattiness\":0.5,\"temperature\":0.6,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":3,\"persona\":{\"id\":\"verna\",\"version\":1,\"name\":\"Verna\",\"blurb\":\"Orders it up on anything red.\",\"prompt\":\"You bid too often and enjoy it. You are cheerful about being euchred and insufferable about a march. You never explain your reasoning.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.8,\"risk\":0.75,\"chattiness\":0.75,\"temperature\":0.7,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"}],\"stats\":{\"euchresFor\":2,\"euchresAgainst\":1,\"lonersAttempted\":1,\"lonersMade\":1,\"marches\":2,\"throwIns\":0,\"tricks\":[27,18]},\"tokens\":{\"tokensIn\":12000,\"tokensOut\":3400,\"cacheReadTokens\":50000,\"calls\":61}}",
+			"outcome": "{\"matchId\":\"m_golf\",\"inserted\":true,\"updated\":false}",
+			"calls": [
+				{
+					"sql": "SELECT ended_at FROM matches WHERE match_id = ? LIMIT 1",
+					"args": [
+						"m_golf"
+					],
+					"rows": []
+				},
+				{
+					"sql": "INSERT INTO matches (match_id, schema, user_id, seed, cfg_json, first_dealer, started_at, ended_at, played_at, status, outcome, score_us, score_them, winner_team, hands_played, personas_json, opponents_json, euchres_for, euchres_against, loners_attempted, loners_made, marches, throw_ins, tricks_us, tricks_them, tokens_in, tokens_out, cache_read_tokens, llm_calls, recorded_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n\t\t\t\tON CONFLICT(match_id) DO NOTHING",
+					"args": [
+						"m_golf",
+						1,
+						"user_7f3a",
+						"ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss",
+						"{\"deckVariant\":\"24\",\"gameTo\":10,\"stickTheDealer\":true,\"requireNaturalTrump\":false,\"loner\":\"makerOnly\",\"defendAlone\":false,\"superEuchre\":false,\"farmersHand\":\"off\",\"railroading\":false,\"dealerMustHoldTrump\":false,\"misdealLimit\":3}",
+						1,
+						1762646400000,
+						1762646400000,
+						1762646400000,
+						"complete",
+						"won",
+						10,
+						9,
+						0,
+						12,
+						"[{\"seat\":1,\"persona\":{\"id\":\"marge\",\"version\":1,\"name\":\"Marge\",\"blurb\":\"Counts every card and lets you know it.\",\"prompt\":\"You have played in this kitchen for thirty years. You are precise, patient, and faintly amused by anybody who bids on three small trump. You speak in short sentences.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"expert\",\"aggression\":0.35,\"risk\":0.25,\"chattiness\":0.4,\"temperature\":0.5,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":2,\"persona\":{\"id\":\"dutch\",\"version\":1,\"name\":\"Dutch\",\"blurb\":\"Your partner. Steady, and slightly deaf.\",\"prompt\":\"You are the player’s partner. You are steady, encouraging and never second-guess a call out loud. When you are pleased you say so in four words or fewer.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.5,\"risk\":0.45,\"chattiness\":0.5,\"temperature\":0.6,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":3,\"persona\":{\"id\":\"verna\",\"version\":1,\"name\":\"Verna\",\"blurb\":\"Orders it up on anything red.\",\"prompt\":\"You bid too often and enjoy it. You are cheerful about being euchred and insufferable about a march. You never explain your reasoning.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.8,\"risk\":0.75,\"chattiness\":0.75,\"temperature\":0.7,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"}]",
+						"[\"Marge\",\"Dutch\",\"Verna\"]",
+						2,
+						1,
+						1,
+						1,
+						2,
+						0,
+						27,
+						18,
+						12000,
+						3400,
+						50000,
+						61,
+						1762819200000,
+						1762819200000
+					],
+					"rows": []
+				}
+			]
+		},
+		{
+			"kind": "match",
+			"raw": {
+				"schema": 1,
+				"matchId": "m_delta",
+				"userId": "user_7f3a",
+				"seed": "seed-base",
+				"cfg": {
+					"deckVariant": "24",
+					"gameTo": 10,
+					"stickTheDealer": true,
+					"requireNaturalTrump": false,
+					"loner": "makerOnly",
+					"defendAlone": false,
+					"superEuchre": false,
+					"farmersHand": "off",
+					"railroading": false,
+					"dealerMustHoldTrump": false,
+					"misdealLimit": 3
+				},
+				"firstDealer": 1,
+				"startedAt": 1762387200000,
+				"endedAt": null,
+				"status": "active",
+				"outcome": "abandoned",
+				"score": [
+					7,
+					4
+				],
+				"winnerTeam": null,
+				"handsPlayed": 6,
+				"personas": [
+					{
+						"seat": 1,
+						"persona": {
+							"id": "marge",
+							"version": 1,
+							"name": "Marge",
+							"blurb": "Counts every card and lets you know it.",
+							"prompt": "You have played in this kitchen for thirty years. You are precise, patient, and faintly amused by anybody who bids on three small trump. You speak in short sentences.",
+							"housePrompt": "This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.",
+							"difficulty": "expert",
+							"aggression": 0.35,
+							"risk": 0.25,
+							"chattiness": 0.4,
+							"temperature": 0.5,
+							"modelId": "claude-haiku-4-5",
+							"bidModelId": "claude-opus-5"
+						},
+						"dossier": ""
+					},
+					{
+						"seat": 2,
+						"persona": {
+							"id": "dutch",
+							"version": 1,
+							"name": "Dutch",
+							"blurb": "Your partner. Steady, and slightly deaf.",
+							"prompt": "You are the player’s partner. You are steady, encouraging and never second-guess a call out loud. When you are pleased you say so in four words or fewer.",
+							"housePrompt": "This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.",
+							"difficulty": "casual",
+							"aggression": 0.5,
+							"risk": 0.45,
+							"chattiness": 0.5,
+							"temperature": 0.6,
+							"modelId": "claude-haiku-4-5",
+							"bidModelId": "claude-opus-5"
+						},
+						"dossier": ""
+					},
+					{
+						"seat": 3,
+						"persona": {
+							"id": "verna",
+							"version": 1,
+							"name": "Verna",
+							"blurb": "Orders it up on anything red.",
+							"prompt": "You bid too often and enjoy it. You are cheerful about being euchred and insufferable about a march. You never explain your reasoning.",
+							"housePrompt": "This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.",
+							"difficulty": "casual",
+							"aggression": 0.8,
+							"risk": 0.75,
+							"chattiness": 0.75,
+							"temperature": 0.7,
+							"modelId": "claude-haiku-4-5",
+							"bidModelId": "claude-opus-5"
+						},
+						"dossier": ""
+					}
+				],
+				"stats": {
+					"euchresFor": 2,
+					"euchresAgainst": 1,
+					"lonersAttempted": 1,
+					"lonersMade": 1,
+					"marches": 2,
+					"throwIns": 0,
+					"tricks": {
+						"0": 27,
+						"1": 18
+					}
+				},
+				"tokens": {
+					"tokensIn": 12000,
+					"tokensOut": 3400,
+					"cacheReadTokens": 50000,
+					"calls": 61
+				}
+			},
+			"now": 1762819205000,
+			"record": "{\"schema\":1,\"matchId\":\"m_delta\",\"userId\":\"user_7f3a\",\"seed\":\"seed-base\",\"cfg\":{\"deckVariant\":\"24\",\"gameTo\":10,\"stickTheDealer\":true,\"requireNaturalTrump\":false,\"loner\":\"makerOnly\",\"defendAlone\":false,\"superEuchre\":false,\"farmersHand\":\"off\",\"railroading\":false,\"dealerMustHoldTrump\":false,\"misdealLimit\":3},\"firstDealer\":1,\"startedAt\":1762387200000,\"endedAt\":null,\"status\":\"active\",\"outcome\":\"abandoned\",\"score\":[7,4],\"winnerTeam\":null,\"handsPlayed\":6,\"personas\":[{\"seat\":1,\"persona\":{\"id\":\"marge\",\"version\":1,\"name\":\"Marge\",\"blurb\":\"Counts every card and lets you know it.\",\"prompt\":\"You have played in this kitchen for thirty years. You are precise, patient, and faintly amused by anybody who bids on three small trump. You speak in short sentences.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"expert\",\"aggression\":0.35,\"risk\":0.25,\"chattiness\":0.4,\"temperature\":0.5,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":2,\"persona\":{\"id\":\"dutch\",\"version\":1,\"name\":\"Dutch\",\"blurb\":\"Your partner. Steady, and slightly deaf.\",\"prompt\":\"You are the player’s partner. You are steady, encouraging and never second-guess a call out loud. When you are pleased you say so in four words or fewer.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.5,\"risk\":0.45,\"chattiness\":0.5,\"temperature\":0.6,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":3,\"persona\":{\"id\":\"verna\",\"version\":1,\"name\":\"Verna\",\"blurb\":\"Orders it up on anything red.\",\"prompt\":\"You bid too often and enjoy it. You are cheerful about being euchred and insufferable about a march. You never explain your reasoning.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.8,\"risk\":0.75,\"chattiness\":0.75,\"temperature\":0.7,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"}],\"stats\":{\"euchresFor\":2,\"euchresAgainst\":1,\"lonersAttempted\":1,\"lonersMade\":1,\"marches\":2,\"throwIns\":0,\"tricks\":[27,18]},\"tokens\":{\"tokensIn\":12000,\"tokensOut\":3400,\"cacheReadTokens\":50000,\"calls\":61}}",
+			"outcome": "{\"matchId\":\"m_delta\",\"inserted\":false,\"updated\":true}",
+			"calls": [
+				{
+					"sql": "SELECT ended_at FROM matches WHERE match_id = ? LIMIT 1",
+					"args": [
+						"m_delta"
+					],
+					"rows": [
+						{
+							"ended_at": null
+						}
+					]
+				},
+				{
+					"sql": "UPDATE matches SET schema = ?, user_id = ?, seed = ?, cfg_json = ?, first_dealer = ?, started_at = ?, ended_at = ?, played_at = ?, status = ?, outcome = ?, score_us = ?, score_them = ?, winner_team = ?, hands_played = ?, personas_json = ?, opponents_json = ?, euchres_for = ?, euchres_against = ?, loners_attempted = ?, loners_made = ?, marches = ?, throw_ins = ?, tricks_us = ?, tricks_them = ?, tokens_in = ?, tokens_out = ?, cache_read_tokens = ?, llm_calls = ?, updated_at = ? WHERE match_id = ? AND ended_at IS NULL",
+					"args": [
+						1,
+						"user_7f3a",
+						"seed-base",
+						"{\"deckVariant\":\"24\",\"gameTo\":10,\"stickTheDealer\":true,\"requireNaturalTrump\":false,\"loner\":\"makerOnly\",\"defendAlone\":false,\"superEuchre\":false,\"farmersHand\":\"off\",\"railroading\":false,\"dealerMustHoldTrump\":false,\"misdealLimit\":3}",
+						1,
+						1762387200000,
+						null,
+						1762387200000,
+						"active",
+						"abandoned",
+						7,
+						4,
+						null,
+						6,
+						"[{\"seat\":1,\"persona\":{\"id\":\"marge\",\"version\":1,\"name\":\"Marge\",\"blurb\":\"Counts every card and lets you know it.\",\"prompt\":\"You have played in this kitchen for thirty years. You are precise, patient, and faintly amused by anybody who bids on three small trump. You speak in short sentences.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"expert\",\"aggression\":0.35,\"risk\":0.25,\"chattiness\":0.4,\"temperature\":0.5,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":2,\"persona\":{\"id\":\"dutch\",\"version\":1,\"name\":\"Dutch\",\"blurb\":\"Your partner. Steady, and slightly deaf.\",\"prompt\":\"You are the player’s partner. You are steady, encouraging and never second-guess a call out loud. When you are pleased you say so in four words or fewer.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.5,\"risk\":0.45,\"chattiness\":0.5,\"temperature\":0.6,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":3,\"persona\":{\"id\":\"verna\",\"version\":1,\"name\":\"Verna\",\"blurb\":\"Orders it up on anything red.\",\"prompt\":\"You bid too often and enjoy it. You are cheerful about being euchred and insufferable about a march. You never explain your reasoning.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.8,\"risk\":0.75,\"chattiness\":0.75,\"temperature\":0.7,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"}]",
+						"[\"Marge\",\"Dutch\",\"Verna\"]",
+						2,
+						1,
+						1,
+						1,
+						2,
+						0,
+						27,
+						18,
+						12000,
+						3400,
+						50000,
+						61,
+						1762819205000,
+						"m_delta"
+					],
+					"rows": []
+				}
+			]
+		},
+		{
+			"kind": "match",
+			"raw": {
+				"schema": 1,
+				"matchId": "m_alpha",
+				"userId": "user_7f3a",
+				"seed": "seed-base",
+				"cfg": {
+					"deckVariant": "24",
+					"gameTo": 10,
+					"stickTheDealer": true,
+					"requireNaturalTrump": false,
+					"loner": "makerOnly",
+					"defendAlone": false,
+					"superEuchre": false,
+					"farmersHand": "off",
+					"railroading": false,
+					"dealerMustHoldTrump": false,
+					"misdealLimit": 3
+				},
+				"firstDealer": 1,
+				"startedAt": 1761955200000,
+				"endedAt": 1761957000000,
+				"status": "complete",
+				"outcome": "lost",
+				"score": [
+					1,
+					10
+				],
+				"winnerTeam": 0,
+				"handsPlayed": 9,
+				"personas": [
+					{
+						"seat": 1,
+						"persona": {
+							"id": "marge",
+							"version": 1,
+							"name": "Marge",
+							"blurb": "Counts every card and lets you know it.",
+							"prompt": "You have played in this kitchen for thirty years. You are precise, patient, and faintly amused by anybody who bids on three small trump. You speak in short sentences.",
+							"housePrompt": "This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.",
+							"difficulty": "expert",
+							"aggression": 0.35,
+							"risk": 0.25,
+							"chattiness": 0.4,
+							"temperature": 0.5,
+							"modelId": "claude-haiku-4-5",
+							"bidModelId": "claude-opus-5"
+						},
+						"dossier": ""
+					},
+					{
+						"seat": 2,
+						"persona": {
+							"id": "dutch",
+							"version": 1,
+							"name": "Dutch",
+							"blurb": "Your partner. Steady, and slightly deaf.",
+							"prompt": "You are the player’s partner. You are steady, encouraging and never second-guess a call out loud. When you are pleased you say so in four words or fewer.",
+							"housePrompt": "This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.",
+							"difficulty": "casual",
+							"aggression": 0.5,
+							"risk": 0.45,
+							"chattiness": 0.5,
+							"temperature": 0.6,
+							"modelId": "claude-haiku-4-5",
+							"bidModelId": "claude-opus-5"
+						},
+						"dossier": ""
+					},
+					{
+						"seat": 3,
+						"persona": {
+							"id": "verna",
+							"version": 1,
+							"name": "Verna",
+							"blurb": "Orders it up on anything red.",
+							"prompt": "You bid too often and enjoy it. You are cheerful about being euchred and insufferable about a march. You never explain your reasoning.",
+							"housePrompt": "This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.",
+							"difficulty": "casual",
+							"aggression": 0.8,
+							"risk": 0.75,
+							"chattiness": 0.75,
+							"temperature": 0.7,
+							"modelId": "claude-haiku-4-5",
+							"bidModelId": "claude-opus-5"
+						},
+						"dossier": ""
+					}
+				],
+				"stats": {
+					"euchresFor": 2,
+					"euchresAgainst": 1,
+					"lonersAttempted": 1,
+					"lonersMade": 1,
+					"marches": 2,
+					"throwIns": 0,
+					"tricks": {
+						"0": 27,
+						"1": 18
+					}
+				},
+				"tokens": {
+					"tokensIn": 12000,
+					"tokensOut": 3400,
+					"cacheReadTokens": 50000,
+					"calls": 61
+				}
+			},
+			"now": 1762819206000,
+			"record": "{\"schema\":1,\"matchId\":\"m_alpha\",\"userId\":\"user_7f3a\",\"seed\":\"seed-base\",\"cfg\":{\"deckVariant\":\"24\",\"gameTo\":10,\"stickTheDealer\":true,\"requireNaturalTrump\":false,\"loner\":\"makerOnly\",\"defendAlone\":false,\"superEuchre\":false,\"farmersHand\":\"off\",\"railroading\":false,\"dealerMustHoldTrump\":false,\"misdealLimit\":3},\"firstDealer\":1,\"startedAt\":1761955200000,\"endedAt\":1761957000000,\"status\":\"complete\",\"outcome\":\"lost\",\"score\":[1,10],\"winnerTeam\":0,\"handsPlayed\":9,\"personas\":[{\"seat\":1,\"persona\":{\"id\":\"marge\",\"version\":1,\"name\":\"Marge\",\"blurb\":\"Counts every card and lets you know it.\",\"prompt\":\"You have played in this kitchen for thirty years. You are precise, patient, and faintly amused by anybody who bids on three small trump. You speak in short sentences.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"expert\",\"aggression\":0.35,\"risk\":0.25,\"chattiness\":0.4,\"temperature\":0.5,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":2,\"persona\":{\"id\":\"dutch\",\"version\":1,\"name\":\"Dutch\",\"blurb\":\"Your partner. Steady, and slightly deaf.\",\"prompt\":\"You are the player’s partner. You are steady, encouraging and never second-guess a call out loud. When you are pleased you say so in four words or fewer.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.5,\"risk\":0.45,\"chattiness\":0.5,\"temperature\":0.6,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":3,\"persona\":{\"id\":\"verna\",\"version\":1,\"name\":\"Verna\",\"blurb\":\"Orders it up on anything red.\",\"prompt\":\"You bid too often and enjoy it. You are cheerful about being euchred and insufferable about a march. You never explain your reasoning.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.8,\"risk\":0.75,\"chattiness\":0.75,\"temperature\":0.7,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"}],\"stats\":{\"euchresFor\":2,\"euchresAgainst\":1,\"lonersAttempted\":1,\"lonersMade\":1,\"marches\":2,\"throwIns\":0,\"tricks\":[27,18]},\"tokens\":{\"tokensIn\":12000,\"tokensOut\":3400,\"cacheReadTokens\":50000,\"calls\":61}}",
+			"outcome": "{\"matchId\":\"m_alpha\",\"inserted\":false,\"updated\":false}",
+			"calls": [
+				{
+					"sql": "SELECT ended_at FROM matches WHERE match_id = ? LIMIT 1",
+					"args": [
+						"m_alpha"
+					],
+					"rows": [
+						{
+							"ended_at": 1761957000000
+						}
+					]
+				}
+			]
+		},
+		{
+			"kind": "hands",
+			"raw": [
+				{
+					"matchId": "m_alpha",
+					"handNo": 0,
+					"seed": "hand-seed-0",
+					"dealerSeat": 1,
+					"deckOrder": [
+						"9S",
+						"TS",
+						"JS",
+						"QS",
+						"KS",
+						"AS",
+						7,
+						null,
+						"9H"
+					],
+					"moves": [
+						{
+							"seat": 2,
+							"id": "a1",
+							"move": {
+								"t": "pass"
+							},
+							"kind": "ai",
+							"source": "llm"
+						},
+						{
+							"seat": 3,
+							"id": "a2",
+							"move": {
+								"t": "orderUp",
+								"alone": false
+							},
+							"kind": "ai"
+						},
+						{
+							"seat": 1,
+							"id": "a3",
+							"move": {
+								"t": "discard",
+								"card": "JH"
+							},
+							"kind": "ai"
+						},
+						{
+							"seat": 0,
+							"id": "a4",
+							"move": {
+								"t": "play",
+								"card": "AS"
+							},
+							"kind": "human"
+						},
+						{
+							"seat": 3,
+							"id": "a5",
+							"move": {
+								"t": "discard",
+								"card": "9D"
+							},
+							"kind": "ai",
+							"reason": "ai_timeout",
+							"source": "fallback"
+						},
+						{
+							"seat": 0,
+							"id": "a6",
+							"move": {
+								"t": "discard",
+								"card": "TC"
+							},
+							"kind": "human"
+						},
+						"not-an-action",
+						{
+							"seat": 2,
+							"move": "discard"
+						},
+						{
+							"seat": "0",
+							"move": {
+								"t": "discard"
+							}
+						},
+						{
+							"move": {
+								"t": "play",
+								"card": "KD",
+								"extra": {
+									"1": "x",
+									"z": 0.1
+								}
+							},
+							"seat": 1
+						}
+					],
+					"trump": "S",
+					"makerSeat": 3,
+					"aloneSeat": null,
+					"tricksWon": [
+						2,
+						3
+					],
+					"result": "point",
+					"delta": [
+						0,
+						1
+					],
+					"endedAt": 1761955500000
+				},
+				{
+					"handNo": 1,
+					"dealerSeat": 2,
+					"moves": [],
+					"trump": null,
+					"result": "throw_in",
+					"delta": null,
+					"endedAt": 1761955600000
+				},
+				{
+					"matchId": "m_alpha",
+					"handNo": 2,
+					"seed": 7,
+					"makerSeat": 0,
+					"aloneSeat": 0,
+					"trump": "H",
+					"tricksWon": [
+						5,
+						0
+					],
+					"result": "lone_march",
+					"delta": [
+						4,
+						0
+					],
+					"moves": [
+						{
+							"seat": 0,
+							"id": "b1",
+							"move": {
+								"t": "call",
+								"suit": "H",
+								"alone": true
+							},
+							"kind": "human"
+						}
+					]
+				}
+			],
+			"matchId": "m_alpha",
+			"rows": "[{\"matchId\":\"m_alpha\",\"handNo\":0,\"seed\":\"hand-seed-0\",\"dealerSeat\":1,\"deckOrder\":[\"9S\",\"TS\",\"JS\",\"QS\",\"KS\",\"AS\",\"9H\"],\"moves\":[{\"seat\":2,\"id\":\"a1\",\"move\":{\"t\":\"pass\"},\"kind\":\"ai\",\"source\":\"llm\"},{\"seat\":3,\"id\":\"a2\",\"move\":{\"t\":\"orderUp\",\"alone\":false},\"kind\":\"ai\"},{\"seat\":1,\"id\":\"a3\",\"move\":{\"t\":\"discard\",\"card\":\"JH\"},\"kind\":\"ai\"},{\"seat\":0,\"id\":\"a4\",\"move\":{\"t\":\"play\",\"card\":\"AS\"},\"kind\":\"human\"},{\"seat\":3,\"id\":\"a5\",\"move\":{\"t\":\"discard\",\"card\":\"9D\"},\"kind\":\"ai\",\"reason\":\"ai_timeout\",\"source\":\"fallback\"},{\"seat\":0,\"id\":\"a6\",\"move\":{\"t\":\"discard\",\"card\":\"TC\"},\"kind\":\"human\"},\"not-an-action\",{\"seat\":2,\"move\":\"discard\"},{\"seat\":\"0\",\"move\":{\"t\":\"discard\"}},{\"move\":{\"t\":\"play\",\"card\":\"KD\",\"extra\":{\"1\":\"x\",\"z\":0.1}},\"seat\":1}],\"trump\":\"S\",\"makerSeat\":3,\"aloneSeat\":null,\"tricksWon\":[2,3],\"result\":\"point\",\"delta\":[0,1],\"endedAt\":1761955500000},{\"matchId\":\"m_alpha\",\"handNo\":1,\"seed\":\"\",\"dealerSeat\":2,\"deckOrder\":[],\"moves\":[],\"trump\":null,\"makerSeat\":null,\"aloneSeat\":null,\"tricksWon\":[0,0],\"result\":\"throw_in\",\"delta\":null,\"endedAt\":1761955600000},{\"matchId\":\"m_alpha\",\"handNo\":2,\"seed\":\"\",\"dealerSeat\":0,\"deckOrder\":[],\"moves\":[{\"seat\":0,\"id\":\"b1\",\"move\":{\"t\":\"call\",\"suit\":\"H\",\"alone\":true},\"kind\":\"human\"}],\"trump\":\"H\",\"makerSeat\":0,\"aloneSeat\":0,\"tricksWon\":[5,0],\"result\":\"lone_march\",\"delta\":[4,0],\"endedAt\":0}]",
+			"calls": [
+				{
+					"sql": "INSERT INTO hands (match_id, hand_no, seed, dealer_seat, deck_order_json, moves_json, trump, maker_seat, alone_seat, tricks_us, tricks_them, result, delta_us, delta_them, ended_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n\t\t\t\t\tON CONFLICT(match_id, hand_no) DO NOTHING",
+					"args": [
+						"m_alpha",
+						0,
+						"hand-seed-0",
+						1,
+						"[\"9S\",\"TS\",\"JS\",\"QS\",\"KS\",\"AS\",\"9H\"]",
+						"[{\"seat\":2,\"id\":\"a1\",\"move\":{\"t\":\"pass\"},\"kind\":\"ai\",\"source\":\"llm\"},{\"seat\":3,\"id\":\"a2\",\"move\":{\"t\":\"orderUp\",\"alone\":false},\"kind\":\"ai\"},{\"seat\":1,\"id\":\"a3\",\"move\":{\"t\":\"discard\",\"card\":\"JH\"},\"kind\":\"ai\"},{\"seat\":0,\"id\":\"a4\",\"move\":{\"t\":\"play\",\"card\":\"AS\"},\"kind\":\"human\"},{\"seat\":3,\"id\":\"a5\",\"move\":{\"t\":\"discard\",\"card\":\"9D\"},\"kind\":\"ai\",\"reason\":\"ai_timeout\",\"source\":\"fallback\"},{\"seat\":0,\"id\":\"a6\",\"move\":{\"t\":\"discard\",\"card\":\"TC\"},\"kind\":\"human\"},\"not-an-action\",{\"seat\":2,\"move\":\"discard\"},{\"seat\":\"0\",\"move\":{\"t\":\"discard\"}},{\"move\":{\"t\":\"play\",\"card\":\"KD\",\"extra\":{\"1\":\"x\",\"z\":0.1}},\"seat\":1}]",
+						"S",
+						3,
+						null,
+						2,
+						3,
+						"point",
+						0,
+						1,
+						1761955500000
+					],
+					"rows": []
+				},
+				{
+					"sql": "INSERT INTO hands (match_id, hand_no, seed, dealer_seat, deck_order_json, moves_json, trump, maker_seat, alone_seat, tricks_us, tricks_them, result, delta_us, delta_them, ended_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n\t\t\t\t\tON CONFLICT(match_id, hand_no) DO NOTHING",
+					"args": [
+						"m_alpha",
+						1,
+						"",
+						2,
+						"[]",
+						"[]",
+						null,
+						null,
+						null,
+						0,
+						0,
+						"throw_in",
+						null,
+						null,
+						1761955600000
+					],
+					"rows": []
+				},
+				{
+					"sql": "INSERT INTO hands (match_id, hand_no, seed, dealer_seat, deck_order_json, moves_json, trump, maker_seat, alone_seat, tricks_us, tricks_them, result, delta_us, delta_them, ended_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n\t\t\t\t\tON CONFLICT(match_id, hand_no) DO NOTHING",
+					"args": [
+						"m_alpha",
+						2,
+						"",
+						0,
+						"[]",
+						"[{\"seat\":0,\"id\":\"b1\",\"move\":{\"t\":\"call\",\"suit\":\"H\",\"alone\":true},\"kind\":\"human\"}]",
+						"H",
+						0,
+						0,
+						5,
+						0,
+						"lone_march",
+						4,
+						0,
+						0
+					],
+					"rows": []
+				}
+			]
+		},
+		{
+			"kind": "hands",
+			"raw": null,
+			"matchId": "m_bravo",
+			"rows": "[{\"matchId\":\"m_bravo\",\"handNo\":0,\"seed\":\"\",\"dealerSeat\":0,\"deckOrder\":[],\"moves\":[{\"seat\":0,\"id\":\"c1\",\"move\":{\"t\":\"discard\",\"card\":\"9C\"},\"kind\":\"human\"}],\"trump\":\"D\",\"makerSeat\":0,\"aloneSeat\":null,\"tricksWon\":[3,2],\"result\":\"point\",\"delta\":[1,0],\"endedAt\":1762128000010}]",
+			"calls": [
+				{
+					"sql": "INSERT INTO hands (match_id, hand_no, seed, dealer_seat, deck_order_json, moves_json, trump, maker_seat, alone_seat, tricks_us, tricks_them, result, delta_us, delta_them, ended_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n\t\t\t\t\tON CONFLICT(match_id, hand_no) DO NOTHING",
+					"args": [
+						"m_bravo",
+						0,
+						"",
+						0,
+						"[]",
+						"[{\"seat\":0,\"id\":\"c1\",\"move\":{\"t\":\"discard\",\"card\":\"9C\"},\"kind\":\"human\"}]",
+						"D",
+						0,
+						null,
+						3,
+						2,
+						"point",
+						1,
+						0,
+						1762128000010
+					],
+					"rows": []
+				}
+			]
+		},
+		{
+			"kind": "episodes",
+			"raw": [
+				{
+					"role": "marge",
+					"matchId": "m_alpha",
+					"handNo": 0,
+					"kind": "bid",
+					"ts": 1760227200000,
+					"summary": "Ordered up on three small trump.",
+					"salience": 0.9
+				},
+				{
+					"role": "marge",
+					"matchId": "m_alpha",
+					"handNo": 1,
+					"kind": "euchre",
+					"ts": 1761523200000,
+					"summary": "Got euchred​ by the\nhuman.",
+					"salience": 0.6
+				},
+				{
+					"role": "marge",
+					"matchId": "m_bravo",
+					"handNo": 0,
+					"kind": "read",
+					"ts": 1761696000000,
+					"summary": "Human leads trump when strong.",
+					"salience": 0.5
+				},
+				{
+					"role": "marge",
+					"matchId": "m_bravo",
+					"handNo": 1,
+					"kind": "loner",
+					"ts": 1762646400000,
+					"summary": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+					"salience": 0.2
+				},
+				{
+					"role": "marge",
+					"matchId": "m_charlie",
+					"handNo": 0,
+					"kind": "play",
+					"ts": 1760399999999,
+					"summary": "Old but bright.",
+					"salience": "1.0"
+				},
+				{
+					"role": "marge",
+					"matchId": "m_charlie",
+					"handNo": 1,
+					"kind": "play",
+					"ts": 1761609600000,
+					"summary": "Exactly one half-life.",
+					"salience": 0.3
+				},
+				{
+					"role": "marge",
+					"matchId": "m_charlie",
+					"handNo": 2,
+					"kind": "bid",
+					"ts": 1761609600001,
+					"summary": "Just under one half-life.",
+					"salience": 0.3
+				},
+				{
+					"role": "marge",
+					"matchId": "m_echo",
+					"handNo": 0,
+					"kind": "read",
+					"ts": 1762905600000,
+					"summary": "From the future.",
+					"salience": 0.1
+				},
+				{
+					"role": "marge",
+					"matchId": "m_echo",
+					"handNo": 1,
+					"kind": "bid",
+					"ts": 1762732800000,
+					"summary": "Expired already.",
+					"salience": 1,
+					"expiresAt": 1762819199999
+				},
+				{
+					"role": "marge",
+					"matchId": "m_echo",
+					"handNo": 2,
+					"kind": "bid",
+					"ts": 1762560000000,
+					"summary": "No salience.",
+					"salience": true
+				},
+				{
+					"role": "dutch",
+					"matchId": "m_alpha",
+					"handNo": 0,
+					"kind": "play",
+					"ts": 1762560000000,
+					"summary": "Partner trusted the call.",
+					"salience": 2
+				},
+				{
+					"role": "verna",
+					"matchId": "m_alpha",
+					"handNo": 0,
+					"kind": "euchre",
+					"ts": 1762732800000,
+					"summary": "Loved the march.",
+					"salience": -0.5,
+					"expiresAt": 1797379200000
+				},
+				{
+					"role": "verna",
+					"matchId": "m_golf",
+					"handNo": 4,
+					"kind": "loner",
+					"summary": "Default ts.",
+					"salience": 0.75
+				}
+			],
+			"now": 1762819199000,
+			"rows": "[{\"episodeId\":\"marge.m_alpha.0.bid\",\"role\":\"marge\",\"matchId\":\"m_alpha\",\"handNo\":0,\"ts\":1760227200000,\"kind\":\"bid\",\"summary\":\"Ordered up on three small trump.\",\"salience\":0.9,\"expiresAt\":1768003200000},{\"episodeId\":\"marge.m_alpha.1.euchre\",\"role\":\"marge\",\"matchId\":\"m_alpha\",\"handNo\":1,\"ts\":1761523200000,\"kind\":\"euchre\",\"summary\":\"Got euchred by the human.\",\"salience\":0.6,\"expiresAt\":1769299200000},{\"episodeId\":\"marge.m_bravo.0.read\",\"role\":\"marge\",\"matchId\":\"m_bravo\",\"handNo\":0,\"ts\":1761696000000,\"kind\":\"read\",\"summary\":\"Human leads trump when strong.\",\"salience\":0.5,\"expiresAt\":1769472000000},{\"episodeId\":\"marge.m_bravo.1.loner\",\"role\":\"marge\",\"matchId\":\"m_bravo\",\"handNo\":1,\"ts\":1762646400000,\"kind\":\"loner\",\"summary\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"salience\":0.2,\"expiresAt\":1770422400000},{\"episodeId\":\"marge.m_charlie.0.play\",\"role\":\"marge\",\"matchId\":\"m_charlie\",\"handNo\":0,\"ts\":1760399999999,\"kind\":\"play\",\"summary\":\"Old but bright.\",\"salience\":1,\"expiresAt\":1768175999999},{\"episodeId\":\"marge.m_charlie.1.play\",\"role\":\"marge\",\"matchId\":\"m_charlie\",\"handNo\":1,\"ts\":1761609600000,\"kind\":\"play\",\"summary\":\"Exactly one half-life.\",\"salience\":0.3,\"expiresAt\":1769385600000},{\"episodeId\":\"marge.m_charlie.2.bid\",\"role\":\"marge\",\"matchId\":\"m_charlie\",\"handNo\":2,\"ts\":1761609600001,\"kind\":\"bid\",\"summary\":\"Just under one half-life.\",\"salience\":0.3,\"expiresAt\":1769385600001},{\"episodeId\":\"marge.m_echo.0.read\",\"role\":\"marge\",\"matchId\":\"m_echo\",\"handNo\":0,\"ts\":1762905600000,\"kind\":\"read\",\"summary\":\"From the future.\",\"salience\":0.1,\"expiresAt\":1770681600000},{\"episodeId\":\"marge.m_echo.1.bid\",\"role\":\"marge\",\"matchId\":\"m_echo\",\"handNo\":1,\"ts\":1762732800000,\"kind\":\"bid\",\"summary\":\"Expired already.\",\"salience\":1,\"expiresAt\":1762819199999},{\"episodeId\":\"marge.m_echo.2.bid\",\"role\":\"marge\",\"matchId\":\"m_echo\",\"handNo\":2,\"ts\":1762560000000,\"kind\":\"bid\",\"summary\":\"No salience.\",\"salience\":0,\"expiresAt\":1770336000000},{\"episodeId\":\"dutch.m_alpha.0.play\",\"role\":\"dutch\",\"matchId\":\"m_alpha\",\"handNo\":0,\"ts\":1762560000000,\"kind\":\"play\",\"summary\":\"Partner trusted the call.\",\"salience\":1,\"expiresAt\":1770336000000},{\"episodeId\":\"verna.m_alpha.0.euchre\",\"role\":\"verna\",\"matchId\":\"m_alpha\",\"handNo\":0,\"ts\":1762732800000,\"kind\":\"euchre\",\"summary\":\"Loved the march.\",\"salience\":0,\"expiresAt\":1797379200000},{\"episodeId\":\"verna.m_golf.4.loner\",\"role\":\"verna\",\"matchId\":\"m_golf\",\"handNo\":4,\"ts\":1762819199000,\"kind\":\"loner\",\"summary\":\"Default ts.\",\"salience\":0.75,\"expiresAt\":1770595199000}]",
+			"calls": [
+				{
+					"sql": "INSERT INTO episodes\n\t\t\t\t\t(episode_id, role, match_id, hand_no, ts, kind, summary, salience, expires_at)\n\t\t\t\t\tVALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)\n\t\t\t\t\tON CONFLICT(episode_id) DO NOTHING",
+					"args": [
+						"marge.m_alpha.0.bid",
+						"marge",
+						"m_alpha",
+						0,
+						1760227200000,
+						"bid",
+						"Ordered up on three small trump.",
+						0.9,
+						1768003200000
+					],
+					"rows": []
+				},
+				{
+					"sql": "INSERT INTO episodes\n\t\t\t\t\t(episode_id, role, match_id, hand_no, ts, kind, summary, salience, expires_at)\n\t\t\t\t\tVALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)\n\t\t\t\t\tON CONFLICT(episode_id) DO NOTHING",
+					"args": [
+						"marge.m_alpha.1.euchre",
+						"marge",
+						"m_alpha",
+						1,
+						1761523200000,
+						"euchre",
+						"Got euchred by the human.",
+						0.6,
+						1769299200000
+					],
+					"rows": []
+				},
+				{
+					"sql": "INSERT INTO episodes\n\t\t\t\t\t(episode_id, role, match_id, hand_no, ts, kind, summary, salience, expires_at)\n\t\t\t\t\tVALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)\n\t\t\t\t\tON CONFLICT(episode_id) DO NOTHING",
+					"args": [
+						"marge.m_bravo.0.read",
+						"marge",
+						"m_bravo",
+						0,
+						1761696000000,
+						"read",
+						"Human leads trump when strong.",
+						0.5,
+						1769472000000
+					],
+					"rows": []
+				},
+				{
+					"sql": "INSERT INTO episodes\n\t\t\t\t\t(episode_id, role, match_id, hand_no, ts, kind, summary, salience, expires_at)\n\t\t\t\t\tVALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)\n\t\t\t\t\tON CONFLICT(episode_id) DO NOTHING",
+					"args": [
+						"marge.m_bravo.1.loner",
+						"marge",
+						"m_bravo",
+						1,
+						1762646400000,
+						"loner",
+						"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+						0.2,
+						1770422400000
+					],
+					"rows": []
+				},
+				{
+					"sql": "INSERT INTO episodes\n\t\t\t\t\t(episode_id, role, match_id, hand_no, ts, kind, summary, salience, expires_at)\n\t\t\t\t\tVALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)\n\t\t\t\t\tON CONFLICT(episode_id) DO NOTHING",
+					"args": [
+						"marge.m_charlie.0.play",
+						"marge",
+						"m_charlie",
+						0,
+						1760399999999,
+						"play",
+						"Old but bright.",
+						1,
+						1768175999999
+					],
+					"rows": []
+				},
+				{
+					"sql": "INSERT INTO episodes\n\t\t\t\t\t(episode_id, role, match_id, hand_no, ts, kind, summary, salience, expires_at)\n\t\t\t\t\tVALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)\n\t\t\t\t\tON CONFLICT(episode_id) DO NOTHING",
+					"args": [
+						"marge.m_charlie.1.play",
+						"marge",
+						"m_charlie",
+						1,
+						1761609600000,
+						"play",
+						"Exactly one half-life.",
+						0.3,
+						1769385600000
+					],
+					"rows": []
+				},
+				{
+					"sql": "INSERT INTO episodes\n\t\t\t\t\t(episode_id, role, match_id, hand_no, ts, kind, summary, salience, expires_at)\n\t\t\t\t\tVALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)\n\t\t\t\t\tON CONFLICT(episode_id) DO NOTHING",
+					"args": [
+						"marge.m_charlie.2.bid",
+						"marge",
+						"m_charlie",
+						2,
+						1761609600001,
+						"bid",
+						"Just under one half-life.",
+						0.3,
+						1769385600001
+					],
+					"rows": []
+				},
+				{
+					"sql": "INSERT INTO episodes\n\t\t\t\t\t(episode_id, role, match_id, hand_no, ts, kind, summary, salience, expires_at)\n\t\t\t\t\tVALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)\n\t\t\t\t\tON CONFLICT(episode_id) DO NOTHING",
+					"args": [
+						"marge.m_echo.0.read",
+						"marge",
+						"m_echo",
+						0,
+						1762905600000,
+						"read",
+						"From the future.",
+						0.1,
+						1770681600000
+					],
+					"rows": []
+				},
+				{
+					"sql": "INSERT INTO episodes\n\t\t\t\t\t(episode_id, role, match_id, hand_no, ts, kind, summary, salience, expires_at)\n\t\t\t\t\tVALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)\n\t\t\t\t\tON CONFLICT(episode_id) DO NOTHING",
+					"args": [
+						"marge.m_echo.1.bid",
+						"marge",
+						"m_echo",
+						1,
+						1762732800000,
+						"bid",
+						"Expired already.",
+						1,
+						1762819199999
+					],
+					"rows": []
+				},
+				{
+					"sql": "INSERT INTO episodes\n\t\t\t\t\t(episode_id, role, match_id, hand_no, ts, kind, summary, salience, expires_at)\n\t\t\t\t\tVALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)\n\t\t\t\t\tON CONFLICT(episode_id) DO NOTHING",
+					"args": [
+						"marge.m_echo.2.bid",
+						"marge",
+						"m_echo",
+						2,
+						1762560000000,
+						"bid",
+						"No salience.",
+						0,
+						1770336000000
+					],
+					"rows": []
+				},
+				{
+					"sql": "INSERT INTO episodes\n\t\t\t\t\t(episode_id, role, match_id, hand_no, ts, kind, summary, salience, expires_at)\n\t\t\t\t\tVALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)\n\t\t\t\t\tON CONFLICT(episode_id) DO NOTHING",
+					"args": [
+						"dutch.m_alpha.0.play",
+						"dutch",
+						"m_alpha",
+						0,
+						1762560000000,
+						"play",
+						"Partner trusted the call.",
+						1,
+						1770336000000
+					],
+					"rows": []
+				},
+				{
+					"sql": "INSERT INTO episodes\n\t\t\t\t\t(episode_id, role, match_id, hand_no, ts, kind, summary, salience, expires_at)\n\t\t\t\t\tVALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)\n\t\t\t\t\tON CONFLICT(episode_id) DO NOTHING",
+					"args": [
+						"verna.m_alpha.0.euchre",
+						"verna",
+						"m_alpha",
+						0,
+						1762732800000,
+						"euchre",
+						"Loved the march.",
+						0,
+						1797379200000
+					],
+					"rows": []
+				},
+				{
+					"sql": "INSERT INTO episodes\n\t\t\t\t\t(episode_id, role, match_id, hand_no, ts, kind, summary, salience, expires_at)\n\t\t\t\t\tVALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)\n\t\t\t\t\tON CONFLICT(episode_id) DO NOTHING",
+					"args": [
+						"verna.m_golf.4.loner",
+						"verna",
+						"m_golf",
+						4,
+						1762819199000,
+						"loner",
+						"Default ts.",
+						0.75,
+						1770595199000
+					],
+					"rows": []
+				}
+			]
+		}
+	],
+	"lists": [
+		{
+			"req": {},
+			"limit": 20,
+			"ok": "{\"rows\":[{\"matchId\":\"m_foxtrot\",\"playedAt\":1762732860000,\"status\":\"abandoned\",\"outcome\":\"abandoned\",\"score\":[2,0],\"handsPlayed\":1,\"opponents\":[\"\",\"\",\"\"]},{\"matchId\":\"m_golf\",\"playedAt\":1762646400000,\"status\":\"complete\",\"outcome\":\"won\",\"score\":[10,9],\"handsPlayed\":12,\"opponents\":[\"Marge\",\"Dutch\",\"Verna\"]},{\"matchId\":\"m_echo\",\"playedAt\":1762388200000,\"status\":\"complete\",\"outcome\":\"lost\",\"score\":[0,10],\"handsPlayed\":6,\"opponents\":[\"Marge\",\"Dutch\",\"Verna\"]},{\"matchId\":\"m_charlie\",\"playedAt\":1762388200000,\"status\":\"complete\",\"outcome\":\"won\",\"score\":[10,7],\"handsPlayed\":9,\"opponents\":[\"Marge\",\"Dutch\",\"Verna\"]},{\"matchId\":\"m_delta\",\"playedAt\":1762387200000,\"status\":\"active\",\"outcome\":\"abandoned\",\"score\":[7,4],\"handsPlayed\":6,\"opponents\":[\"Marge\",\"Dutch\",\"Verna\"]},{\"matchId\":\"m_bravo\",\"playedAt\":1762130000000,\"status\":\"complete\",\"outcome\":\"lost\",\"score\":[6,10],\"handsPlayed\":9,\"opponents\":[\"Marge\",\"Dutch the Elder\",\"Verna\"]},{\"matchId\":\"m_alpha\",\"playedAt\":1761957000000,\"status\":\"complete\",\"outcome\":\"won\",\"score\":[10,7],\"handsPlayed\":9,\"opponents\":[\"Marge\",\"Dutch\",\"Verna\"]}],\"cursor\":null}",
+			"calls": [
+				{
+					"sql": "SELECT match_id, played_at, status, outcome, score_us, score_them, hands_played, opponents_json FROM matches\n\t\t\t\t\tORDER BY played_at DESC, match_id DESC\n\t\t\t\t\tLIMIT ?",
+					"args": [
+						21
+					],
+					"rows": [
+						{
+							"match_id": "m_foxtrot",
+							"played_at": 1762732860000,
+							"status": "abandoned",
+							"outcome": "abandoned",
+							"score_us": 2,
+							"score_them": 0,
+							"hands_played": 1,
+							"opponents_json": "[\"\",\"\",\"\"]"
+						},
+						{
+							"match_id": "m_golf",
+							"played_at": 1762646400000,
+							"status": "complete",
+							"outcome": "won",
+							"score_us": 10,
+							"score_them": 9,
+							"hands_played": 12,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						},
+						{
+							"match_id": "m_echo",
+							"played_at": 1762388200000,
+							"status": "complete",
+							"outcome": "lost",
+							"score_us": 0,
+							"score_them": 10,
+							"hands_played": 6,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						},
+						{
+							"match_id": "m_charlie",
+							"played_at": 1762388200000,
+							"status": "complete",
+							"outcome": "won",
+							"score_us": 10,
+							"score_them": 7,
+							"hands_played": 9,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						},
+						{
+							"match_id": "m_delta",
+							"played_at": 1762387200000,
+							"status": "active",
+							"outcome": "abandoned",
+							"score_us": 7,
+							"score_them": 4,
+							"hands_played": 6,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						},
+						{
+							"match_id": "m_bravo",
+							"played_at": 1762130000000,
+							"status": "complete",
+							"outcome": "lost",
+							"score_us": 6,
+							"score_them": 10,
+							"hands_played": 9,
+							"opponents_json": "[\"Marge\",\"Dutch the Elder\",\"Verna\"]"
+						},
+						{
+							"match_id": "m_alpha",
+							"played_at": 1761957000000,
+							"status": "complete",
+							"outcome": "won",
+							"score_us": 10,
+							"score_them": 7,
+							"hands_played": 9,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						}
+					]
+				}
+			]
+		},
+		{
+			"req": {
+				"limit": 2
+			},
+			"limit": 2,
+			"ok": "{\"rows\":[{\"matchId\":\"m_foxtrot\",\"playedAt\":1762732860000,\"status\":\"abandoned\",\"outcome\":\"abandoned\",\"score\":[2,0],\"handsPlayed\":1,\"opponents\":[\"\",\"\",\"\"]},{\"matchId\":\"m_golf\",\"playedAt\":1762646400000,\"status\":\"complete\",\"outcome\":\"won\",\"score\":[10,9],\"handsPlayed\":12,\"opponents\":[\"Marge\",\"Dutch\",\"Verna\"]}],\"cursor\":\"1762646400000:m_golf\"}",
+			"calls": [
+				{
+					"sql": "SELECT match_id, played_at, status, outcome, score_us, score_them, hands_played, opponents_json FROM matches\n\t\t\t\t\tORDER BY played_at DESC, match_id DESC\n\t\t\t\t\tLIMIT ?",
+					"args": [
+						3
+					],
+					"rows": [
+						{
+							"match_id": "m_foxtrot",
+							"played_at": 1762732860000,
+							"status": "abandoned",
+							"outcome": "abandoned",
+							"score_us": 2,
+							"score_them": 0,
+							"hands_played": 1,
+							"opponents_json": "[\"\",\"\",\"\"]"
+						},
+						{
+							"match_id": "m_golf",
+							"played_at": 1762646400000,
+							"status": "complete",
+							"outcome": "won",
+							"score_us": 10,
+							"score_them": 9,
+							"hands_played": 12,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						},
+						{
+							"match_id": "m_echo",
+							"played_at": 1762388200000,
+							"status": "complete",
+							"outcome": "lost",
+							"score_us": 0,
+							"score_them": 10,
+							"hands_played": 6,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						}
+					]
+				}
+			]
+		},
+		{
+			"req": {
+				"limit": 2,
+				"cursor": "1762388200000:m_echo"
+			},
+			"limit": 2,
+			"ok": "{\"rows\":[{\"matchId\":\"m_charlie\",\"playedAt\":1762388200000,\"status\":\"complete\",\"outcome\":\"won\",\"score\":[10,7],\"handsPlayed\":9,\"opponents\":[\"Marge\",\"Dutch\",\"Verna\"]},{\"matchId\":\"m_delta\",\"playedAt\":1762387200000,\"status\":\"active\",\"outcome\":\"abandoned\",\"score\":[7,4],\"handsPlayed\":6,\"opponents\":[\"Marge\",\"Dutch\",\"Verna\"]}],\"cursor\":\"1762387200000:m_delta\"}",
+			"calls": [
+				{
+					"sql": "SELECT match_id, played_at, status, outcome, score_us, score_them, hands_played, opponents_json FROM matches\n\t\t\t\t\tWHERE played_at < ? OR (played_at = ? AND match_id < ?)\n\t\t\t\t\tORDER BY played_at DESC, match_id DESC\n\t\t\t\t\tLIMIT ?",
+					"args": [
+						1762388200000,
+						1762388200000,
+						"m_echo",
+						3
+					],
+					"rows": [
+						{
+							"match_id": "m_charlie",
+							"played_at": 1762388200000,
+							"status": "complete",
+							"outcome": "won",
+							"score_us": 10,
+							"score_them": 7,
+							"hands_played": 9,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						},
+						{
+							"match_id": "m_delta",
+							"played_at": 1762387200000,
+							"status": "active",
+							"outcome": "abandoned",
+							"score_us": 7,
+							"score_them": 4,
+							"hands_played": 6,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						},
+						{
+							"match_id": "m_bravo",
+							"played_at": 1762130000000,
+							"status": "complete",
+							"outcome": "lost",
+							"score_us": 6,
+							"score_them": 10,
+							"hands_played": 9,
+							"opponents_json": "[\"Marge\",\"Dutch the Elder\",\"Verna\"]"
+						}
+					]
+				}
+			]
+		},
+		{
+			"req": {
+				"limit": 3,
+				"cursor": "1762388200000:m_charlie"
+			},
+			"limit": 3,
+			"ok": "{\"rows\":[{\"matchId\":\"m_delta\",\"playedAt\":1762387200000,\"status\":\"active\",\"outcome\":\"abandoned\",\"score\":[7,4],\"handsPlayed\":6,\"opponents\":[\"Marge\",\"Dutch\",\"Verna\"]},{\"matchId\":\"m_bravo\",\"playedAt\":1762130000000,\"status\":\"complete\",\"outcome\":\"lost\",\"score\":[6,10],\"handsPlayed\":9,\"opponents\":[\"Marge\",\"Dutch the Elder\",\"Verna\"]},{\"matchId\":\"m_alpha\",\"playedAt\":1761957000000,\"status\":\"complete\",\"outcome\":\"won\",\"score\":[10,7],\"handsPlayed\":9,\"opponents\":[\"Marge\",\"Dutch\",\"Verna\"]}],\"cursor\":null}",
+			"calls": [
+				{
+					"sql": "SELECT match_id, played_at, status, outcome, score_us, score_them, hands_played, opponents_json FROM matches\n\t\t\t\t\tWHERE played_at < ? OR (played_at = ? AND match_id < ?)\n\t\t\t\t\tORDER BY played_at DESC, match_id DESC\n\t\t\t\t\tLIMIT ?",
+					"args": [
+						1762388200000,
+						1762388200000,
+						"m_charlie",
+						4
+					],
+					"rows": [
+						{
+							"match_id": "m_delta",
+							"played_at": 1762387200000,
+							"status": "active",
+							"outcome": "abandoned",
+							"score_us": 7,
+							"score_them": 4,
+							"hands_played": 6,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						},
+						{
+							"match_id": "m_bravo",
+							"played_at": 1762130000000,
+							"status": "complete",
+							"outcome": "lost",
+							"score_us": 6,
+							"score_them": 10,
+							"hands_played": 9,
+							"opponents_json": "[\"Marge\",\"Dutch the Elder\",\"Verna\"]"
+						},
+						{
+							"match_id": "m_alpha",
+							"played_at": 1761957000000,
+							"status": "complete",
+							"outcome": "won",
+							"score_us": 10,
+							"score_them": 7,
+							"hands_played": 9,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						}
+					]
+				}
+			]
+		},
+		{
+			"req": {
+				"limit": 50,
+				"cursor": "1761957000000:m_alpha"
+			},
+			"limit": 50,
+			"ok": "{\"rows\":[],\"cursor\":null}",
+			"calls": [
+				{
+					"sql": "SELECT match_id, played_at, status, outcome, score_us, score_them, hands_played, opponents_json FROM matches\n\t\t\t\t\tWHERE played_at < ? OR (played_at = ? AND match_id < ?)\n\t\t\t\t\tORDER BY played_at DESC, match_id DESC\n\t\t\t\t\tLIMIT ?",
+					"args": [
+						1761957000000,
+						1761957000000,
+						"m_alpha",
+						51
+					],
+					"rows": []
+				}
+			]
+		},
+		{
+			"req": {
+				"limit": 1,
+				"cursor": ""
+			},
+			"limit": 1,
+			"ok": "{\"rows\":[{\"matchId\":\"m_foxtrot\",\"playedAt\":1762732860000,\"status\":\"abandoned\",\"outcome\":\"abandoned\",\"score\":[2,0],\"handsPlayed\":1,\"opponents\":[\"\",\"\",\"\"]}],\"cursor\":\"1762732860000:m_foxtrot\"}",
+			"calls": [
+				{
+					"sql": "SELECT match_id, played_at, status, outcome, score_us, score_them, hands_played, opponents_json FROM matches\n\t\t\t\t\tORDER BY played_at DESC, match_id DESC\n\t\t\t\t\tLIMIT ?",
+					"args": [
+						2
+					],
+					"rows": [
+						{
+							"match_id": "m_foxtrot",
+							"played_at": 1762732860000,
+							"status": "abandoned",
+							"outcome": "abandoned",
+							"score_us": 2,
+							"score_them": 0,
+							"hands_played": 1,
+							"opponents_json": "[\"\",\"\",\"\"]"
+						},
+						{
+							"match_id": "m_golf",
+							"played_at": 1762646400000,
+							"status": "complete",
+							"outcome": "won",
+							"score_us": 10,
+							"score_them": 9,
+							"hands_played": 12,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						}
+					]
+				}
+			]
+		},
+		{
+			"req": {
+				"limit": 1,
+				"cursor": null
+			},
+			"limit": 1,
+			"ok": "{\"rows\":[{\"matchId\":\"m_foxtrot\",\"playedAt\":1762732860000,\"status\":\"abandoned\",\"outcome\":\"abandoned\",\"score\":[2,0],\"handsPlayed\":1,\"opponents\":[\"\",\"\",\"\"]}],\"cursor\":\"1762732860000:m_foxtrot\"}",
+			"calls": [
+				{
+					"sql": "SELECT match_id, played_at, status, outcome, score_us, score_them, hands_played, opponents_json FROM matches\n\t\t\t\t\tORDER BY played_at DESC, match_id DESC\n\t\t\t\t\tLIMIT ?",
+					"args": [
+						2
+					],
+					"rows": [
+						{
+							"match_id": "m_foxtrot",
+							"played_at": 1762732860000,
+							"status": "abandoned",
+							"outcome": "abandoned",
+							"score_us": 2,
+							"score_them": 0,
+							"hands_played": 1,
+							"opponents_json": "[\"\",\"\",\"\"]"
+						},
+						{
+							"match_id": "m_golf",
+							"played_at": 1762646400000,
+							"status": "complete",
+							"outcome": "won",
+							"score_us": 10,
+							"score_them": 9,
+							"hands_played": 12,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						}
+					]
+				}
+			]
+		},
+		{
+			"req": {
+				"limit": 0.5
+			},
+			"limit": 1,
+			"ok": "{\"rows\":[{\"matchId\":\"m_foxtrot\",\"playedAt\":1762732860000,\"status\":\"abandoned\",\"outcome\":\"abandoned\",\"score\":[2,0],\"handsPlayed\":1,\"opponents\":[\"\",\"\",\"\"]}],\"cursor\":\"1762732860000:m_foxtrot\"}",
+			"calls": [
+				{
+					"sql": "SELECT match_id, played_at, status, outcome, score_us, score_them, hands_played, opponents_json FROM matches\n\t\t\t\t\tORDER BY played_at DESC, match_id DESC\n\t\t\t\t\tLIMIT ?",
+					"args": [
+						2
+					],
+					"rows": [
+						{
+							"match_id": "m_foxtrot",
+							"played_at": 1762732860000,
+							"status": "abandoned",
+							"outcome": "abandoned",
+							"score_us": 2,
+							"score_them": 0,
+							"hands_played": 1,
+							"opponents_json": "[\"\",\"\",\"\"]"
+						},
+						{
+							"match_id": "m_golf",
+							"played_at": 1762646400000,
+							"status": "complete",
+							"outcome": "won",
+							"score_us": 10,
+							"score_them": 9,
+							"hands_played": 12,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						}
+					]
+				}
+			]
+		},
+		{
+			"req": {
+				"limit": 999
+			},
+			"limit": 50,
+			"ok": "{\"rows\":[{\"matchId\":\"m_foxtrot\",\"playedAt\":1762732860000,\"status\":\"abandoned\",\"outcome\":\"abandoned\",\"score\":[2,0],\"handsPlayed\":1,\"opponents\":[\"\",\"\",\"\"]},{\"matchId\":\"m_golf\",\"playedAt\":1762646400000,\"status\":\"complete\",\"outcome\":\"won\",\"score\":[10,9],\"handsPlayed\":12,\"opponents\":[\"Marge\",\"Dutch\",\"Verna\"]},{\"matchId\":\"m_echo\",\"playedAt\":1762388200000,\"status\":\"complete\",\"outcome\":\"lost\",\"score\":[0,10],\"handsPlayed\":6,\"opponents\":[\"Marge\",\"Dutch\",\"Verna\"]},{\"matchId\":\"m_charlie\",\"playedAt\":1762388200000,\"status\":\"complete\",\"outcome\":\"won\",\"score\":[10,7],\"handsPlayed\":9,\"opponents\":[\"Marge\",\"Dutch\",\"Verna\"]},{\"matchId\":\"m_delta\",\"playedAt\":1762387200000,\"status\":\"active\",\"outcome\":\"abandoned\",\"score\":[7,4],\"handsPlayed\":6,\"opponents\":[\"Marge\",\"Dutch\",\"Verna\"]},{\"matchId\":\"m_bravo\",\"playedAt\":1762130000000,\"status\":\"complete\",\"outcome\":\"lost\",\"score\":[6,10],\"handsPlayed\":9,\"opponents\":[\"Marge\",\"Dutch the Elder\",\"Verna\"]},{\"matchId\":\"m_alpha\",\"playedAt\":1761957000000,\"status\":\"complete\",\"outcome\":\"won\",\"score\":[10,7],\"handsPlayed\":9,\"opponents\":[\"Marge\",\"Dutch\",\"Verna\"]}],\"cursor\":null}",
+			"calls": [
+				{
+					"sql": "SELECT match_id, played_at, status, outcome, score_us, score_them, hands_played, opponents_json FROM matches\n\t\t\t\t\tORDER BY played_at DESC, match_id DESC\n\t\t\t\t\tLIMIT ?",
+					"args": [
+						51
+					],
+					"rows": [
+						{
+							"match_id": "m_foxtrot",
+							"played_at": 1762732860000,
+							"status": "abandoned",
+							"outcome": "abandoned",
+							"score_us": 2,
+							"score_them": 0,
+							"hands_played": 1,
+							"opponents_json": "[\"\",\"\",\"\"]"
+						},
+						{
+							"match_id": "m_golf",
+							"played_at": 1762646400000,
+							"status": "complete",
+							"outcome": "won",
+							"score_us": 10,
+							"score_them": 9,
+							"hands_played": 12,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						},
+						{
+							"match_id": "m_echo",
+							"played_at": 1762388200000,
+							"status": "complete",
+							"outcome": "lost",
+							"score_us": 0,
+							"score_them": 10,
+							"hands_played": 6,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						},
+						{
+							"match_id": "m_charlie",
+							"played_at": 1762388200000,
+							"status": "complete",
+							"outcome": "won",
+							"score_us": 10,
+							"score_them": 7,
+							"hands_played": 9,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						},
+						{
+							"match_id": "m_delta",
+							"played_at": 1762387200000,
+							"status": "active",
+							"outcome": "abandoned",
+							"score_us": 7,
+							"score_them": 4,
+							"hands_played": 6,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						},
+						{
+							"match_id": "m_bravo",
+							"played_at": 1762130000000,
+							"status": "complete",
+							"outcome": "lost",
+							"score_us": 6,
+							"score_them": 10,
+							"hands_played": 9,
+							"opponents_json": "[\"Marge\",\"Dutch the Elder\",\"Verna\"]"
+						},
+						{
+							"match_id": "m_alpha",
+							"played_at": 1761957000000,
+							"status": "complete",
+							"outcome": "won",
+							"score_us": 10,
+							"score_them": 7,
+							"hands_played": 9,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						}
+					]
+				}
+			]
+		},
+		{
+			"req": {
+				"limit": "5"
+			},
+			"limit": 20,
+			"ok": "{\"rows\":[{\"matchId\":\"m_foxtrot\",\"playedAt\":1762732860000,\"status\":\"abandoned\",\"outcome\":\"abandoned\",\"score\":[2,0],\"handsPlayed\":1,\"opponents\":[\"\",\"\",\"\"]},{\"matchId\":\"m_golf\",\"playedAt\":1762646400000,\"status\":\"complete\",\"outcome\":\"won\",\"score\":[10,9],\"handsPlayed\":12,\"opponents\":[\"Marge\",\"Dutch\",\"Verna\"]},{\"matchId\":\"m_echo\",\"playedAt\":1762388200000,\"status\":\"complete\",\"outcome\":\"lost\",\"score\":[0,10],\"handsPlayed\":6,\"opponents\":[\"Marge\",\"Dutch\",\"Verna\"]},{\"matchId\":\"m_charlie\",\"playedAt\":1762388200000,\"status\":\"complete\",\"outcome\":\"won\",\"score\":[10,7],\"handsPlayed\":9,\"opponents\":[\"Marge\",\"Dutch\",\"Verna\"]},{\"matchId\":\"m_delta\",\"playedAt\":1762387200000,\"status\":\"active\",\"outcome\":\"abandoned\",\"score\":[7,4],\"handsPlayed\":6,\"opponents\":[\"Marge\",\"Dutch\",\"Verna\"]},{\"matchId\":\"m_bravo\",\"playedAt\":1762130000000,\"status\":\"complete\",\"outcome\":\"lost\",\"score\":[6,10],\"handsPlayed\":9,\"opponents\":[\"Marge\",\"Dutch the Elder\",\"Verna\"]},{\"matchId\":\"m_alpha\",\"playedAt\":1761957000000,\"status\":\"complete\",\"outcome\":\"won\",\"score\":[10,7],\"handsPlayed\":9,\"opponents\":[\"Marge\",\"Dutch\",\"Verna\"]}],\"cursor\":null}",
+			"calls": [
+				{
+					"sql": "SELECT match_id, played_at, status, outcome, score_us, score_them, hands_played, opponents_json FROM matches\n\t\t\t\t\tORDER BY played_at DESC, match_id DESC\n\t\t\t\t\tLIMIT ?",
+					"args": [
+						21
+					],
+					"rows": [
+						{
+							"match_id": "m_foxtrot",
+							"played_at": 1762732860000,
+							"status": "abandoned",
+							"outcome": "abandoned",
+							"score_us": 2,
+							"score_them": 0,
+							"hands_played": 1,
+							"opponents_json": "[\"\",\"\",\"\"]"
+						},
+						{
+							"match_id": "m_golf",
+							"played_at": 1762646400000,
+							"status": "complete",
+							"outcome": "won",
+							"score_us": 10,
+							"score_them": 9,
+							"hands_played": 12,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						},
+						{
+							"match_id": "m_echo",
+							"played_at": 1762388200000,
+							"status": "complete",
+							"outcome": "lost",
+							"score_us": 0,
+							"score_them": 10,
+							"hands_played": 6,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						},
+						{
+							"match_id": "m_charlie",
+							"played_at": 1762388200000,
+							"status": "complete",
+							"outcome": "won",
+							"score_us": 10,
+							"score_them": 7,
+							"hands_played": 9,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						},
+						{
+							"match_id": "m_delta",
+							"played_at": 1762387200000,
+							"status": "active",
+							"outcome": "abandoned",
+							"score_us": 7,
+							"score_them": 4,
+							"hands_played": 6,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						},
+						{
+							"match_id": "m_bravo",
+							"played_at": 1762130000000,
+							"status": "complete",
+							"outcome": "lost",
+							"score_us": 6,
+							"score_them": 10,
+							"hands_played": 9,
+							"opponents_json": "[\"Marge\",\"Dutch the Elder\",\"Verna\"]"
+						},
+						{
+							"match_id": "m_alpha",
+							"played_at": 1761957000000,
+							"status": "complete",
+							"outcome": "won",
+							"score_us": 10,
+							"score_them": 7,
+							"hands_played": 9,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						}
+					]
+				}
+			]
+		},
+		{
+			"req": {
+				"limit": -3
+			},
+			"limit": 1,
+			"ok": "{\"rows\":[{\"matchId\":\"m_foxtrot\",\"playedAt\":1762732860000,\"status\":\"abandoned\",\"outcome\":\"abandoned\",\"score\":[2,0],\"handsPlayed\":1,\"opponents\":[\"\",\"\",\"\"]}],\"cursor\":\"1762732860000:m_foxtrot\"}",
+			"calls": [
+				{
+					"sql": "SELECT match_id, played_at, status, outcome, score_us, score_them, hands_played, opponents_json FROM matches\n\t\t\t\t\tORDER BY played_at DESC, match_id DESC\n\t\t\t\t\tLIMIT ?",
+					"args": [
+						2
+					],
+					"rows": [
+						{
+							"match_id": "m_foxtrot",
+							"played_at": 1762732860000,
+							"status": "abandoned",
+							"outcome": "abandoned",
+							"score_us": 2,
+							"score_them": 0,
+							"hands_played": 1,
+							"opponents_json": "[\"\",\"\",\"\"]"
+						},
+						{
+							"match_id": "m_golf",
+							"played_at": 1762646400000,
+							"status": "complete",
+							"outcome": "won",
+							"score_us": 10,
+							"score_them": 9,
+							"hands_played": 12,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						}
+					]
+				}
+			]
+		},
+		{
+			"req": {
+				"cursor": 17
+			},
+			"limit": 20,
+			"error": {
+				"code": "internal_error",
+				"message": "cursor is not a string"
+			},
+			"calls": []
+		},
+		{
+			"req": {
+				"cursor": "11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+			},
+			"limit": 20,
+			"error": {
+				"code": "internal_error",
+				"message": "cursor is not a string"
+			},
+			"calls": []
+		},
+		{
+			"req": {
+				"cursor": ":m_alpha"
+			},
+			"limit": 20,
+			"error": {
+				"code": "internal_error",
+				"message": "cursor is malformed"
+			},
+			"calls": []
+		},
+		{
+			"req": {
+				"cursor": "no-separator"
+			},
+			"limit": 20,
+			"error": {
+				"code": "internal_error",
+				"message": "cursor is malformed"
+			},
+			"calls": []
+		},
+		{
+			"req": {
+				"cursor": "12a:m_alpha"
+			},
+			"limit": 20,
+			"error": {
+				"code": "internal_error",
+				"message": "cursor timestamp is malformed"
+			},
+			"calls": []
+		},
+		{
+			"req": {
+				"cursor": "1234567890123456:m_alpha"
+			},
+			"limit": 20,
+			"error": {
+				"code": "internal_error",
+				"message": "cursor timestamp is malformed"
+			},
+			"calls": []
+		},
+		{
+			"req": {
+				"cursor": "123:bad id"
+			},
+			"limit": 20,
+			"error": {
+				"code": "internal_error",
+				"message": "cursor must match /^[A-Za-z0-9_-]{1,128}$/"
+			},
+			"calls": []
+		},
+		{
+			"req": {
+				"cursor": "123:"
+			},
+			"limit": 20,
+			"error": {
+				"code": "internal_error",
+				"message": "cursor must match /^[A-Za-z0-9_-]{1,128}$/"
+			},
+			"calls": []
+		},
+		{
+			"req": {
+				"cursor": "123:m:alpha"
+			},
+			"limit": 20,
+			"error": {
+				"code": "internal_error",
+				"message": "cursor must match /^[A-Za-z0-9_-]{1,128}$/"
+			},
+			"calls": []
+		},
+		{
+			"req": {
+				"cursor": "000:m_alpha"
+			},
+			"limit": 20,
+			"ok": "{\"rows\":[],\"cursor\":null}",
+			"calls": [
+				{
+					"sql": "SELECT match_id, played_at, status, outcome, score_us, score_them, hands_played, opponents_json FROM matches\n\t\t\t\t\tWHERE played_at < ? OR (played_at = ? AND match_id < ?)\n\t\t\t\t\tORDER BY played_at DESC, match_id DESC\n\t\t\t\t\tLIMIT ?",
+					"args": [
+						0,
+						0,
+						"m_alpha",
+						21
+					],
+					"rows": []
+				}
+			]
+		}
+	],
+	"walk": [
+		{
+			"cursor": null,
+			"ok": "{\"rows\":[{\"matchId\":\"m_foxtrot\",\"playedAt\":1762732860000,\"status\":\"abandoned\",\"outcome\":\"abandoned\",\"score\":[2,0],\"handsPlayed\":1,\"opponents\":[\"\",\"\",\"\"]},{\"matchId\":\"m_golf\",\"playedAt\":1762646400000,\"status\":\"complete\",\"outcome\":\"won\",\"score\":[10,9],\"handsPlayed\":12,\"opponents\":[\"Marge\",\"Dutch\",\"Verna\"]}],\"cursor\":\"1762646400000:m_golf\"}",
+			"calls": [
+				{
+					"sql": "SELECT match_id, played_at, status, outcome, score_us, score_them, hands_played, opponents_json FROM matches\n\t\t\t\t\tORDER BY played_at DESC, match_id DESC\n\t\t\t\t\tLIMIT ?",
+					"args": [
+						3
+					],
+					"rows": [
+						{
+							"match_id": "m_foxtrot",
+							"played_at": 1762732860000,
+							"status": "abandoned",
+							"outcome": "abandoned",
+							"score_us": 2,
+							"score_them": 0,
+							"hands_played": 1,
+							"opponents_json": "[\"\",\"\",\"\"]"
+						},
+						{
+							"match_id": "m_golf",
+							"played_at": 1762646400000,
+							"status": "complete",
+							"outcome": "won",
+							"score_us": 10,
+							"score_them": 9,
+							"hands_played": 12,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						},
+						{
+							"match_id": "m_echo",
+							"played_at": 1762388200000,
+							"status": "complete",
+							"outcome": "lost",
+							"score_us": 0,
+							"score_them": 10,
+							"hands_played": 6,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						}
+					]
+				}
+			]
+		},
+		{
+			"cursor": "1762646400000:m_golf",
+			"ok": "{\"rows\":[{\"matchId\":\"m_echo\",\"playedAt\":1762388200000,\"status\":\"complete\",\"outcome\":\"lost\",\"score\":[0,10],\"handsPlayed\":6,\"opponents\":[\"Marge\",\"Dutch\",\"Verna\"]},{\"matchId\":\"m_charlie\",\"playedAt\":1762388200000,\"status\":\"complete\",\"outcome\":\"won\",\"score\":[10,7],\"handsPlayed\":9,\"opponents\":[\"Marge\",\"Dutch\",\"Verna\"]}],\"cursor\":\"1762388200000:m_charlie\"}",
+			"calls": [
+				{
+					"sql": "SELECT match_id, played_at, status, outcome, score_us, score_them, hands_played, opponents_json FROM matches\n\t\t\t\t\tWHERE played_at < ? OR (played_at = ? AND match_id < ?)\n\t\t\t\t\tORDER BY played_at DESC, match_id DESC\n\t\t\t\t\tLIMIT ?",
+					"args": [
+						1762646400000,
+						1762646400000,
+						"m_golf",
+						3
+					],
+					"rows": [
+						{
+							"match_id": "m_echo",
+							"played_at": 1762388200000,
+							"status": "complete",
+							"outcome": "lost",
+							"score_us": 0,
+							"score_them": 10,
+							"hands_played": 6,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						},
+						{
+							"match_id": "m_charlie",
+							"played_at": 1762388200000,
+							"status": "complete",
+							"outcome": "won",
+							"score_us": 10,
+							"score_them": 7,
+							"hands_played": 9,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						},
+						{
+							"match_id": "m_delta",
+							"played_at": 1762387200000,
+							"status": "active",
+							"outcome": "abandoned",
+							"score_us": 7,
+							"score_them": 4,
+							"hands_played": 6,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						}
+					]
+				}
+			]
+		},
+		{
+			"cursor": "1762388200000:m_charlie",
+			"ok": "{\"rows\":[{\"matchId\":\"m_delta\",\"playedAt\":1762387200000,\"status\":\"active\",\"outcome\":\"abandoned\",\"score\":[7,4],\"handsPlayed\":6,\"opponents\":[\"Marge\",\"Dutch\",\"Verna\"]},{\"matchId\":\"m_bravo\",\"playedAt\":1762130000000,\"status\":\"complete\",\"outcome\":\"lost\",\"score\":[6,10],\"handsPlayed\":9,\"opponents\":[\"Marge\",\"Dutch the Elder\",\"Verna\"]}],\"cursor\":\"1762130000000:m_bravo\"}",
+			"calls": [
+				{
+					"sql": "SELECT match_id, played_at, status, outcome, score_us, score_them, hands_played, opponents_json FROM matches\n\t\t\t\t\tWHERE played_at < ? OR (played_at = ? AND match_id < ?)\n\t\t\t\t\tORDER BY played_at DESC, match_id DESC\n\t\t\t\t\tLIMIT ?",
+					"args": [
+						1762388200000,
+						1762388200000,
+						"m_charlie",
+						3
+					],
+					"rows": [
+						{
+							"match_id": "m_delta",
+							"played_at": 1762387200000,
+							"status": "active",
+							"outcome": "abandoned",
+							"score_us": 7,
+							"score_them": 4,
+							"hands_played": 6,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						},
+						{
+							"match_id": "m_bravo",
+							"played_at": 1762130000000,
+							"status": "complete",
+							"outcome": "lost",
+							"score_us": 6,
+							"score_them": 10,
+							"hands_played": 9,
+							"opponents_json": "[\"Marge\",\"Dutch the Elder\",\"Verna\"]"
+						},
+						{
+							"match_id": "m_alpha",
+							"played_at": 1761957000000,
+							"status": "complete",
+							"outcome": "won",
+							"score_us": 10,
+							"score_them": 7,
+							"hands_played": 9,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						}
+					]
+				}
+			]
+		},
+		{
+			"cursor": "1762130000000:m_bravo",
+			"ok": "{\"rows\":[{\"matchId\":\"m_alpha\",\"playedAt\":1761957000000,\"status\":\"complete\",\"outcome\":\"won\",\"score\":[10,7],\"handsPlayed\":9,\"opponents\":[\"Marge\",\"Dutch\",\"Verna\"]}],\"cursor\":null}",
+			"calls": [
+				{
+					"sql": "SELECT match_id, played_at, status, outcome, score_us, score_them, hands_played, opponents_json FROM matches\n\t\t\t\t\tWHERE played_at < ? OR (played_at = ? AND match_id < ?)\n\t\t\t\t\tORDER BY played_at DESC, match_id DESC\n\t\t\t\t\tLIMIT ?",
+					"args": [
+						1762130000000,
+						1762130000000,
+						"m_bravo",
+						3
+					],
+					"rows": [
+						{
+							"match_id": "m_alpha",
+							"played_at": 1761957000000,
+							"status": "complete",
+							"outcome": "won",
+							"score_us": 10,
+							"score_them": 7,
+							"hands_played": 9,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]"
+						}
+					]
+				}
+			]
+		}
+	],
+	"replays": [
+		{
+			"matchId": "m_alpha",
+			"client": "{\"matchId\":\"m_alpha\",\"startedAt\":1761955200000,\"endedAt\":1761957000000,\"playedAt\":1761957000000,\"status\":\"complete\",\"outcome\":\"won\",\"score\":[10,7],\"winnerTeam\":0,\"handsPlayed\":9,\"opponents\":[\"Marge\",\"Dutch\",\"Verna\"],\"stats\":{\"euchresFor\":2,\"euchresAgainst\":1,\"lonersAttempted\":1,\"lonersMade\":1,\"marches\":2,\"throwIns\":0,\"tricks\":[27,18]},\"hands\":[{\"handNo\":0,\"dealerSeat\":1,\"trump\":\"S\",\"makerSeat\":3,\"aloneSeat\":null,\"tricksWon\":[2,3],\"result\":\"point\",\"delta\":[0,1],\"endedAt\":1761955500000,\"moves\":[{\"seat\":2,\"id\":\"a1\",\"move\":{\"t\":\"pass\"},\"kind\":\"ai\",\"source\":\"llm\"},{\"seat\":3,\"id\":\"a2\",\"move\":{\"t\":\"orderUp\",\"alone\":false},\"kind\":\"ai\"},{\"seat\":0,\"id\":\"a4\",\"move\":{\"t\":\"play\",\"card\":\"AS\"},\"kind\":\"human\"},{\"seat\":0,\"id\":\"a6\",\"move\":{\"t\":\"discard\",\"card\":\"TC\"},\"kind\":\"human\"},\"not-an-action\",{\"seat\":2,\"move\":\"discard\"},{\"move\":{\"t\":\"play\",\"card\":\"KD\",\"extra\":{\"1\":\"x\",\"z\":0.1}},\"seat\":1}]},{\"handNo\":1,\"dealerSeat\":2,\"trump\":null,\"makerSeat\":null,\"aloneSeat\":null,\"tricksWon\":[0,0],\"result\":\"throw_in\",\"delta\":null,\"endedAt\":1761955600000,\"moves\":[]},{\"handNo\":2,\"dealerSeat\":0,\"trump\":\"H\",\"makerSeat\":0,\"aloneSeat\":0,\"tricksWon\":[5,0],\"result\":\"lone_march\",\"delta\":[4,0],\"endedAt\":0,\"moves\":[{\"seat\":0,\"id\":\"b1\",\"move\":{\"t\":\"call\",\"suit\":\"H\",\"alone\":true},\"kind\":\"human\"}]}]}",
+			"clientCalls": [
+				{
+					"sql": "SELECT match_id, started_at, ended_at, played_at, status, outcome, score_us, score_them,\n\t\t\twinner_team, hands_played, opponents_json, euchres_for, euchres_against,\n\t\t\tloners_attempted, loners_made, marches, throw_ins, tricks_us, tricks_them\n\t\t\tFROM matches WHERE match_id = ? LIMIT 1",
+					"args": [
+						"m_alpha"
+					],
+					"rows": [
+						{
+							"match_id": "m_alpha",
+							"started_at": 1761955200000,
+							"ended_at": 1761957000000,
+							"played_at": 1761957000000,
+							"status": "complete",
+							"outcome": "won",
+							"score_us": 10,
+							"score_them": 7,
+							"winner_team": 0,
+							"hands_played": 9,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]",
+							"euchres_for": 2,
+							"euchres_against": 1,
+							"loners_attempted": 1,
+							"loners_made": 1,
+							"marches": 2,
+							"throw_ins": 0,
+							"tricks_us": 27,
+							"tricks_them": 18
+						}
+					]
+				},
+				{
+					"sql": "SELECT hand_no, dealer_seat, moves_json, trump, maker_seat, alone_seat,\n\t\t\ttricks_us, tricks_them, result, delta_us, delta_them, ended_at\n\t\t\tFROM hands WHERE match_id = ? ORDER BY hand_no ASC",
+					"args": [
+						"m_alpha"
+					],
+					"rows": [
+						{
+							"hand_no": 0,
+							"dealer_seat": 1,
+							"moves_json": "[{\"seat\":2,\"id\":\"a1\",\"move\":{\"t\":\"pass\"},\"kind\":\"ai\",\"source\":\"llm\"},{\"seat\":3,\"id\":\"a2\",\"move\":{\"t\":\"orderUp\",\"alone\":false},\"kind\":\"ai\"},{\"seat\":1,\"id\":\"a3\",\"move\":{\"t\":\"discard\",\"card\":\"JH\"},\"kind\":\"ai\"},{\"seat\":0,\"id\":\"a4\",\"move\":{\"t\":\"play\",\"card\":\"AS\"},\"kind\":\"human\"},{\"seat\":3,\"id\":\"a5\",\"move\":{\"t\":\"discard\",\"card\":\"9D\"},\"kind\":\"ai\",\"reason\":\"ai_timeout\",\"source\":\"fallback\"},{\"seat\":0,\"id\":\"a6\",\"move\":{\"t\":\"discard\",\"card\":\"TC\"},\"kind\":\"human\"},\"not-an-action\",{\"seat\":2,\"move\":\"discard\"},{\"seat\":\"0\",\"move\":{\"t\":\"discard\"}},{\"move\":{\"t\":\"play\",\"card\":\"KD\",\"extra\":{\"1\":\"x\",\"z\":0.1}},\"seat\":1}]",
+							"trump": "S",
+							"maker_seat": 3,
+							"alone_seat": null,
+							"tricks_us": 2,
+							"tricks_them": 3,
+							"result": "point",
+							"delta_us": 0,
+							"delta_them": 1,
+							"ended_at": 1761955500000
+						},
+						{
+							"hand_no": 1,
+							"dealer_seat": 2,
+							"moves_json": "[]",
+							"trump": null,
+							"maker_seat": null,
+							"alone_seat": null,
+							"tricks_us": 0,
+							"tricks_them": 0,
+							"result": "throw_in",
+							"delta_us": null,
+							"delta_them": null,
+							"ended_at": 1761955600000
+						},
+						{
+							"hand_no": 2,
+							"dealer_seat": 0,
+							"moves_json": "[{\"seat\":0,\"id\":\"b1\",\"move\":{\"t\":\"call\",\"suit\":\"H\",\"alone\":true},\"kind\":\"human\"}]",
+							"trump": "H",
+							"maker_seat": 0,
+							"alone_seat": 0,
+							"tricks_us": 5,
+							"tricks_them": 0,
+							"result": "lone_march",
+							"delta_us": 4,
+							"delta_them": 0,
+							"ended_at": 0
+						}
+					]
+				}
+			],
+			"server": "{\"match\":{\"schema\":1,\"matchId\":\"m_alpha\",\"userId\":\"user_7f3a\",\"seed\":\"seed-base\",\"cfg\":{\"deckVariant\":\"24\",\"gameTo\":10,\"stickTheDealer\":true,\"requireNaturalTrump\":false,\"loner\":\"makerOnly\",\"defendAlone\":false,\"superEuchre\":false,\"farmersHand\":\"off\",\"railroading\":false,\"dealerMustHoldTrump\":false,\"misdealLimit\":3},\"firstDealer\":1,\"startedAt\":1761955200000,\"endedAt\":1761957000000,\"status\":\"complete\",\"outcome\":\"won\",\"score\":[10,7],\"winnerTeam\":0,\"handsPlayed\":9,\"personas\":[{\"seat\":1,\"persona\":{\"id\":\"marge\",\"version\":1,\"name\":\"Marge\",\"blurb\":\"Counts every card and lets you know it.\",\"prompt\":\"You have played in this kitchen for thirty years. You are precise, patient, and faintly amused by anybody who bids on three small trump. You speak in short sentences.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"expert\",\"aggression\":0.35,\"risk\":0.25,\"chattiness\":0.4,\"temperature\":0.5,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":2,\"persona\":{\"id\":\"dutch\",\"version\":1,\"name\":\"Dutch\",\"blurb\":\"Your partner. Steady, and slightly deaf.\",\"prompt\":\"You are the player’s partner. You are steady, encouraging and never second-guess a call out loud. When you are pleased you say so in four words or fewer.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.5,\"risk\":0.45,\"chattiness\":0.5,\"temperature\":0.6,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":3,\"persona\":{\"id\":\"verna\",\"version\":1,\"name\":\"Verna\",\"blurb\":\"Orders it up on anything red.\",\"prompt\":\"You bid too often and enjoy it. You are cheerful about being euchred and insufferable about a march. You never explain your reasoning.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.8,\"risk\":0.75,\"chattiness\":0.75,\"temperature\":0.7,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"}],\"stats\":{\"euchresFor\":2,\"euchresAgainst\":1,\"lonersAttempted\":1,\"lonersMade\":1,\"marches\":2,\"throwIns\":0,\"tricks\":[27,18]},\"tokens\":{\"tokensIn\":12000,\"tokensOut\":3400,\"cacheReadTokens\":50000,\"calls\":61}},\"hands\":[{\"matchId\":\"m_alpha\",\"handNo\":0,\"seed\":\"hand-seed-0\",\"dealerSeat\":1,\"deckOrder\":[\"9S\",\"TS\",\"JS\",\"QS\",\"KS\",\"AS\",\"9H\"],\"moves\":[{\"seat\":2,\"id\":\"a1\",\"move\":{\"t\":\"pass\"},\"kind\":\"ai\",\"source\":\"llm\"},{\"seat\":3,\"id\":\"a2\",\"move\":{\"t\":\"orderUp\",\"alone\":false},\"kind\":\"ai\"},{\"seat\":1,\"id\":\"a3\",\"move\":{\"t\":\"discard\",\"card\":\"JH\"},\"kind\":\"ai\"},{\"seat\":0,\"id\":\"a4\",\"move\":{\"t\":\"play\",\"card\":\"AS\"},\"kind\":\"human\"},{\"seat\":3,\"id\":\"a5\",\"move\":{\"t\":\"discard\",\"card\":\"9D\"},\"kind\":\"ai\",\"reason\":\"ai_timeout\",\"source\":\"fallback\"},{\"seat\":0,\"id\":\"a6\",\"move\":{\"t\":\"discard\",\"card\":\"TC\"},\"kind\":\"human\"},\"not-an-action\",{\"seat\":2,\"move\":\"discard\"},{\"seat\":\"0\",\"move\":{\"t\":\"discard\"}},{\"move\":{\"t\":\"play\",\"card\":\"KD\",\"extra\":{\"1\":\"x\",\"z\":0.1}},\"seat\":1}],\"trump\":\"S\",\"makerSeat\":3,\"aloneSeat\":null,\"tricksWon\":[2,3],\"result\":\"point\",\"delta\":[0,1],\"endedAt\":1761955500000},{\"matchId\":\"m_alpha\",\"handNo\":1,\"seed\":\"\",\"dealerSeat\":2,\"deckOrder\":[],\"moves\":[],\"trump\":null,\"makerSeat\":null,\"aloneSeat\":null,\"tricksWon\":[0,0],\"result\":\"throw_in\",\"delta\":null,\"endedAt\":1761955600000},{\"matchId\":\"m_alpha\",\"handNo\":2,\"seed\":\"\",\"dealerSeat\":0,\"deckOrder\":[],\"moves\":[{\"seat\":0,\"id\":\"b1\",\"move\":{\"t\":\"call\",\"suit\":\"H\",\"alone\":true},\"kind\":\"human\"}],\"trump\":\"H\",\"makerSeat\":0,\"aloneSeat\":0,\"tricksWon\":[5,0],\"result\":\"lone_march\",\"delta\":[4,0],\"endedAt\":0}]}",
+			"serverCalls": [
+				{
+					"sql": "SELECT * FROM matches WHERE match_id = ? LIMIT 1",
+					"args": [
+						"m_alpha"
+					],
+					"rows": [
+						{
+							"match_id": "m_alpha",
+							"schema": 1,
+							"user_id": "user_7f3a",
+							"seed": "seed-base",
+							"cfg_json": "{\"deckVariant\":\"24\",\"gameTo\":10,\"stickTheDealer\":true,\"requireNaturalTrump\":false,\"loner\":\"makerOnly\",\"defendAlone\":false,\"superEuchre\":false,\"farmersHand\":\"off\",\"railroading\":false,\"dealerMustHoldTrump\":false,\"misdealLimit\":3}",
+							"first_dealer": 1,
+							"started_at": 1761955200000,
+							"ended_at": 1761957000000,
+							"played_at": 1761957000000,
+							"status": "complete",
+							"outcome": "won",
+							"score_us": 10,
+							"score_them": 7,
+							"winner_team": 0,
+							"hands_played": 9,
+							"personas_json": "[{\"seat\":1,\"persona\":{\"id\":\"marge\",\"version\":1,\"name\":\"Marge\",\"blurb\":\"Counts every card and lets you know it.\",\"prompt\":\"You have played in this kitchen for thirty years. You are precise, patient, and faintly amused by anybody who bids on three small trump. You speak in short sentences.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"expert\",\"aggression\":0.35,\"risk\":0.25,\"chattiness\":0.4,\"temperature\":0.5,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":2,\"persona\":{\"id\":\"dutch\",\"version\":1,\"name\":\"Dutch\",\"blurb\":\"Your partner. Steady, and slightly deaf.\",\"prompt\":\"You are the player’s partner. You are steady, encouraging and never second-guess a call out loud. When you are pleased you say so in four words or fewer.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.5,\"risk\":0.45,\"chattiness\":0.5,\"temperature\":0.6,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":3,\"persona\":{\"id\":\"verna\",\"version\":1,\"name\":\"Verna\",\"blurb\":\"Orders it up on anything red.\",\"prompt\":\"You bid too often and enjoy it. You are cheerful about being euchred and insufferable about a march. You never explain your reasoning.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.8,\"risk\":0.75,\"chattiness\":0.75,\"temperature\":0.7,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"}]",
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]",
+							"euchres_for": 2,
+							"euchres_against": 1,
+							"loners_attempted": 1,
+							"loners_made": 1,
+							"marches": 2,
+							"throw_ins": 0,
+							"tricks_us": 27,
+							"tricks_them": 18,
+							"tokens_in": 12000,
+							"tokens_out": 3400,
+							"cache_read_tokens": 50000,
+							"llm_calls": 61,
+							"recorded_at": 1762819200000,
+							"updated_at": 1762819200000
+						}
+					]
+				},
+				{
+					"sql": "SELECT * FROM hands WHERE match_id = ? ORDER BY hand_no ASC",
+					"args": [
+						"m_alpha"
+					],
+					"rows": [
+						{
+							"match_id": "m_alpha",
+							"hand_no": 0,
+							"seed": "hand-seed-0",
+							"dealer_seat": 1,
+							"deck_order_json": "[\"9S\",\"TS\",\"JS\",\"QS\",\"KS\",\"AS\",\"9H\"]",
+							"moves_json": "[{\"seat\":2,\"id\":\"a1\",\"move\":{\"t\":\"pass\"},\"kind\":\"ai\",\"source\":\"llm\"},{\"seat\":3,\"id\":\"a2\",\"move\":{\"t\":\"orderUp\",\"alone\":false},\"kind\":\"ai\"},{\"seat\":1,\"id\":\"a3\",\"move\":{\"t\":\"discard\",\"card\":\"JH\"},\"kind\":\"ai\"},{\"seat\":0,\"id\":\"a4\",\"move\":{\"t\":\"play\",\"card\":\"AS\"},\"kind\":\"human\"},{\"seat\":3,\"id\":\"a5\",\"move\":{\"t\":\"discard\",\"card\":\"9D\"},\"kind\":\"ai\",\"reason\":\"ai_timeout\",\"source\":\"fallback\"},{\"seat\":0,\"id\":\"a6\",\"move\":{\"t\":\"discard\",\"card\":\"TC\"},\"kind\":\"human\"},\"not-an-action\",{\"seat\":2,\"move\":\"discard\"},{\"seat\":\"0\",\"move\":{\"t\":\"discard\"}},{\"move\":{\"t\":\"play\",\"card\":\"KD\",\"extra\":{\"1\":\"x\",\"z\":0.1}},\"seat\":1}]",
+							"trump": "S",
+							"maker_seat": 3,
+							"alone_seat": null,
+							"tricks_us": 2,
+							"tricks_them": 3,
+							"result": "point",
+							"delta_us": 0,
+							"delta_them": 1,
+							"ended_at": 1761955500000
+						},
+						{
+							"match_id": "m_alpha",
+							"hand_no": 1,
+							"seed": "",
+							"dealer_seat": 2,
+							"deck_order_json": "[]",
+							"moves_json": "[]",
+							"trump": null,
+							"maker_seat": null,
+							"alone_seat": null,
+							"tricks_us": 0,
+							"tricks_them": 0,
+							"result": "throw_in",
+							"delta_us": null,
+							"delta_them": null,
+							"ended_at": 1761955600000
+						},
+						{
+							"match_id": "m_alpha",
+							"hand_no": 2,
+							"seed": "",
+							"dealer_seat": 0,
+							"deck_order_json": "[]",
+							"moves_json": "[{\"seat\":0,\"id\":\"b1\",\"move\":{\"t\":\"call\",\"suit\":\"H\",\"alone\":true},\"kind\":\"human\"}]",
+							"trump": "H",
+							"maker_seat": 0,
+							"alone_seat": 0,
+							"tricks_us": 5,
+							"tricks_them": 0,
+							"result": "lone_march",
+							"delta_us": 4,
+							"delta_them": 0,
+							"ended_at": 0
+						}
+					]
+				}
+			]
+		},
+		{
+			"matchId": "m_bravo",
+			"client": "{\"matchId\":\"m_bravo\",\"startedAt\":1762128000000,\"endedAt\":1762130000000,\"playedAt\":1762130000000,\"status\":\"complete\",\"outcome\":\"lost\",\"score\":[6,10],\"winnerTeam\":1,\"handsPlayed\":9,\"opponents\":[\"Marge\",\"Dutch the Elder\",\"Verna\"],\"stats\":{\"euchresFor\":0,\"euchresAgainst\":3,\"lonersAttempted\":2,\"lonersMade\":0,\"marches\":1,\"throwIns\":2,\"tricks\":[0,0]},\"hands\":[{\"handNo\":0,\"dealerSeat\":0,\"trump\":\"D\",\"makerSeat\":0,\"aloneSeat\":null,\"tricksWon\":[3,2],\"result\":\"point\",\"delta\":[1,0],\"endedAt\":1762128000010,\"moves\":[{\"seat\":0,\"id\":\"c1\",\"move\":{\"t\":\"discard\",\"card\":\"9C\"},\"kind\":\"human\"}]}]}",
+			"clientCalls": [
+				{
+					"sql": "SELECT match_id, started_at, ended_at, played_at, status, outcome, score_us, score_them,\n\t\t\twinner_team, hands_played, opponents_json, euchres_for, euchres_against,\n\t\t\tloners_attempted, loners_made, marches, throw_ins, tricks_us, tricks_them\n\t\t\tFROM matches WHERE match_id = ? LIMIT 1",
+					"args": [
+						"m_bravo"
+					],
+					"rows": [
+						{
+							"match_id": "m_bravo",
+							"started_at": 1762128000000,
+							"ended_at": 1762130000000,
+							"played_at": 1762130000000,
+							"status": "complete",
+							"outcome": "lost",
+							"score_us": 6,
+							"score_them": 10,
+							"winner_team": 1,
+							"hands_played": 9,
+							"opponents_json": "[\"Marge\",\"Dutch the Elder\",\"Verna\"]",
+							"euchres_for": 0,
+							"euchres_against": 3,
+							"loners_attempted": 2,
+							"loners_made": 0,
+							"marches": 1,
+							"throw_ins": 2,
+							"tricks_us": 0,
+							"tricks_them": 0
+						}
+					]
+				},
+				{
+					"sql": "SELECT hand_no, dealer_seat, moves_json, trump, maker_seat, alone_seat,\n\t\t\ttricks_us, tricks_them, result, delta_us, delta_them, ended_at\n\t\t\tFROM hands WHERE match_id = ? ORDER BY hand_no ASC",
+					"args": [
+						"m_bravo"
+					],
+					"rows": [
+						{
+							"hand_no": 0,
+							"dealer_seat": 0,
+							"moves_json": "[{\"seat\":0,\"id\":\"c1\",\"move\":{\"t\":\"discard\",\"card\":\"9C\"},\"kind\":\"human\"}]",
+							"trump": "D",
+							"maker_seat": 0,
+							"alone_seat": null,
+							"tricks_us": 3,
+							"tricks_them": 2,
+							"result": "point",
+							"delta_us": 1,
+							"delta_them": 0,
+							"ended_at": 1762128000010
+						}
+					]
+				}
+			],
+			"server": "{\"match\":{\"schema\":1,\"matchId\":\"m_bravo\",\"userId\":\"user_7f3a\",\"seed\":\"seed-base\",\"cfg\":{\"deckVariant\":\"24\",\"gameTo\":10,\"stickTheDealer\":true,\"requireNaturalTrump\":false,\"loner\":\"makerOnly\",\"defendAlone\":false,\"superEuchre\":false,\"farmersHand\":\"off\",\"railroading\":false,\"dealerMustHoldTrump\":false,\"misdealLimit\":3},\"firstDealer\":1,\"startedAt\":1762128000000,\"endedAt\":1762130000000,\"status\":\"complete\",\"outcome\":\"lost\",\"score\":[6,10],\"winnerTeam\":1,\"handsPlayed\":9,\"personas\":[{\"seat\":1,\"persona\":{\"id\":\"marge\",\"version\":1,\"name\":\"Marge\",\"blurb\":\"Counts every card and lets you know it.\",\"prompt\":\"You have played in this kitchen for thirty years. You are precise, patient, and faintly amused by anybody who bids on three small trump. You speak in short sentences.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"expert\",\"aggression\":0.35,\"risk\":0.25,\"chattiness\":0.4,\"temperature\":0.5,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":2,\"persona\":{\"id\":\"dutch\",\"version\":1,\"name\":\"  Dutch​\\u0007  the   Elder  \",\"blurb\":\"Your partner. Steady, and slightly deaf.\",\"prompt\":\"You are the player’s partner. You are steady, encouraging and never second-guess a call out loud. When you are pleased you say so in four words or fewer.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.5,\"risk\":0.45,\"chattiness\":0.5,\"temperature\":0.6,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":3,\"persona\":{\"name\":\"Verna\"},\"dossier\":\"x\"}],\"stats\":{\"euchresFor\":0,\"euchresAgainst\":3,\"lonersAttempted\":2,\"lonersMade\":0,\"marches\":1,\"throwIns\":2,\"tricks\":[0,0]},\"tokens\":{\"tokensIn\":9000,\"tokensOut\":120,\"cacheReadTokens\":0,\"calls\":0}},\"hands\":[{\"matchId\":\"m_bravo\",\"handNo\":0,\"seed\":\"\",\"dealerSeat\":0,\"deckOrder\":[],\"moves\":[{\"seat\":0,\"id\":\"c1\",\"move\":{\"t\":\"discard\",\"card\":\"9C\"},\"kind\":\"human\"}],\"trump\":\"D\",\"makerSeat\":0,\"aloneSeat\":null,\"tricksWon\":[3,2],\"result\":\"point\",\"delta\":[1,0],\"endedAt\":1762128000010}]}",
+			"serverCalls": [
+				{
+					"sql": "SELECT * FROM matches WHERE match_id = ? LIMIT 1",
+					"args": [
+						"m_bravo"
+					],
+					"rows": [
+						{
+							"match_id": "m_bravo",
+							"schema": 1,
+							"user_id": "user_7f3a",
+							"seed": "seed-base",
+							"cfg_json": "{\"deckVariant\":\"24\",\"gameTo\":10,\"stickTheDealer\":true,\"requireNaturalTrump\":false,\"loner\":\"makerOnly\",\"defendAlone\":false,\"superEuchre\":false,\"farmersHand\":\"off\",\"railroading\":false,\"dealerMustHoldTrump\":false,\"misdealLimit\":3}",
+							"first_dealer": 1,
+							"started_at": 1762128000000,
+							"ended_at": 1762130000000,
+							"played_at": 1762130000000,
+							"status": "complete",
+							"outcome": "lost",
+							"score_us": 6,
+							"score_them": 10,
+							"winner_team": 1,
+							"hands_played": 9,
+							"personas_json": "[{\"seat\":1,\"persona\":{\"id\":\"marge\",\"version\":1,\"name\":\"Marge\",\"blurb\":\"Counts every card and lets you know it.\",\"prompt\":\"You have played in this kitchen for thirty years. You are precise, patient, and faintly amused by anybody who bids on three small trump. You speak in short sentences.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"expert\",\"aggression\":0.35,\"risk\":0.25,\"chattiness\":0.4,\"temperature\":0.5,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":2,\"persona\":{\"id\":\"dutch\",\"version\":1,\"name\":\"  Dutch​\\u0007  the   Elder  \",\"blurb\":\"Your partner. Steady, and slightly deaf.\",\"prompt\":\"You are the player’s partner. You are steady, encouraging and never second-guess a call out loud. When you are pleased you say so in four words or fewer.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.5,\"risk\":0.45,\"chattiness\":0.5,\"temperature\":0.6,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":3,\"persona\":{\"name\":\"Verna\"},\"dossier\":\"x\"}]",
+							"opponents_json": "[\"Marge\",\"Dutch the Elder\",\"Verna\"]",
+							"euchres_for": 0,
+							"euchres_against": 3,
+							"loners_attempted": 2,
+							"loners_made": 0,
+							"marches": 1,
+							"throw_ins": 2,
+							"tricks_us": 0,
+							"tricks_them": 0,
+							"tokens_in": 9000,
+							"tokens_out": 120,
+							"cache_read_tokens": 0,
+							"llm_calls": 0,
+							"recorded_at": 1762819200000,
+							"updated_at": 1762819200000
+						}
+					]
+				},
+				{
+					"sql": "SELECT * FROM hands WHERE match_id = ? ORDER BY hand_no ASC",
+					"args": [
+						"m_bravo"
+					],
+					"rows": [
+						{
+							"match_id": "m_bravo",
+							"hand_no": 0,
+							"seed": "",
+							"dealer_seat": 0,
+							"deck_order_json": "[]",
+							"moves_json": "[{\"seat\":0,\"id\":\"c1\",\"move\":{\"t\":\"discard\",\"card\":\"9C\"},\"kind\":\"human\"}]",
+							"trump": "D",
+							"maker_seat": 0,
+							"alone_seat": null,
+							"tricks_us": 3,
+							"tricks_them": 2,
+							"result": "point",
+							"delta_us": 1,
+							"delta_them": 0,
+							"ended_at": 1762128000010
+						}
+					]
+				}
+			]
+		},
+		{
+			"matchId": "m_delta",
+			"client": "{\"matchId\":\"m_delta\",\"startedAt\":1762387200000,\"endedAt\":null,\"playedAt\":1762387200000,\"status\":\"active\",\"outcome\":\"abandoned\",\"score\":[7,4],\"winnerTeam\":null,\"handsPlayed\":6,\"opponents\":[\"Marge\",\"Dutch\",\"Verna\"],\"stats\":{\"euchresFor\":2,\"euchresAgainst\":1,\"lonersAttempted\":1,\"lonersMade\":1,\"marches\":2,\"throwIns\":0,\"tricks\":[27,18]},\"hands\":[]}",
+			"clientCalls": [
+				{
+					"sql": "SELECT match_id, started_at, ended_at, played_at, status, outcome, score_us, score_them,\n\t\t\twinner_team, hands_played, opponents_json, euchres_for, euchres_against,\n\t\t\tloners_attempted, loners_made, marches, throw_ins, tricks_us, tricks_them\n\t\t\tFROM matches WHERE match_id = ? LIMIT 1",
+					"args": [
+						"m_delta"
+					],
+					"rows": [
+						{
+							"match_id": "m_delta",
+							"started_at": 1762387200000,
+							"ended_at": null,
+							"played_at": 1762387200000,
+							"status": "active",
+							"outcome": "abandoned",
+							"score_us": 7,
+							"score_them": 4,
+							"winner_team": null,
+							"hands_played": 6,
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]",
+							"euchres_for": 2,
+							"euchres_against": 1,
+							"loners_attempted": 1,
+							"loners_made": 1,
+							"marches": 2,
+							"throw_ins": 0,
+							"tricks_us": 27,
+							"tricks_them": 18
+						}
+					]
+				},
+				{
+					"sql": "SELECT hand_no, dealer_seat, moves_json, trump, maker_seat, alone_seat,\n\t\t\ttricks_us, tricks_them, result, delta_us, delta_them, ended_at\n\t\t\tFROM hands WHERE match_id = ? ORDER BY hand_no ASC",
+					"args": [
+						"m_delta"
+					],
+					"rows": []
+				}
+			],
+			"server": "{\"match\":{\"schema\":1,\"matchId\":\"m_delta\",\"userId\":\"user_7f3a\",\"seed\":\"seed-base\",\"cfg\":{\"deckVariant\":\"24\",\"gameTo\":10,\"stickTheDealer\":true,\"requireNaturalTrump\":false,\"loner\":\"makerOnly\",\"defendAlone\":false,\"superEuchre\":false,\"farmersHand\":\"off\",\"railroading\":false,\"dealerMustHoldTrump\":false,\"misdealLimit\":3},\"firstDealer\":1,\"startedAt\":1762387200000,\"endedAt\":null,\"status\":\"active\",\"outcome\":\"abandoned\",\"score\":[7,4],\"winnerTeam\":null,\"handsPlayed\":6,\"personas\":[{\"seat\":1,\"persona\":{\"id\":\"marge\",\"version\":1,\"name\":\"Marge\",\"blurb\":\"Counts every card and lets you know it.\",\"prompt\":\"You have played in this kitchen for thirty years. You are precise, patient, and faintly amused by anybody who bids on three small trump. You speak in short sentences.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"expert\",\"aggression\":0.35,\"risk\":0.25,\"chattiness\":0.4,\"temperature\":0.5,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":2,\"persona\":{\"id\":\"dutch\",\"version\":1,\"name\":\"Dutch\",\"blurb\":\"Your partner. Steady, and slightly deaf.\",\"prompt\":\"You are the player’s partner. You are steady, encouraging and never second-guess a call out loud. When you are pleased you say so in four words or fewer.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.5,\"risk\":0.45,\"chattiness\":0.5,\"temperature\":0.6,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":3,\"persona\":{\"id\":\"verna\",\"version\":1,\"name\":\"Verna\",\"blurb\":\"Orders it up on anything red.\",\"prompt\":\"You bid too often and enjoy it. You are cheerful about being euchred and insufferable about a march. You never explain your reasoning.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.8,\"risk\":0.75,\"chattiness\":0.75,\"temperature\":0.7,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"}],\"stats\":{\"euchresFor\":2,\"euchresAgainst\":1,\"lonersAttempted\":1,\"lonersMade\":1,\"marches\":2,\"throwIns\":0,\"tricks\":[27,18]},\"tokens\":{\"tokensIn\":12000,\"tokensOut\":3400,\"cacheReadTokens\":50000,\"calls\":61}},\"hands\":[]}",
+			"serverCalls": [
+				{
+					"sql": "SELECT * FROM matches WHERE match_id = ? LIMIT 1",
+					"args": [
+						"m_delta"
+					],
+					"rows": [
+						{
+							"match_id": "m_delta",
+							"schema": 1,
+							"user_id": "user_7f3a",
+							"seed": "seed-base",
+							"cfg_json": "{\"deckVariant\":\"24\",\"gameTo\":10,\"stickTheDealer\":true,\"requireNaturalTrump\":false,\"loner\":\"makerOnly\",\"defendAlone\":false,\"superEuchre\":false,\"farmersHand\":\"off\",\"railroading\":false,\"dealerMustHoldTrump\":false,\"misdealLimit\":3}",
+							"first_dealer": 1,
+							"started_at": 1762387200000,
+							"ended_at": null,
+							"played_at": 1762387200000,
+							"status": "active",
+							"outcome": "abandoned",
+							"score_us": 7,
+							"score_them": 4,
+							"winner_team": null,
+							"hands_played": 6,
+							"personas_json": "[{\"seat\":1,\"persona\":{\"id\":\"marge\",\"version\":1,\"name\":\"Marge\",\"blurb\":\"Counts every card and lets you know it.\",\"prompt\":\"You have played in this kitchen for thirty years. You are precise, patient, and faintly amused by anybody who bids on three small trump. You speak in short sentences.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"expert\",\"aggression\":0.35,\"risk\":0.25,\"chattiness\":0.4,\"temperature\":0.5,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":2,\"persona\":{\"id\":\"dutch\",\"version\":1,\"name\":\"Dutch\",\"blurb\":\"Your partner. Steady, and slightly deaf.\",\"prompt\":\"You are the player’s partner. You are steady, encouraging and never second-guess a call out loud. When you are pleased you say so in four words or fewer.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.5,\"risk\":0.45,\"chattiness\":0.5,\"temperature\":0.6,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"},{\"seat\":3,\"persona\":{\"id\":\"verna\",\"version\":1,\"name\":\"Verna\",\"blurb\":\"Orders it up on anything red.\",\"prompt\":\"You bid too often and enjoy it. You are cheerful about being euchred and insufferable about a march. You never explain your reasoning.\",\"housePrompt\":\"This is a friendly Thursday-night euchre game in somebody’s kitchen. Keep the table talk short, dry and good-natured. No coaching, no gloating that lasts.\",\"difficulty\":\"casual\",\"aggression\":0.8,\"risk\":0.75,\"chattiness\":0.75,\"temperature\":0.7,\"modelId\":\"claude-haiku-4-5\",\"bidModelId\":\"claude-opus-5\"},\"dossier\":\"\"}]",
+							"opponents_json": "[\"Marge\",\"Dutch\",\"Verna\"]",
+							"euchres_for": 2,
+							"euchres_against": 1,
+							"loners_attempted": 1,
+							"loners_made": 1,
+							"marches": 2,
+							"throw_ins": 0,
+							"tricks_us": 27,
+							"tricks_them": 18,
+							"tokens_in": 12000,
+							"tokens_out": 3400,
+							"cache_read_tokens": 50000,
+							"llm_calls": 61,
+							"recorded_at": 1762819200000,
+							"updated_at": 1762819205000
+						}
+					]
+				},
+				{
+					"sql": "SELECT * FROM hands WHERE match_id = ? ORDER BY hand_no ASC",
+					"args": [
+						"m_delta"
+					],
+					"rows": []
+				}
+			]
+		},
+		{
+			"matchId": "m_missing",
+			"client": "null",
+			"clientCalls": [
+				{
+					"sql": "SELECT match_id, started_at, ended_at, played_at, status, outcome, score_us, score_them,\n\t\t\twinner_team, hands_played, opponents_json, euchres_for, euchres_against,\n\t\t\tloners_attempted, loners_made, marches, throw_ins, tricks_us, tricks_them\n\t\t\tFROM matches WHERE match_id = ? LIMIT 1",
+					"args": [
+						"m_missing"
+					],
+					"rows": []
+				}
+			],
+			"server": "null",
+			"serverCalls": [
+				{
+					"sql": "SELECT * FROM matches WHERE match_id = ? LIMIT 1",
+					"args": [
+						"m_missing"
+					],
+					"rows": []
+				}
+			]
+		}
+	],
+	"stats": {
+		"now": 1762819200000,
+		"ok": "{\"matches\":7,\"won\":3,\"lost\":2,\"abandoned\":2,\"winRate\":0.6,\"euchresFor\":12,\"euchresAgainst\":9,\"lonersAttempted\":8,\"lonersMade\":6,\"marches\":13,\"throwIns\":2,\"handsPlayed\":52,\"tricks\":[162,108],\"tokens\":{\"tokensIn\":81000,\"tokensOut\":20520,\"cacheReadTokens\":300000,\"calls\":366},\"updatedAt\":1762819200000}",
+		"calls": [
+			{
+				"sql": "SELECT\n\t\t\tCOUNT(*) AS matches,\n\t\t\tCOALESCE(SUM(CASE WHEN outcome = 'won' THEN 1 ELSE 0 END), 0) AS won,\n\t\t\tCOALESCE(SUM(CASE WHEN outcome = 'lost' THEN 1 ELSE 0 END), 0) AS lost,\n\t\t\tCOALESCE(SUM(CASE WHEN outcome = 'abandoned' THEN 1 ELSE 0 END), 0) AS abandoned,\n\t\t\tCOALESCE(SUM(euchres_for), 0) AS euchres_for,\n\t\t\tCOALESCE(SUM(euchres_against), 0) AS euchres_against,\n\t\t\tCOALESCE(SUM(loners_attempted), 0) AS loners_attempted,\n\t\t\tCOALESCE(SUM(loners_made), 0) AS loners_made,\n\t\t\tCOALESCE(SUM(marches), 0) AS marches,\n\t\t\tCOALESCE(SUM(throw_ins), 0) AS throw_ins,\n\t\t\tCOALESCE(SUM(hands_played), 0) AS hands_played,\n\t\t\tCOALESCE(SUM(tricks_us), 0) AS tricks_us,\n\t\t\tCOALESCE(SUM(tricks_them), 0) AS tricks_them,\n\t\t\tCOALESCE(SUM(tokens_in), 0) AS tokens_in,\n\t\t\tCOALESCE(SUM(tokens_out), 0) AS tokens_out,\n\t\t\tCOALESCE(SUM(cache_read_tokens), 0) AS cache_read_tokens,\n\t\t\tCOALESCE(SUM(llm_calls), 0) AS llm_calls\n\t\t\tFROM matches",
+				"args": [],
+				"rows": [
+					{
+						"matches": 7,
+						"won": 3,
+						"lost": 2,
+						"abandoned": 2,
+						"euchres_for": 12,
+						"euchres_against": 9,
+						"loners_attempted": 8,
+						"loners_made": 6,
+						"marches": 13,
+						"throw_ins": 2,
+						"hands_played": 52,
+						"tricks_us": 162,
+						"tricks_them": 108,
+						"tokens_in": 81000,
+						"tokens_out": 20520,
+						"cache_read_tokens": 300000,
+						"llm_calls": 366
+					}
+				]
+			}
+		]
+	},
+	"ranked": [
+		{
+			"role": "marge",
+			"limit": 20,
+			"now": 1762819200000,
+			"ok": "[{\"episodeId\":\"marge.m_bravo.0.read\",\"role\":\"marge\",\"matchId\":\"m_bravo\",\"handNo\":0,\"ts\":1761696000000,\"kind\":\"read\",\"summary\":\"Human leads trump when strong.\",\"salience\":0.5,\"expiresAt\":1769472000000},{\"episodeId\":\"marge.m_charlie.2.bid\",\"role\":\"marge\",\"matchId\":\"m_charlie\",\"handNo\":2,\"ts\":1761609600001,\"kind\":\"bid\",\"summary\":\"Just under one half-life.\",\"salience\":0.3,\"expiresAt\":1769385600001},{\"episodeId\":\"marge.m_alpha.1.euchre\",\"role\":\"marge\",\"matchId\":\"m_alpha\",\"handNo\":1,\"ts\":1761523200000,\"kind\":\"euchre\",\"summary\":\"Got euchred by the human.\",\"salience\":0.6,\"expiresAt\":1769299200000},{\"episodeId\":\"marge.m_charlie.0.play\",\"role\":\"marge\",\"matchId\":\"m_charlie\",\"handNo\":0,\"ts\":1760399999999,\"kind\":\"play\",\"summary\":\"Old but bright.\",\"salience\":1,\"expiresAt\":1768175999999},{\"episodeId\":\"marge.m_alpha.0.bid\",\"role\":\"marge\",\"matchId\":\"m_alpha\",\"handNo\":0,\"ts\":1760227200000,\"kind\":\"bid\",\"summary\":\"Ordered up on three small trump.\",\"salience\":0.9,\"expiresAt\":1768003200000},{\"episodeId\":\"marge.m_bravo.1.loner\",\"role\":\"marge\",\"matchId\":\"m_bravo\",\"handNo\":1,\"ts\":1762646400000,\"kind\":\"loner\",\"summary\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"salience\":0.2,\"expiresAt\":1770422400000},{\"episodeId\":\"marge.m_charlie.1.play\",\"role\":\"marge\",\"matchId\":\"m_charlie\",\"handNo\":1,\"ts\":1761609600000,\"kind\":\"play\",\"summary\":\"Exactly one half-life.\",\"salience\":0.3,\"expiresAt\":1769385600000},{\"episodeId\":\"marge.m_echo.0.read\",\"role\":\"marge\",\"matchId\":\"m_echo\",\"handNo\":0,\"ts\":1762905600000,\"kind\":\"read\",\"summary\":\"From the future.\",\"salience\":0.1,\"expiresAt\":1770681600000},{\"episodeId\":\"marge.m_echo.2.bid\",\"role\":\"marge\",\"matchId\":\"m_echo\",\"handNo\":2,\"ts\":1762560000000,\"kind\":\"bid\",\"summary\":\"No salience.\",\"salience\":0,\"expiresAt\":1770336000000}]",
+			"candidates": [
+				{
+					"episode_id": "marge.m_echo.0.read",
+					"role": "marge",
+					"match_id": "m_echo",
+					"hand_no": 0,
+					"ts": 1762905600000,
+					"kind": "read",
+					"summary": "From the future.",
+					"salience": 0.1,
+					"expires_at": 1770681600000
+				},
+				{
+					"episode_id": "marge.m_bravo.1.loner",
+					"role": "marge",
+					"match_id": "m_bravo",
+					"hand_no": 1,
+					"ts": 1762646400000,
+					"kind": "loner",
+					"summary": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+					"salience": 0.2,
+					"expires_at": 1770422400000
+				},
+				{
+					"episode_id": "marge.m_echo.2.bid",
+					"role": "marge",
+					"match_id": "m_echo",
+					"hand_no": 2,
+					"ts": 1762560000000,
+					"kind": "bid",
+					"summary": "No salience.",
+					"salience": 0,
+					"expires_at": 1770336000000
+				},
+				{
+					"episode_id": "marge.m_bravo.0.read",
+					"role": "marge",
+					"match_id": "m_bravo",
+					"hand_no": 0,
+					"ts": 1761696000000,
+					"kind": "read",
+					"summary": "Human leads trump when strong.",
+					"salience": 0.5,
+					"expires_at": 1769472000000
+				},
+				{
+					"episode_id": "marge.m_charlie.2.bid",
+					"role": "marge",
+					"match_id": "m_charlie",
+					"hand_no": 2,
+					"ts": 1761609600001,
+					"kind": "bid",
+					"summary": "Just under one half-life.",
+					"salience": 0.3,
+					"expires_at": 1769385600001
+				},
+				{
+					"episode_id": "marge.m_charlie.1.play",
+					"role": "marge",
+					"match_id": "m_charlie",
+					"hand_no": 1,
+					"ts": 1761609600000,
+					"kind": "play",
+					"summary": "Exactly one half-life.",
+					"salience": 0.3,
+					"expires_at": 1769385600000
+				},
+				{
+					"episode_id": "marge.m_alpha.1.euchre",
+					"role": "marge",
+					"match_id": "m_alpha",
+					"hand_no": 1,
+					"ts": 1761523200000,
+					"kind": "euchre",
+					"summary": "Got euchred by the human.",
+					"salience": 0.6,
+					"expires_at": 1769299200000
+				},
+				{
+					"episode_id": "marge.m_charlie.0.play",
+					"role": "marge",
+					"match_id": "m_charlie",
+					"hand_no": 0,
+					"ts": 1760399999999,
+					"kind": "play",
+					"summary": "Old but bright.",
+					"salience": 1,
+					"expires_at": 1768175999999
+				},
+				{
+					"episode_id": "marge.m_alpha.0.bid",
+					"role": "marge",
+					"match_id": "m_alpha",
+					"hand_no": 0,
+					"ts": 1760227200000,
+					"kind": "bid",
+					"summary": "Ordered up on three small trump.",
+					"salience": 0.9,
+					"expires_at": 1768003200000
+				}
+			]
+		},
+		{
+			"role": "marge",
+			"limit": 3,
+			"now": 1762819200000,
+			"ok": "[{\"episodeId\":\"marge.m_bravo.0.read\",\"role\":\"marge\",\"matchId\":\"m_bravo\",\"handNo\":0,\"ts\":1761696000000,\"kind\":\"read\",\"summary\":\"Human leads trump when strong.\",\"salience\":0.5,\"expiresAt\":1769472000000},{\"episodeId\":\"marge.m_charlie.2.bid\",\"role\":\"marge\",\"matchId\":\"m_charlie\",\"handNo\":2,\"ts\":1761609600001,\"kind\":\"bid\",\"summary\":\"Just under one half-life.\",\"salience\":0.3,\"expiresAt\":1769385600001},{\"episodeId\":\"marge.m_alpha.1.euchre\",\"role\":\"marge\",\"matchId\":\"m_alpha\",\"handNo\":1,\"ts\":1761523200000,\"kind\":\"euchre\",\"summary\":\"Got euchred by the human.\",\"salience\":0.6,\"expiresAt\":1769299200000}]",
+			"candidates": [
+				{
+					"episode_id": "marge.m_echo.0.read",
+					"role": "marge",
+					"match_id": "m_echo",
+					"hand_no": 0,
+					"ts": 1762905600000,
+					"kind": "read",
+					"summary": "From the future.",
+					"salience": 0.1,
+					"expires_at": 1770681600000
+				},
+				{
+					"episode_id": "marge.m_bravo.1.loner",
+					"role": "marge",
+					"match_id": "m_bravo",
+					"hand_no": 1,
+					"ts": 1762646400000,
+					"kind": "loner",
+					"summary": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+					"salience": 0.2,
+					"expires_at": 1770422400000
+				},
+				{
+					"episode_id": "marge.m_echo.2.bid",
+					"role": "marge",
+					"match_id": "m_echo",
+					"hand_no": 2,
+					"ts": 1762560000000,
+					"kind": "bid",
+					"summary": "No salience.",
+					"salience": 0,
+					"expires_at": 1770336000000
+				},
+				{
+					"episode_id": "marge.m_bravo.0.read",
+					"role": "marge",
+					"match_id": "m_bravo",
+					"hand_no": 0,
+					"ts": 1761696000000,
+					"kind": "read",
+					"summary": "Human leads trump when strong.",
+					"salience": 0.5,
+					"expires_at": 1769472000000
+				},
+				{
+					"episode_id": "marge.m_charlie.2.bid",
+					"role": "marge",
+					"match_id": "m_charlie",
+					"hand_no": 2,
+					"ts": 1761609600001,
+					"kind": "bid",
+					"summary": "Just under one half-life.",
+					"salience": 0.3,
+					"expires_at": 1769385600001
+				},
+				{
+					"episode_id": "marge.m_charlie.1.play",
+					"role": "marge",
+					"match_id": "m_charlie",
+					"hand_no": 1,
+					"ts": 1761609600000,
+					"kind": "play",
+					"summary": "Exactly one half-life.",
+					"salience": 0.3,
+					"expires_at": 1769385600000
+				},
+				{
+					"episode_id": "marge.m_alpha.1.euchre",
+					"role": "marge",
+					"match_id": "m_alpha",
+					"hand_no": 1,
+					"ts": 1761523200000,
+					"kind": "euchre",
+					"summary": "Got euchred by the human.",
+					"salience": 0.6,
+					"expires_at": 1769299200000
+				},
+				{
+					"episode_id": "marge.m_charlie.0.play",
+					"role": "marge",
+					"match_id": "m_charlie",
+					"hand_no": 0,
+					"ts": 1760399999999,
+					"kind": "play",
+					"summary": "Old but bright.",
+					"salience": 1,
+					"expires_at": 1768175999999
+				},
+				{
+					"episode_id": "marge.m_alpha.0.bid",
+					"role": "marge",
+					"match_id": "m_alpha",
+					"hand_no": 0,
+					"ts": 1760227200000,
+					"kind": "bid",
+					"summary": "Ordered up on three small trump.",
+					"salience": 0.9,
+					"expires_at": 1768003200000
+				}
+			]
+		},
+		{
+			"role": "marge",
+			"limit": 20,
+			"now": 1765411200000,
+			"ok": "[{\"episodeId\":\"marge.m_alpha.1.euchre\",\"role\":\"marge\",\"matchId\":\"m_alpha\",\"handNo\":1,\"ts\":1761523200000,\"kind\":\"euchre\",\"summary\":\"Got euchred by the human.\",\"salience\":0.6,\"expiresAt\":1769299200000},{\"episodeId\":\"marge.m_bravo.0.read\",\"role\":\"marge\",\"matchId\":\"m_bravo\",\"handNo\":0,\"ts\":1761696000000,\"kind\":\"read\",\"summary\":\"Human leads trump when strong.\",\"salience\":0.5,\"expiresAt\":1769472000000},{\"episodeId\":\"marge.m_charlie.0.play\",\"role\":\"marge\",\"matchId\":\"m_charlie\",\"handNo\":0,\"ts\":1760399999999,\"kind\":\"play\",\"summary\":\"Old but bright.\",\"salience\":1,\"expiresAt\":1768175999999},{\"episodeId\":\"marge.m_alpha.0.bid\",\"role\":\"marge\",\"matchId\":\"m_alpha\",\"handNo\":0,\"ts\":1760227200000,\"kind\":\"bid\",\"summary\":\"Ordered up on three small trump.\",\"salience\":0.9,\"expiresAt\":1768003200000},{\"episodeId\":\"marge.m_bravo.1.loner\",\"role\":\"marge\",\"matchId\":\"m_bravo\",\"handNo\":1,\"ts\":1762646400000,\"kind\":\"loner\",\"summary\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"salience\":0.2,\"expiresAt\":1770422400000},{\"episodeId\":\"marge.m_charlie.2.bid\",\"role\":\"marge\",\"matchId\":\"m_charlie\",\"handNo\":2,\"ts\":1761609600001,\"kind\":\"bid\",\"summary\":\"Just under one half-life.\",\"salience\":0.3,\"expiresAt\":1769385600001},{\"episodeId\":\"marge.m_charlie.1.play\",\"role\":\"marge\",\"matchId\":\"m_charlie\",\"handNo\":1,\"ts\":1761609600000,\"kind\":\"play\",\"summary\":\"Exactly one half-life.\",\"salience\":0.3,\"expiresAt\":1769385600000},{\"episodeId\":\"marge.m_echo.0.read\",\"role\":\"marge\",\"matchId\":\"m_echo\",\"handNo\":0,\"ts\":1762905600000,\"kind\":\"read\",\"summary\":\"From the future.\",\"salience\":0.1,\"expiresAt\":1770681600000},{\"episodeId\":\"marge.m_echo.2.bid\",\"role\":\"marge\",\"matchId\":\"m_echo\",\"handNo\":2,\"ts\":1762560000000,\"kind\":\"bid\",\"summary\":\"No salience.\",\"salience\":0,\"expiresAt\":1770336000000}]",
+			"candidates": [
+				{
+					"episode_id": "marge.m_echo.0.read",
+					"role": "marge",
+					"match_id": "m_echo",
+					"hand_no": 0,
+					"ts": 1762905600000,
+					"kind": "read",
+					"summary": "From the future.",
+					"salience": 0.1,
+					"expires_at": 1770681600000
+				},
+				{
+					"episode_id": "marge.m_bravo.1.loner",
+					"role": "marge",
+					"match_id": "m_bravo",
+					"hand_no": 1,
+					"ts": 1762646400000,
+					"kind": "loner",
+					"summary": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+					"salience": 0.2,
+					"expires_at": 1770422400000
+				},
+				{
+					"episode_id": "marge.m_echo.2.bid",
+					"role": "marge",
+					"match_id": "m_echo",
+					"hand_no": 2,
+					"ts": 1762560000000,
+					"kind": "bid",
+					"summary": "No salience.",
+					"salience": 0,
+					"expires_at": 1770336000000
+				},
+				{
+					"episode_id": "marge.m_bravo.0.read",
+					"role": "marge",
+					"match_id": "m_bravo",
+					"hand_no": 0,
+					"ts": 1761696000000,
+					"kind": "read",
+					"summary": "Human leads trump when strong.",
+					"salience": 0.5,
+					"expires_at": 1769472000000
+				},
+				{
+					"episode_id": "marge.m_charlie.2.bid",
+					"role": "marge",
+					"match_id": "m_charlie",
+					"hand_no": 2,
+					"ts": 1761609600001,
+					"kind": "bid",
+					"summary": "Just under one half-life.",
+					"salience": 0.3,
+					"expires_at": 1769385600001
+				},
+				{
+					"episode_id": "marge.m_charlie.1.play",
+					"role": "marge",
+					"match_id": "m_charlie",
+					"hand_no": 1,
+					"ts": 1761609600000,
+					"kind": "play",
+					"summary": "Exactly one half-life.",
+					"salience": 0.3,
+					"expires_at": 1769385600000
+				},
+				{
+					"episode_id": "marge.m_alpha.1.euchre",
+					"role": "marge",
+					"match_id": "m_alpha",
+					"hand_no": 1,
+					"ts": 1761523200000,
+					"kind": "euchre",
+					"summary": "Got euchred by the human.",
+					"salience": 0.6,
+					"expires_at": 1769299200000
+				},
+				{
+					"episode_id": "marge.m_charlie.0.play",
+					"role": "marge",
+					"match_id": "m_charlie",
+					"hand_no": 0,
+					"ts": 1760399999999,
+					"kind": "play",
+					"summary": "Old but bright.",
+					"salience": 1,
+					"expires_at": 1768175999999
+				},
+				{
+					"episode_id": "marge.m_alpha.0.bid",
+					"role": "marge",
+					"match_id": "m_alpha",
+					"hand_no": 0,
+					"ts": 1760227200000,
+					"kind": "bid",
+					"summary": "Ordered up on three small trump.",
+					"salience": 0.9,
+					"expires_at": 1768003200000
+				}
+			]
+		},
+		{
+			"role": "dutch",
+			"limit": 5,
+			"now": 1762819200000,
+			"ok": "[{\"episodeId\":\"dutch.m_alpha.0.play\",\"role\":\"dutch\",\"matchId\":\"m_alpha\",\"handNo\":0,\"ts\":1762560000000,\"kind\":\"play\",\"summary\":\"Partner trusted the call.\",\"salience\":1,\"expiresAt\":1770336000000}]",
+			"candidates": [
+				{
+					"episode_id": "dutch.m_alpha.0.play",
+					"role": "dutch",
+					"match_id": "m_alpha",
+					"hand_no": 0,
+					"ts": 1762560000000,
+					"kind": "play",
+					"summary": "Partner trusted the call.",
+					"salience": 1,
+					"expires_at": 1770336000000
+				}
+			]
+		},
+		{
+			"role": "verna",
+			"limit": 1,
+			"now": 1762819200000,
+			"ok": "[{\"episodeId\":\"verna.m_golf.4.loner\",\"role\":\"verna\",\"matchId\":\"m_golf\",\"handNo\":4,\"ts\":1762819199000,\"kind\":\"loner\",\"summary\":\"Default ts.\",\"salience\":0.75,\"expiresAt\":1770595199000}]",
+			"candidates": [
+				{
+					"episode_id": "verna.m_golf.4.loner",
+					"role": "verna",
+					"match_id": "m_golf",
+					"hand_no": 4,
+					"ts": 1762819199000,
+					"kind": "loner",
+					"summary": "Default ts.",
+					"salience": 0.75,
+					"expires_at": 1770595199000
+				},
+				{
+					"episode_id": "verna.m_alpha.0.euchre",
+					"role": "verna",
+					"match_id": "m_alpha",
+					"hand_no": 0,
+					"ts": 1762732800000,
+					"kind": "euchre",
+					"summary": "Loved the march.",
+					"salience": 0,
+					"expires_at": 1797379200000
+				}
+			]
+		},
+		{
+			"role": "nobody",
+			"limit": 5,
+			"now": 1762819200000,
+			"ok": "[]",
+			"candidates": []
+		}
+	],
+	"listEpisodes": {
+		"now": 1762819200000,
+		"limit": 5,
+		"ok": "[{\"episodeId\":\"marge.m_echo.0.read\",\"role\":\"marge\",\"matchId\":\"m_echo\",\"handNo\":0,\"ts\":1762905600000,\"kind\":\"read\",\"summary\":\"From the future.\",\"salience\":0.1,\"expiresAt\":1770681600000},{\"episodeId\":\"verna.m_golf.4.loner\",\"role\":\"verna\",\"matchId\":\"m_golf\",\"handNo\":4,\"ts\":1762819199000,\"kind\":\"loner\",\"summary\":\"Default ts.\",\"salience\":0.75,\"expiresAt\":1770595199000},{\"episodeId\":\"verna.m_alpha.0.euchre\",\"role\":\"verna\",\"matchId\":\"m_alpha\",\"handNo\":0,\"ts\":1762732800000,\"kind\":\"euchre\",\"summary\":\"Loved the march.\",\"salience\":0,\"expiresAt\":1797379200000},{\"episodeId\":\"marge.m_bravo.1.loner\",\"role\":\"marge\",\"matchId\":\"m_bravo\",\"handNo\":1,\"ts\":1762646400000,\"kind\":\"loner\",\"summary\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"salience\":0.2,\"expiresAt\":1770422400000},{\"episodeId\":\"marge.m_echo.2.bid\",\"role\":\"marge\",\"matchId\":\"m_echo\",\"handNo\":2,\"ts\":1762560000000,\"kind\":\"bid\",\"summary\":\"No salience.\",\"salience\":0,\"expiresAt\":1770336000000}]",
+		"calls": [
+			{
+				"sql": "SELECT * FROM episodes WHERE expires_at > ? ORDER BY ts DESC LIMIT ?",
+				"args": [
+					1762819200000,
+					5
+				],
+				"rows": [
+					{
+						"episode_id": "marge.m_echo.0.read",
+						"role": "marge",
+						"match_id": "m_echo",
+						"hand_no": 0,
+						"ts": 1762905600000,
+						"kind": "read",
+						"summary": "From the future.",
+						"salience": 0.1,
+						"expires_at": 1770681600000
+					},
+					{
+						"episode_id": "verna.m_golf.4.loner",
+						"role": "verna",
+						"match_id": "m_golf",
+						"hand_no": 4,
+						"ts": 1762819199000,
+						"kind": "loner",
+						"summary": "Default ts.",
+						"salience": 0.75,
+						"expires_at": 1770595199000
+					},
+					{
+						"episode_id": "verna.m_alpha.0.euchre",
+						"role": "verna",
+						"match_id": "m_alpha",
+						"hand_no": 0,
+						"ts": 1762732800000,
+						"kind": "euchre",
+						"summary": "Loved the march.",
+						"salience": 0,
+						"expires_at": 1797379200000
+					},
+					{
+						"episode_id": "marge.m_bravo.1.loner",
+						"role": "marge",
+						"match_id": "m_bravo",
+						"hand_no": 1,
+						"ts": 1762646400000,
+						"kind": "loner",
+						"summary": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+						"salience": 0.2,
+						"expires_at": 1770422400000
+					},
+					{
+						"episode_id": "marge.m_echo.2.bid",
+						"role": "marge",
+						"match_id": "m_echo",
+						"hand_no": 2,
+						"ts": 1762560000000,
+						"kind": "bid",
+						"summary": "No salience.",
+						"salience": 0,
+						"expires_at": 1770336000000
+					}
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,817 @@
+{
+	"scored": {
+		"handNo": 1,
+		"dealerSeat": 0,
+		"tricksWon": [
+			4,
+			1
+		],
+		"upCard": "9C",
+		"trump": "C",
+		"makerSeat": 1,
+		"aloneSeat": null,
+		"tricks": [
+			{
+				"index": 0,
+				"ledSuit": "D",
+				"plays": [
+					{
+						"seat": 1,
+						"card": "QD"
+					},
+					{
+						"seat": 2,
+						"card": "JS"
+					},
+					{
+						"seat": 3,
+						"card": "AD"
+					},
+					{
+						"seat": 0,
+						"card": "TD"
+					}
+				],
+				"winnerSeat": 2
+			},
+			{
+				"index": 1,
+				"ledSuit": "C",
+				"plays": [
+					{
+						"seat": 2,
+						"card": "AC"
+					},
+					{
+						"seat": 3,
+						"card": "QC"
+					},
+					{
+						"seat": 0,
+						"card": "9C"
+					},
+					{
+						"seat": 1,
+						"card": "KC"
+					}
+				],
+				"winnerSeat": 2
+			},
+			{
+				"index": 2,
+				"ledSuit": "H",
+				"plays": [
+					{
+						"seat": 2,
+						"card": "9H"
+					},
+					{
+						"seat": 3,
+						"card": "QH"
+					},
+					{
+						"seat": 0,
+						"card": "TH"
+					},
+					{
+						"seat": 1,
+						"card": "AH"
+					}
+				],
+				"winnerSeat": 1
+			},
+			{
+				"index": 3,
+				"ledSuit": "S",
+				"plays": [
+					{
+						"seat": 1,
+						"card": "KS"
+					},
+					{
+						"seat": 2,
+						"card": "AS"
+					},
+					{
+						"seat": 3,
+						"card": "9S"
+					},
+					{
+						"seat": 0,
+						"card": "TS"
+					}
+				],
+				"winnerSeat": 2
+			},
+			{
+				"index": 4,
+				"ledSuit": "C",
+				"plays": [
+					{
+						"seat": 2,
+						"card": "JC"
+					},
+					{
+						"seat": 3,
+						"card": "TC"
+					},
+					{
+						"seat": 0,
+						"card": "QS"
+					},
+					{
+						"seat": 1,
+						"card": "KD"
+					}
+				],
+				"winnerSeat": 2
+			}
+		],
+		"buried": [
+			"KH",
+			"JD",
+			"JH",
+			"9D"
+		],
+		"unplayed": [],
+		"result": "euchre",
+		"delta": [
+			2,
+			0
+		]
+	},
+	"throwIn": {
+		"handNo": 0,
+		"dealerSeat": 3,
+		"tricksWon": [
+			0,
+			0
+		],
+		"upCard": "TC",
+		"trump": null,
+		"makerSeat": null,
+		"aloneSeat": null,
+		"tricks": [],
+		"buried": [
+			"TH",
+			"KD",
+			"AC",
+			"TC"
+		],
+		"unplayed": [
+			"9D",
+			"KH",
+			"JD",
+			"QH",
+			"QD",
+			"JC",
+			"9C",
+			"AD",
+			"JS",
+			"AS",
+			"TD",
+			"9H",
+			"QS",
+			"AH",
+			"KS",
+			"KC",
+			"JH",
+			"QC",
+			"9S",
+			"TS"
+		],
+		"result": null,
+		"delta": null
+	},
+	"legacy": {
+		"handNo": 1,
+		"trump": "C",
+		"makerSeat": 1,
+		"aloneSeat": null,
+		"tricks": [
+			{
+				"index": 0,
+				"ledSuit": "D",
+				"plays": [
+					{
+						"seat": 1,
+						"card": "QD"
+					},
+					{
+						"seat": 2,
+						"card": "JS"
+					},
+					{
+						"seat": 3,
+						"card": "AD"
+					},
+					{
+						"seat": 0,
+						"card": "TD"
+					}
+				],
+				"winnerSeat": 2
+			},
+			{
+				"index": 1,
+				"ledSuit": "C",
+				"plays": [
+					{
+						"seat": 2,
+						"card": "AC"
+					},
+					{
+						"seat": 3,
+						"card": "QC"
+					},
+					{
+						"seat": 0,
+						"card": "9C"
+					},
+					{
+						"seat": 1,
+						"card": "KC"
+					}
+				],
+				"winnerSeat": 2
+			},
+			{
+				"index": 2,
+				"ledSuit": "H",
+				"plays": [
+					{
+						"seat": 2,
+						"card": "9H"
+					},
+					{
+						"seat": 3,
+						"card": "QH"
+					},
+					{
+						"seat": 0,
+						"card": "TH"
+					},
+					{
+						"seat": 1,
+						"card": "AH"
+					}
+				],
+				"winnerSeat": 1
+			},
+			{
+				"index": 3,
+				"ledSuit": "S",
+				"plays": [
+					{
+						"seat": 1,
+						"card": "KS"
+					},
+					{
+						"seat": 2,
+						"card": "AS"
+					},
+					{
+						"seat": 3,
+						"card": "9S"
+					},
+					{
+						"seat": 0,
+						"card": "TS"
+					}
+				],
+				"winnerSeat": 2
+			},
+			{
+				"index": 4,
+				"ledSuit": "C",
+				"plays": [
+					{
+						"seat": 2,
+						"card": "JC"
+					},
+					{
+						"seat": 3,
+						"card": "TC"
+					},
+					{
+						"seat": 0,
+						"card": "QS"
+					},
+					{
+						"seat": 1,
+						"card": "KD"
+					}
+				],
+				"winnerSeat": 2
+			}
+		],
+		"buried": [
+			"KH",
+			"JD",
+			"JH",
+			"9D"
+		],
+		"unplayed": [],
+		"result": "euchre",
+		"delta": [
+			2,
+			0
+		]
+	},
+	"nullUpCard": {
+		"handNo": 1,
+		"dealerSeat": 0,
+		"tricksWon": [
+			4,
+			1
+		],
+		"upCard": null,
+		"trump": "C",
+		"makerSeat": 1,
+		"aloneSeat": null,
+		"tricks": [
+			{
+				"index": 0,
+				"ledSuit": "D",
+				"plays": [
+					{
+						"seat": 1,
+						"card": "QD"
+					},
+					{
+						"seat": 2,
+						"card": "JS"
+					},
+					{
+						"seat": 3,
+						"card": "AD"
+					},
+					{
+						"seat": 0,
+						"card": "TD"
+					}
+				],
+				"winnerSeat": 2
+			},
+			{
+				"index": 1,
+				"ledSuit": "C",
+				"plays": [
+					{
+						"seat": 2,
+						"card": "AC"
+					},
+					{
+						"seat": 3,
+						"card": "QC"
+					},
+					{
+						"seat": 0,
+						"card": "9C"
+					},
+					{
+						"seat": 1,
+						"card": "KC"
+					}
+				],
+				"winnerSeat": 2
+			},
+			{
+				"index": 2,
+				"ledSuit": "H",
+				"plays": [
+					{
+						"seat": 2,
+						"card": "9H"
+					},
+					{
+						"seat": 3,
+						"card": "QH"
+					},
+					{
+						"seat": 0,
+						"card": "TH"
+					},
+					{
+						"seat": 1,
+						"card": "AH"
+					}
+				],
+				"winnerSeat": 1
+			},
+			{
+				"index": 3,
+				"ledSuit": "S",
+				"plays": [
+					{
+						"seat": 1,
+						"card": "KS"
+					},
+					{
+						"seat": 2,
+						"card": "AS"
+					},
+					{
+						"seat": 3,
+						"card": "9S"
+					},
+					{
+						"seat": 0,
+						"card": "TS"
+					}
+				],
+				"winnerSeat": 2
+			},
+			{
+				"index": 4,
+				"ledSuit": "C",
+				"plays": [
+					{
+						"seat": 2,
+						"card": "JC"
+					},
+					{
+						"seat": 3,
+						"card": "TC"
+					},
+					{
+						"seat": 0,
+						"card": "QS"
+					},
+					{
+						"seat": 1,
+						"card": "KD"
+					}
+				],
+				"winnerSeat": 2
+			}
+		],
+		"buried": [
+			"KH",
+			"JD",
+			"JH",
+			"9D"
+		],
+		"unplayed": [],
+		"result": "euchre",
+		"delta": [
+			2,
+			0
+		]
+	},
+	"scoredHand": {
+		"handNo": 1,
+		"phase": "hand_score",
+		"dealerSeat": 0,
+		"turnSeat": null,
+		"deckOrder": [
+			"QD",
+			"KC",
+			"JS",
+			"AC",
+			"9H",
+			"9S",
+			"QH",
+			"9D",
+			"TS",
+			"TH",
+			"KS",
+			"KD",
+			"AH",
+			"AS",
+			"JC",
+			"QC",
+			"TC",
+			"AD",
+			"TD",
+			"QS",
+			"9C",
+			"KH",
+			"JD",
+			"JH"
+		],
+		"cut": true,
+		"hands": {
+			"0": [],
+			"1": [],
+			"2": [],
+			"3": []
+		},
+		"kitty": [
+			"9C",
+			"KH",
+			"JD",
+			"JH"
+		],
+		"upCard": "9C",
+		"upCardTurnedDown": false,
+		"turnedDownSuit": null,
+		"trump": "C",
+		"makerSeat": 1,
+		"aloneSeat": null,
+		"sittingSeat": null,
+		"dealerDiscard": "9D",
+		"passes": 0,
+		"bids": [
+			{
+				"seat": 1,
+				"move": {
+					"t": "orderUp",
+					"alone": false
+				},
+				"say": "Order it up."
+			}
+		],
+		"trick": {
+			"index": 4,
+			"ledSuit": "C",
+			"plays": [
+				{
+					"seat": 2,
+					"card": "JC"
+				},
+				{
+					"seat": 3,
+					"card": "TC"
+				},
+				{
+					"seat": 0,
+					"card": "QS"
+				},
+				{
+					"seat": 1,
+					"card": "KD"
+				}
+			],
+			"winnerSeat": 2
+		},
+		"trickLog": [
+			{
+				"index": 0,
+				"ledSuit": "D",
+				"plays": [
+					{
+						"seat": 1,
+						"card": "QD"
+					},
+					{
+						"seat": 2,
+						"card": "JS"
+					},
+					{
+						"seat": 3,
+						"card": "AD"
+					},
+					{
+						"seat": 0,
+						"card": "TD"
+					}
+				],
+				"winnerSeat": 2
+			},
+			{
+				"index": 1,
+				"ledSuit": "C",
+				"plays": [
+					{
+						"seat": 2,
+						"card": "AC"
+					},
+					{
+						"seat": 3,
+						"card": "QC"
+					},
+					{
+						"seat": 0,
+						"card": "9C"
+					},
+					{
+						"seat": 1,
+						"card": "KC"
+					}
+				],
+				"winnerSeat": 2
+			},
+			{
+				"index": 2,
+				"ledSuit": "H",
+				"plays": [
+					{
+						"seat": 2,
+						"card": "9H"
+					},
+					{
+						"seat": 3,
+						"card": "QH"
+					},
+					{
+						"seat": 0,
+						"card": "TH"
+					},
+					{
+						"seat": 1,
+						"card": "AH"
+					}
+				],
+				"winnerSeat": 1
+			},
+			{
+				"index": 3,
+				"ledSuit": "S",
+				"plays": [
+					{
+						"seat": 1,
+						"card": "KS"
+					},
+					{
+						"seat": 2,
+						"card": "AS"
+					},
+					{
+						"seat": 3,
+						"card": "9S"
+					},
+					{
+						"seat": 0,
+						"card": "TS"
+					}
+				],
+				"winnerSeat": 2
+			},
+			{
+				"index": 4,
+				"ledSuit": "C",
+				"plays": [
+					{
+						"seat": 2,
+						"card": "JC"
+					},
+					{
+						"seat": 3,
+						"card": "TC"
+					},
+					{
+						"seat": 0,
+						"card": "QS"
+					},
+					{
+						"seat": 1,
+						"card": "KD"
+					}
+				],
+				"winnerSeat": 2
+			}
+		],
+		"tricksWon": [
+			4,
+			1
+		],
+		"result": "euchre",
+		"delta": [
+			2,
+			0
+		]
+	},
+	"throwInHand": {
+		"handNo": 0,
+		"phase": "bid_round_2",
+		"dealerSeat": 3,
+		"turnSeat": 3,
+		"deckOrder": [
+			"9D",
+			"KH",
+			"JD",
+			"JC",
+			"9C",
+			"TD",
+			"9H",
+			"QS",
+			"KC",
+			"JH",
+			"QH",
+			"QD",
+			"AD",
+			"JS",
+			"AS",
+			"AH",
+			"KS",
+			"QC",
+			"9S",
+			"TS",
+			"TC",
+			"TH",
+			"KD",
+			"AC"
+		],
+		"cut": false,
+		"hands": {
+			"0": [
+				"9D",
+				"KH",
+				"JD",
+				"QH",
+				"QD"
+			],
+			"1": [
+				"JC",
+				"9C",
+				"AD",
+				"JS",
+				"AS"
+			],
+			"2": [
+				"TD",
+				"9H",
+				"QS",
+				"AH",
+				"KS"
+			],
+			"3": [
+				"KC",
+				"JH",
+				"QC",
+				"9S",
+				"TS"
+			]
+		},
+		"kitty": [
+			"TC",
+			"TH",
+			"KD",
+			"AC"
+		],
+		"upCard": "TC",
+		"upCardTurnedDown": true,
+		"turnedDownSuit": "C",
+		"trump": null,
+		"makerSeat": null,
+		"aloneSeat": null,
+		"sittingSeat": null,
+		"dealerDiscard": null,
+		"passes": 3,
+		"bids": [
+			{
+				"seat": 0,
+				"move": {
+					"t": "pass"
+				},
+				"say": "Pass."
+			},
+			{
+				"seat": 1,
+				"move": {
+					"t": "pass"
+				},
+				"say": "Pass."
+			},
+			{
+				"seat": 2,
+				"move": {
+					"t": "pass"
+				},
+				"say": "Pass."
+			},
+			{
+				"seat": 3,
+				"move": {
+					"t": "pass"
+				},
+				"say": "Turn it down."
+			},
+			{
+				"seat": 0,
+				"move": {
+					"t": "pass"
+				},
+				"say": "Pass."
+			},
+			{
+				"seat": 1,
+				"move": {
+					"t": "pass"
+				},
+				"say": "Pass."
+			},
+			{
+				"seat": 2,
+				"move": {
+					"t": "pass"
+				},
+				"say": "Pass."
+			}
+		],
+		"trick": {
+			"index": 0,
+			"ledSuit": null,
+			"plays": [],
+			"winnerSeat": null
+		},
+		"trickLog": [],
+		"tricksWon": [
+			0,
+			0
+		],
+		"result": null,
+		"delta": null
+	}
+}

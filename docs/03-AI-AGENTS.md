@@ -1,3 +1,8 @@
+> **TS-era design document.** It describes the original TypeScript build, which the Rust port
+> replaced (`apps/server`, `crates/`, the static SPA in `apps/web`). Where it disagrees with the
+> port, the port wins: read [`port/ARCHITECTURE.md`](./port/ARCHITECTURE.md) first. Kept as the
+> record of the original design and the rules the port had to match.
+
 # 03 — AI Agents
 
 The three opponents: the `aiSeat` actor, the decision ladder, the prompt architecture, the

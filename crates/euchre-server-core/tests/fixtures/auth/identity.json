@@ -1,0 +1,192 @@
+{
+	"generated_by": "crates/euchre-server-core/scripts/gen-auth-fixtures.ts",
+	"actor_secret": "fixture-actor-secret-0123456789abcdef-guest",
+	"internal_token": "fixture-internal-token-0123456789abcdef",
+	"identity_secret": "fixture-identity-secret-0123456789abcdef",
+	"now_secs": 1800000000,
+	"emails": [
+		{
+			"raw": "Ann@Example.com",
+			"normalized": "ann@example.com",
+			"user_id": "71d4f55f72fa128dfb468a1a3901507c804b74316488744d769d7f4b16696476"
+		},
+		{
+			"raw": "  Ann@Example.COM \n",
+			"normalized": "ann@example.com",
+			"user_id": "71d4f55f72fa128dfb468a1a3901507c804b74316488744d769d7f4b16696476"
+		},
+		{
+			"raw": " ﻿a@b.co ",
+			"normalized": "a@b.co",
+			"user_id": "80305c9bb1bb2480e03894350e0a8a366dcbdeb302e69e0817aa0743abd77054"
+		},
+		{
+			"raw": "a@b",
+			"normalized": null,
+			"user_id": null
+		},
+		{
+			"raw": "@b.co",
+			"normalized": null,
+			"user_id": null
+		},
+		{
+			"raw": "a@.co",
+			"normalized": null,
+			"user_id": null
+		},
+		{
+			"raw": "a@b.",
+			"normalized": null,
+			"user_id": null
+		},
+		{
+			"raw": "a@b..",
+			"normalized": "a@b..",
+			"user_id": "91d6683b5038492aa465843792adbc0347e81c97c65a8f04af933732f67fedfb"
+		},
+		{
+			"raw": "a@@b.co",
+			"normalized": null,
+			"user_id": null
+		},
+		{
+			"raw": "a b@c.co",
+			"normalized": null,
+			"user_id": null
+		},
+		{
+			"raw": "a@b.c d",
+			"normalized": null,
+			"user_id": null
+		},
+		{
+			"raw": "",
+			"normalized": null,
+			"user_id": null
+		},
+		{
+			"raw": "   ",
+			"normalized": null,
+			"user_id": null
+		},
+		{
+			"raw": "ÅNN@EXAMPLE.COM",
+			"normalized": "ånn@example.com",
+			"user_id": "7d63dba6b4adea3aa46e9866a64544ff0ed438357f4a1d3b882b7136d1e96757"
+		},
+		{
+			"raw": "İ@b.co",
+			"normalized": "i̇@b.co",
+			"user_id": "4592dd706b4308f8c9e6af56ec98f8892df58eaf981517417a02c99fe031f1a3"
+		},
+		{
+			"raw": "ΣΑ@b.co",
+			"normalized": "σα@b.co",
+			"user_id": "bd7c9c2fc50b18857d08ca3392c3dc0d8dd94e2fca35aa69c1d7baed7220b893"
+		},
+		{
+			"raw": "ΑΣ@b.co",
+			"normalized": "ας@b.co",
+			"user_id": "d34ae43f860a8efae3d85f76091c7b24b08ee60580fa89084941546411f9cf5a"
+		},
+		{
+			"raw": "xΣ@b.co",
+			"normalized": "xς@b.co",
+			"user_id": "119be8af4e13424cd892135139154050e452849b6ca60f471af1d2d2316e9793"
+		},
+		{
+			"raw": "straße@b.co",
+			"normalized": "straße@b.co",
+			"user_id": "3e4844c8932751c819446ab6f8803c4981c1588e2c70654565e94294cbfe2ba1"
+		},
+		{
+			"raw": "🂡@b.co",
+			"normalized": "🂡@b.co",
+			"user_id": "ebdfaeb31a139e8b625e614046b28e32d4ed8685259a128afdbb51b6eb7e31da"
+		},
+		{
+			"raw": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@b.co",
+			"normalized": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@b.co",
+			"user_id": "ec11939bb4f3081de31f6e88fc844d40efad5cc85c94ca07024d38bf56016094"
+		},
+		{
+			"raw": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@b.co",
+			"normalized": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@b.co",
+			"user_id": "3d72e0c94ab95dc95be554f3d86a7b2427ec257e208fe9940ac8bcb2ec0e39f8"
+		},
+		{
+			"raw": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@b.co",
+			"normalized": null,
+			"user_id": null
+		},
+		{
+			"raw": "a​@b.co",
+			"normalized": "a​@b.co",
+			"user_id": "d91800d0b6984d18c53bfe397c62a18a53312c02ca5d82891ba65f119ed700dc"
+		},
+		{
+			"raw": "a@b.co\u0000",
+			"normalized": "a@b.co\u0000",
+			"user_id": "06c513a8b78dcae64fc2d1d4195b345f0fad1a34a37e137b38a1a54483680c54"
+		}
+	],
+	"legacy_cookies": [
+		{
+			"raw": "ann%40example.com",
+			"decoded": "ann@example.com",
+			"email": "ann@example.com",
+			"user_id": "71d4f55f72fa128dfb468a1a3901507c804b74316488744d769d7f4b16696476"
+		},
+		{
+			"raw": "Ann%40Example.COM",
+			"decoded": "Ann@Example.COM",
+			"email": "ann@example.com",
+			"user_id": "71d4f55f72fa128dfb468a1a3901507c804b74316488744d769d7f4b16696476"
+		},
+		{
+			"raw": "ann@example.com",
+			"decoded": "ann@example.com",
+			"email": "ann@example.com",
+			"user_id": "71d4f55f72fa128dfb468a1a3901507c804b74316488744d769d7f4b16696476"
+		},
+		{
+			"raw": "ann%zz@example.com",
+			"decoded": "ann%zz@example.com",
+			"email": "ann%zz@example.com",
+			"user_id": "5e8d94858a5ce4fd60738e5d3cfa247cd24acf69433ead8c41b60b95e053c6de"
+		},
+		{
+			"raw": "ann%40example.com%E0",
+			"decoded": "ann%40example.com%E0",
+			"email": null,
+			"user_id": null
+		},
+		{
+			"raw": "%C3%A9@b.co",
+			"decoded": "é@b.co",
+			"email": "é@b.co",
+			"user_id": "77a24c2140a38fdbdd6162267a35de71ab508d45908aafbbd488e8776135f123"
+		},
+		{
+			"raw": "a%2540b.co",
+			"decoded": "a%40b.co",
+			"email": null,
+			"user_id": null
+		},
+		{
+			"raw": "%20ann%40example.com%20",
+			"decoded": " ann@example.com ",
+			"email": "ann@example.com",
+			"user_id": "71d4f55f72fa128dfb468a1a3901507c804b74316488744d769d7f4b16696476"
+		}
+	],
+	"minted": [
+		{
+			"email": "ann@example.com",
+			"user_id": "71d4f55f72fa128dfb468a1a3901507c804b74316488744d769d7f4b16696476",
+			"iat": 1800000000,
+			"token": "eyJhbGciOiJIUzI1NiJ9.eyJraW5kIjoiZW1haWwtbmljayIsInN1YiI6IjcxZDRmNTVmNzJmYTEyOGRmYjQ2OGExYTM5MDE1MDdjODA0Yjc0MzE2NDg4NzQ0ZDc2OWQ3ZjRiMTY2OTY0NzYiLCJlbSI6ImFubkBleGFtcGxlLmNvbSIsImlzcyI6ImV1Y2hyZS1pZGVudGl0eSIsImF1ZCI6ImV1Y2hyZS1pZGVudGl0eSIsImlhdCI6MTgwMDAwMDAwMCwiZXhwIjoxODM0NTYwMDAwfQ.3OGBD-GiS-4HgBwzcu1MfswN9kEAIdRbpsML6yFMbzc"
+		}
+	]
+}

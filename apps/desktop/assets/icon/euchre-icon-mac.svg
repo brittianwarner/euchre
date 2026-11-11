@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Euchre app icon (macOS grid: 824 px body, 100 px margin). Felt colours from
+       apps/desktop/src/theme/felt.rs (FELT_HI, FELT_CENTER, FELT_EDGE, FELT_RIM, FELT_TEXT);
+       the club is the SCA pip of apps/web/static/art/cards/AC.svg. -->
+  <defs>
+    <radialGradient id="felt" cx="0.5" cy="0.42" r="0.72">
+      <stop offset="0" stop-color="#2d6b56"/>
+      <stop offset="0.55" stop-color="#245a49"/>
+      <stop offset="1" stop-color="#10382c"/>
+    </radialGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="125%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#felt)" filter="url(#shadow)"/>
+  <rect x="134" y="134" width="756" height="756" rx="152" fill="none" stroke="#dae6b0" stroke-opacity="0.22" stroke-width="6"/>
+  <g transform="translate(512 512) scale(0.5)">
+    <path d="M30 150C35 385 85 400 130 500L-130 500C-85 400 -35 385 -30 150A10 10 0 0 0 -50 150A210 210 0 1 1 -124 -51A10 10 0 0 0 -110 -65A230 230 0 1 1 110 -65A10 10 0 0 0 124 -51A210 210 0 1 1 50 150A10 10 0 0 0 30 150Z" fill="#fffdf3"/>
+  </g>
+</svg>

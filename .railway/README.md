@@ -1,54 +1,27 @@
 # Railway configuration
 
-This project defines its Railway infrastructure in code.
+`.railway/railway.ts` describes the whole Railway project `euchre`: the `euchre` server (root `Dockerfile`), the private `rivet-engine` (3.1.0), the `rivet-data` volume, and every service variable. The runbook is [docs/DEPLOY.md](../docs/DEPLOY.md).
 
-```txt
-.railway/railway.ts
-```
+The file imports `railway/iac` from the `railway` package, a root devDependency. `bun install` at the repo root installs it.
 
-Use this file to describe the Railway project you want: services, databases, buckets, custom domains, replicas, groups, and environment variables.
-
-The TypeScript file imports `railway/iac`. Install the SDK from the repository root:
+## Commands
 
 ```bash
-npm install railway
+bunx railway config plan    # preview the changes; safe, changes nothing
+railway config apply        # a human only, after reading the plan
 ```
 
-## Common commands
+## Rules
 
-Create the configuration files:
+- Omitting a service, volume or variable here deletes it on apply.
+- Secrets are `preserve()`, so Railway keeps the value it holds and the file never contains it. Set a new secret in Railway before the plan that first lists it.
+- Agents edit this file and may run `railway config plan`. They never run `railway config apply`, `railway up`, `railway add` or `railway down`.
+- Stop if the plan shows a Destroy line you did not expect.
+- Do not add a per-service `railway.json`; this file manages every service.
+- `railway config pull --include-variables` decrypts secrets into the file. Never run it here.
+
+Type-check the file from the repo root (needs `bun install`):
 
 ```bash
-railway config init
+bun apps/web/node_modules/typescript/bin/tsc --noEmit --strict --target es2022 --module preserve --moduleResolution bundler .railway/railway.ts
 ```
-
-Import an existing Railway project into code:
-
-```bash
-railway config pull
-```
-
-Preview what Railway would change:
-
-```bash
-railway config plan
-```
-
-Apply the planned changes:
-
-```bash
-railway config apply
-```
-
-## Notes
-
-- `railway config plan` is safe and does not change Railway.
-- `railway config apply` previews changes and asks before applying unless you pass `--yes`.
-- Destructive changes in non-interactive or agent sessions require `railway config apply --confirm-destructive` after reviewing the plan.
-- CI should pin a plan (`railway config plan --out railway-plan.json`) and apply that file on merge (`railway config apply --plan railway-plan.json --yes --confirm-destructive`) so the reviewed change set is what lands. On GitHub Actions, use https://github.com/railwayapp/config.
-- Services already managed by `railway.json` must be migrated before `.railway/railway.ts` can manage them.
-- Keep one `.railway` file for the whole project. A named `export const partial` (or `PARTIAL` / `const Partial`) is a last resort for separate repos that cannot share that file. Do not add it unless omit=delete across repos is a blocker.
-- Use `replicas` for scaling; advanced placement can still specify region names.
-- Use `group("Name", [resources])` to keep large projects organized on the Railway canvas.
-- Secrets imported from Railway are rendered as `preserve()` so existing values are retained without writing secret values to source. Use `railway config pull --omit-preserved-variables` for a smaller import. `railway config pull --include-variables` decrypts and inlines non-sealed values (including secrets that were never sealed).
-- `railway config migrate` finds every `railway.json` / `railway.toml` in the repository and writes them into this one file.

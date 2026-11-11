@@ -1,0 +1,16 @@
+{
+	"name": "@euchre/ai",
+	"private": true,
+	"version": "0.1.0",
+	"scripts": {
+		"build": "cargo build -p euchre-ai",
+		"check": "cargo clippy -p euchre-ai --all-targets -- -D warnings",
+		"test": "cargo test -p euchre-ai",
+		"lint": "cargo fmt -p euchre-ai --check",
+		"format": "cargo fmt -p euchre-ai"
+	},
+	"dependencies": {
+		"@euchre/engine": "workspace:*",
+		"@euchre/protocol": "workspace:*"
+	}
+}

@@ -1,0 +1,143 @@
+[
+	{
+		"t": "cut",
+		"seat": 2,
+		"cut": false
+	},
+	{
+		"t": "dealt",
+		"packets": [
+			{
+				"seat": 0,
+				"count": 3,
+				"cards": [
+					"9D",
+					"KH",
+					"JD"
+				]
+			},
+			{
+				"seat": 1,
+				"count": 2,
+				"cards": null
+			},
+			{
+				"seat": 2,
+				"count": 3,
+				"cards": null
+			},
+			{
+				"seat": 3,
+				"count": 2,
+				"cards": null
+			},
+			{
+				"seat": 0,
+				"count": 2,
+				"cards": [
+					"QH",
+					"QD"
+				]
+			},
+			{
+				"seat": 1,
+				"count": 3,
+				"cards": null
+			},
+			{
+				"seat": 2,
+				"count": 2,
+				"cards": null
+			},
+			{
+				"seat": 3,
+				"count": 3,
+				"cards": null
+			}
+		]
+	},
+	{
+		"t": "upCardTurned",
+		"card": "TC"
+	},
+	{
+		"t": "bid",
+		"seat": 0,
+		"id": "pass",
+		"say": "Pass."
+	},
+	{
+		"t": "turnedDown",
+		"suit": "C"
+	},
+	{
+		"t": "trumpSet",
+		"suit": "C",
+		"makerSeat": 1,
+		"aloneSeat": null,
+		"sittingSeat": null,
+		"viaOrderUp": true
+	},
+	{
+		"t": "dealerDiscarded",
+		"seat": 0
+	},
+	{
+		"t": "cardPlayed",
+		"seat": 1,
+		"card": "QD"
+	},
+	{
+		"t": "trickWon",
+		"index": 0,
+		"winnerSeat": 2,
+		"plays": [
+			{
+				"seat": 1,
+				"card": "QD"
+			},
+			{
+				"seat": 2,
+				"card": "JS"
+			},
+			{
+				"seat": 3,
+				"card": "AD"
+			},
+			{
+				"seat": 0,
+				"card": "TD"
+			}
+		],
+		"sealsEuchre": false
+	},
+	{
+		"t": "handScored",
+		"result": "euchre",
+		"delta": [
+			2,
+			0
+		],
+		"score": [
+			2,
+			0
+		],
+		"makerSeat": 1,
+		"aloneSeat": null,
+		"tricksWon": [
+			4,
+			1
+		]
+	},
+	{
+		"t": "throwIn"
+	},
+	{
+		"t": "gameWon",
+		"team": 0,
+		"score": [
+			10,
+			5
+		]
+	}
+]

@@ -1,23 +1,26 @@
-You are able to use the Svelte MCP server, where you have access to comprehensive Svelte 5 and SvelteKit documentation. Here's how to use the available tools effectively:
+# Euchre: notes for agents
 
-## Available MCP Tools:
+`README.md` has the layout and commands. `docs/port/ARCHITECTURE.md` is the build contract for the Rust port. `docs/DEPLOY.md` is the deploy runbook.
 
-### 1. list-sections
+## Rules
 
-Use this FIRST to discover all available documentation sections. Returns a structured list with titles, use_cases, and paths.
-When asked about Svelte or SvelteKit topics, ALWAYS use this tool at the start of the chat to find relevant sections.
+- Use Bun only (`bun`, `bunx`). Never npm, npx or pnpm.
+- Rust 1.99.1 (`rust-toolchain.toml`). Each crate must pass `cargo fmt -p <crate> -- --check`, `cargo clippy -p <crate> --all-targets -- -D warnings` and `cargo test -p <crate>`. `bun run check` and `bun run test` run them for every crate.
+- Actor names, keys, actions, events and JSON shapes stay byte-compatible with the web client (`crates/euchre-protocol`).
+- Keep the player-facing copy and behaviour that the specs in `docs/port/` pin down.
+- Assume other sessions work in this repo at the same time:
+  - Use your own `CARGO_TARGET_DIR`, and never run `cargo clean`.
+  - Never stop a process you did not start, including other sessions' `rivet-engine` processes.
+  - Do not commit, stage or stash unless asked.
 
-### 2. get-documentation
+## Engines in tests
 
-Retrieves full documentation content for specific sections. Accepts single or multiple sections.
-After calling the list-sections tool, you MUST analyze the returned documentation sections (especially the use_cases field) and then use the get-documentation tool to fetch ALL documentation sections that are relevant for the user's task.
+Engine-backed tests skip unless `EUCHRE_E2E=1`. Each test binary starts one private engine on `EUCHRE_TEST_ENGINE_PORT` (default 6751) through `euchre_server_core::testing::TestEngine`. That engine binds the port P, plus P+1 and P+5. Behind an HTTP proxy, set `NO_PROXY=127.0.0.1,localhost,::1`. The engine refuses to start with less than 4 GiB of free disk.
 
-### 3. svelte-autofixer
+## Deploy
 
-Analyzes Svelte code and returns issues and suggestions.
-You MUST use this tool whenever writing Svelte code before sending it to the user. Keep calling it until no issues or suggestions are returned.
+`.railway/railway.ts` is the whole Railway project, and omitting anything there deletes it. Agents edit that file and may run `railway config plan`. Only a human runs `railway config apply`. Never run `railway up`, `railway add` or `railway down`. Never put secret values in the file; use `preserve()`.
 
-### 4. playground-link
+## Svelte
 
-Generates a Svelte Playground link with the provided code.
-After completing the code, ask the user if they want a playground link. Only call this tool after user confirmation and NEVER if code was written to files in their project.
+`apps/web` and `packages/rivetkit-svelte` are Svelte 5. The `svelte` MCP server (`.mcp.json`) serves the Svelte and SvelteKit docs (`list-sections`, then `get-documentation`). It also runs `svelte-autofixer`; run that on any Svelte code you write until it reports no issues.

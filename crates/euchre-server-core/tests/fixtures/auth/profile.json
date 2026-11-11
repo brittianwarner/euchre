@@ -1,0 +1,370 @@
+{
+	"generated_by": "crates/euchre-server-core/scripts/gen-auth-fixtures.ts",
+	"actor_secret": "fixture-actor-secret-0123456789abcdef-guest",
+	"internal_token": "fixture-internal-token-0123456789abcdef",
+	"identity_secret": "fixture-identity-secret-0123456789abcdef",
+	"now_secs": 1800000000,
+	"minted": [
+		{
+			"user_id": "4f2a9c1e0b7d8a6c5e3f1a2b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d",
+			"iat": 1800000000,
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZjJhOWMxZTBiN2Q4YTZjNWUzZjFhMmI5YzhkN2U2ZjVhNGIzYzJkMWUwZjlhOGI3YzZkNWU0ZjNhMmIxYzBkIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyIsImlhdCI6MTgwMDAwMDAwMCwiZXhwIjoxODAwMDAxODAwfQ.DzDkVs3HTIiRcyEHis8Fy77aVS8ep91ps0RC3Hay_vE"
+		}
+	],
+	"cases": [
+		{
+			"name": "profile_minted_ok",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZjJhOWMxZTBiN2Q4YTZjNWUzZjFhMmI5YzhkN2U2ZjVhNGIzYzJkMWUwZjlhOGI3YzZkNWU0ZjNhMmIxYzBkIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyIsImlhdCI6MTgwMDAwMDAwMCwiZXhwIjoxODAwMDAxODAwfQ.DzDkVs3HTIiRcyEHis8Fy77aVS8ep91ps0RC3Hay_vE",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": true,
+			"user_id": "4f2a9c1e0b7d8a6c5e3f1a2b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d",
+			"issued_at_ms": 1800000000000,
+			"expires_at_ms": 1800001800000
+		},
+		{
+			"name": "profile_minted_wrong_issuer",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZjJhOWMxZTBiN2Q4YTZjNWUzZjFhMmI5YzhkN2U2ZjVhNGIzYzJkMWUwZjlhOGI3YzZkNWU0ZjNhMmIxYzBkIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyIsImlhdCI6MTgwMDAwMDAwMCwiZXhwIjoxODAwMDAxODAwfQ.DzDkVs3HTIiRcyEHis8Fy77aVS8ep91ps0RC3Hay_vE",
+			"now_ms": 1800000005000,
+			"issuer": "euchre-test",
+			"ok": false,
+			"error": "wrong issuer"
+		},
+		{
+			"name": "profile_issuer_ok",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyIsImlzcyI6ImV1Y2hyZS10ZXN0IiwiaWF0IjoxODAwMDAwMDAwLCJleHAiOjE4MDAwMDE4MDB9.LM0p4Y0T3AWNTB8bsygFXcseFfrRx6YNBzNR7zfyZn8",
+			"now_ms": 1800000005000,
+			"issuer": "euchre-test",
+			"ok": true,
+			"user_id": "a",
+			"issued_at_ms": 1800000000000,
+			"expires_at_ms": 1800001800000
+		},
+		{
+			"name": "profile_expired_past_skew",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZjJhOWMxZTBiN2Q4YTZjNWUzZjFhMmI5YzhkN2U2ZjVhNGIzYzJkMWUwZjlhOGI3YzZkNWU0ZjNhMmIxYzBkIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyIsImlhdCI6MTgwMDAwMDAwMCwiZXhwIjoxODAwMDAxODAwfQ.DzDkVs3HTIiRcyEHis8Fy77aVS8ep91ps0RC3Hay_vE",
+			"now_ms": 1800001860001,
+			"issuer": null,
+			"ok": false,
+			"error": "token expired"
+		},
+		{
+			"name": "profile_expired_within_skew",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZjJhOWMxZTBiN2Q4YTZjNWUzZjFhMmI5YzhkN2U2ZjVhNGIzYzJkMWUwZjlhOGI3YzZkNWU0ZjNhMmIxYzBkIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyIsImlhdCI6MTgwMDAwMDAwMCwiZXhwIjoxODAwMDAxODAwfQ.DzDkVs3HTIiRcyEHis8Fy77aVS8ep91ps0RC3Hay_vE",
+			"now_ms": 1800001860000,
+			"issuer": null,
+			"ok": true,
+			"user_id": "4f2a9c1e0b7d8a6c5e3f1a2b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d",
+			"issued_at_ms": 1800000000000,
+			"expires_at_ms": 1800001800000
+		},
+		{
+			"name": "profile_alg_none",
+			"token": "eyJhbGciOiJub25lIn0.eyJzdWIiOiJhIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyIsImV4cCI6MTgwMDAwMTgwMH0.",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": false,
+			"error": "unsupported token algorithm"
+		},
+		{
+			"name": "profile_alg_hs512",
+			"token": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyIsImV4cCI6MTgwMDAwMTgwMH0.TaO7kRWlPIqgSUSqodpgvkVHj1CzJnSfP-RTizJwx3AWG86XntdeiFDiMEYmlIsfozt0RgWcH-jyYoClrsrqcg",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": false,
+			"error": "unsupported token algorithm"
+		},
+		{
+			"name": "profile_wrong_audience",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhIiwiYXVkIjoiZXVjaHJlLXNlc3Npb24iLCJleHAiOjE4MDAwMDE4MDB9.exAL7tgh7IwRt2hq3a5ZaVuJ12WZ465HTELlGA1IIvc",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": false,
+			"error": "wrong audience"
+		},
+		{
+			"name": "profile_aud_array",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhIiwiYXVkIjpbIngiLCJldWNocmUtYWN0b3JzIl0sImV4cCI6MTgwMDAwMTgwMH0.9eNiusFcYdUrAplz-ybg-21AwIqv_a2jzZTdAfOZgok",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": true,
+			"user_id": "a",
+			"issued_at_ms": 1800000005000,
+			"expires_at_ms": 1800001800000
+		},
+		{
+			"name": "profile_no_expiry",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyJ9.HvY0YWmfeKXjO_kk3qmkimXHdsD-7qVg2qPmtaTTUWs",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": false,
+			"error": "token has no expiry"
+		},
+		{
+			"name": "profile_exp_string",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyIsImV4cCI6IjE4MDAwMDE4MDAifQ.pZb0eWszLtFPD2vIYARQaQzIl5OXDyaIqdNN4h2rWuM",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": false,
+			"error": "token has no expiry"
+		},
+		{
+			"name": "profile_exp_float",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyIsImV4cCI6MTgwMDAwMTgwMC41LCJpYXQiOjE4MDAwMDAwMDAuMjV9.ACAvPcakn7duE8SRTv_JDyDlsEPIcueBmomBEDoSqi4",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": true,
+			"user_id": "a",
+			"issued_at_ms": 1800000000250,
+			"expires_at_ms": 1800001800500
+		},
+		{
+			"name": "profile_nbf_future",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyIsIm5iZiI6MTgwMDAwMDA2NiwiZXhwIjoxODAwMDAxODAwfQ.VsBSLyHouKUvjxXV58HbeyToMddR9de-NAZ7MM5qodI",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": false,
+			"error": "token not yet valid"
+		},
+		{
+			"name": "profile_nbf_within_skew",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyIsIm5iZiI6MTgwMDAwMDA2NSwiZXhwIjoxODAwMDAxODAwfQ.NApc14Rpb6IjWnKV9ewkTmD5L-p24Y6WbmDqfHrzIVU",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": true,
+			"user_id": "a",
+			"issued_at_ms": 1800000005000,
+			"expires_at_ms": 1800001800000
+		},
+		{
+			"name": "profile_iat_future",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyIsImlhdCI6MTgwMDAwMDA2NiwiZXhwIjoxODAwMDAxODAwfQ.86cMmF7lioFegp2DB7EioLiugOO1SEqdO6cS-Zu_FL8",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": false,
+			"error": "token issued in the future"
+		},
+		{
+			"name": "profile_lifetime_too_long",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyIsImlhdCI6MTgwMDAwMDAwMCwiZXhwIjoxODAwMDAzNjAxfQ.1cQoLvNufaRSIjPDIMdzLdkMQqfgNC96wBUscPp0vQ0",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": false,
+			"error": "token lifetime exceeds the maximum"
+		},
+		{
+			"name": "profile_lifetime_max_ok",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyIsImlhdCI6MTgwMDAwMDAwMCwiZXhwIjoxODAwMDAzNjAwfQ.B7Qatvh08lrLyQUDgF5xpd_d95uyQIqDzHkjUWwIczA",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": true,
+			"user_id": "a",
+			"issued_at_ms": 1800000000000,
+			"expires_at_ms": 1800003600000
+		},
+		{
+			"name": "profile_no_iat_long_ok",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyIsImV4cCI6MTgwMDA4NjQwMH0.PAbwayR4WILJVlIKMpcoFNCawJg6p4mOQx5DOqXodNo",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": true,
+			"user_id": "a",
+			"issued_at_ms": 1800000005000,
+			"expires_at_ms": 1800086400000
+		},
+		{
+			"name": "profile_sub_missing",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJldWNocmUtYWN0b3JzIiwiZXhwIjoxODAwMDAxODAwfQ.rthGaZYo7FWyUiCWO2g17hpMWLv2lSt_y6dnXkW9dkc",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": false,
+			"error": "token subject is missing or unusable"
+		},
+		{
+			"name": "profile_sub_empty",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiZXhwIjoxODAwMDAxODAwfQ.juhjP3R8qd0OSpM7RAY0uxJ_vssGixDbhgX3u5o0xck",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": false,
+			"error": "token subject is missing or unusable"
+		},
+		{
+			"name": "profile_sub_number",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjcsImF1ZCI6ImV1Y2hyZS1hY3RvcnMiLCJleHAiOjE4MDAwMDE4MDB9.Me-Vv9jx_c4ZMg-6TOi_yIi0q1t3_hAZNjKh2XhNWpI",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": false,
+			"error": "token subject is missing or unusable"
+		},
+		{
+			"name": "profile_sub_128_ok",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3NzcyIsImF1ZCI6ImV1Y2hyZS1hY3RvcnMiLCJleHAiOjE4MDAwMDE4MDB9.lCOC6cdkPAmMRcsyR1pLfTgV1hilttGJ0Hw6E9b-x4g",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": true,
+			"user_id": "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss",
+			"issued_at_ms": 1800000005000,
+			"expires_at_ms": 1800001800000
+		},
+		{
+			"name": "profile_sub_129",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3MiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiZXhwIjoxODAwMDAxODAwfQ.ozNT2MqnDVRpqYIDKQTS0YK2_Gwd4tDq4E1pj-jzqlQ",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": false,
+			"error": "token subject is missing or unusable"
+		},
+		{
+			"name": "profile_sub_64_astral_ok",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiLwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4KhIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyIsImV4cCI6MTgwMDAwMTgwMH0.HMTwkUtpJc4NEPs5GpkDeDTTnWXM5RpUfUPt67IsMEk",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": true,
+			"user_id": "🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡🂡",
+			"issued_at_ms": 1800000005000,
+			"expires_at_ms": 1800001800000
+		},
+		{
+			"name": "profile_sub_65_astral",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiLwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CofCfgqHwn4Kh8J-CoSIsImF1ZCI6ImV1Y2hyZS1hY3RvcnMiLCJleHAiOjE4MDAwMDE4MDB9.f0PqZpz9tJ8Hd97NpK5nIoSEIYDAhY-GCvcOt00KKz0",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": false,
+			"error": "token subject is missing or unusable"
+		},
+		{
+			"name": "profile_header_null",
+			"token": "bnVsbA.eyJzdWIiOiJhIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyIsImV4cCI6MTgwMDAwMTgwMH0.SUyagyNNw7518O-IraC8HD_piUzbLu8aJ1Kw_McgT40",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": false,
+			"error": "token header is not an object"
+		},
+		{
+			"name": "profile_header_array",
+			"token": "W10.eyJzdWIiOiJhIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyIsImV4cCI6MTgwMDAwMTgwMH0.vVczEkzlN56QwhKXmVig5uF6iofpa4t2nkAhAKHhcFc",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": false,
+			"error": "token header is not an object"
+		},
+		{
+			"name": "profile_payload_array",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.WzFd.EP0Eo39zIBiL57-XNPpWhcXgMJlo_fCPvvgns7-LuaE",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": false,
+			"error": "token payload is not an object"
+		},
+		{
+			"name": "profile_payload_string",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.Ingi.z0huakobEQ15ZspNDQUWCEtVcWdn6CAW8m9A8q4zS_A",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": false,
+			"error": "token payload is not an object"
+		},
+		{
+			"name": "profile_not_json",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e25vcGU.DzDkVs3HTIiRcyEHis8Fy77aVS8ep91ps0RC3Hay_vE",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": false,
+			"error": "token segments are not JSON"
+		},
+		{
+			"name": "profile_bad_base64",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.%%%.DzDkVs3HTIiRcyEHis8Fy77aVS8ep91ps0RC3Hay_vE",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": false,
+			"error": "token segments are not JSON"
+		},
+		{
+			"name": "profile_base64_len_mod4_1",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZjJhOWMxZTBiN2Q4YTZjNWUzZjFhMmI5YzhkN2U2ZjVhNGIzYzJkMWUwZjlhOGI3YzZkNWU0ZjNhMmIxYzBkIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyIsImlhdCI6MTgwMDAwMDAwMCwiZXhwIjoxODAwMDAxODAwfQA.DzDkVs3HTIiRcyEHis8Fy77aVS8ep91ps0RC3Hay_vE",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": false,
+			"error": "token segments are not JSON"
+		},
+		{
+			"name": "profile_padded_payload_segment",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZjJhOWMxZTBiN2Q4YTZjNWUzZjFhMmI5YzhkN2U2ZjVhNGIzYzJkMWUwZjlhOGI3YzZkNWU0ZjNhMmIxYzBkIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyIsImlhdCI6MTgwMDAwMDAwMCwiZXhwIjoxODAwMDAxODAwfQ==.DzDkVs3HTIiRcyEHis8Fy77aVS8ep91ps0RC3Hay_vE",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": false,
+			"error": "signature rejected"
+		},
+		{
+			"name": "profile_tampered_payload",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyIsImlhdCI6MTgwMDAwMDAwMCwiZXhwIjoxODAwMDAxODAwfQ.DzDkVs3HTIiRcyEHis8Fy77aVS8ep91ps0RC3Hay_vE",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": false,
+			"error": "signature rejected"
+		},
+		{
+			"name": "profile_bad_signature_chars",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZjJhOWMxZTBiN2Q4YTZjNWUzZjFhMmI5YzhkN2U2ZjVhNGIzYzJkMWUwZjlhOGI3YzZkNWU0ZjNhMmIxYzBkIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyIsImlhdCI6MTgwMDAwMDAwMCwiZXhwIjoxODAwMDAxODAwfQ.*zDkVs3HTIiRcyEHis8Fy77aVS8ep91ps0RC3Hay_vE",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": false,
+			"error": "malformed signature"
+		},
+		{
+			"name": "profile_sig_noncanonical_ok",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZjJhOWMxZTBiN2Q4YTZjNWUzZjFhMmI5YzhkN2U2ZjVhNGIzYzJkMWUwZjlhOGI3YzZkNWU0ZjNhMmIxYzBkIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyIsImlhdCI6MTgwMDAwMDAwMCwiZXhwIjoxODAwMDAxODAwfQ.DzDkVs3HTIiRcyEHis8Fy77aVS8ep91ps0RC3Hay_vF",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": true,
+			"user_id": "4f2a9c1e0b7d8a6c5e3f1a2b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d",
+			"issued_at_ms": 1800000000000,
+			"expires_at_ms": 1800001800000
+		},
+		{
+			"name": "profile_wrong_key",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyIsImV4cCI6MTgwMDAwMTgwMH0.KmW1zeXMPKRetyRzrhSK08FiBZoxoBrLG1beJoMZ8gk",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": false,
+			"error": "signature rejected"
+		},
+		{
+			"name": "profile_invalid_utf8_lossy",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJh_8MiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiZXhwIjoxODAwMDAxODAwfQ.DwuMZwRArnDbRQUGp_tlaj3MRlyUNETqE9Yv8SacvXY",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": true,
+			"user_id": "a��",
+			"issued_at_ms": 1800000005000,
+			"expires_at_ms": 1800001800000
+		},
+		{
+			"name": "profile_bom_payload",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.77u_eyJzdWIiOiJhIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyIsImV4cCI6MTgwMDAwMTgwMH0.1JxDTC3z-E7vUh6S_Tz98Kyj65ow7lU2WnFdDEBCbA4",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": true,
+			"user_id": "a",
+			"issued_at_ms": 1800000005000,
+			"expires_at_ms": 1800001800000
+		},
+		{
+			"name": "profile_two_parts",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZjJhOWMxZTBiN2Q4YTZjNWUzZjFhMmI5YzhkN2U2ZjVhNGIzYzJkMWUwZjlhOGI3YzZkNWU0ZjNhMmIxYzBkIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyIsImlhdCI6MTgwMDAwMDAwMCwiZXhwIjoxODAwMDAxODAwfQ",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": false,
+			"error": "malformed token"
+		},
+		{
+			"name": "profile_four_parts",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZjJhOWMxZTBiN2Q4YTZjNWUzZjFhMmI5YzhkN2U2ZjVhNGIzYzJkMWUwZjlhOGI3YzZkNWU0ZjNhMmIxYzBkIiwiYXVkIjoiZXVjaHJlLWFjdG9ycyIsImlhdCI6MTgwMDAwMDAwMCwiZXhwIjoxODAwMDAxODAwfQ.DzDkVs3HTIiRcyEHis8Fy77aVS8ep91ps0RC3Hay_vE.x",
+			"now_ms": 1800000005000,
+			"issuer": null,
+			"ok": false,
+			"error": "malformed token"
+		}
+	]
+}

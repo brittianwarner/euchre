@@ -1,0 +1,17 @@
+[package]
+name = "euchre-engine"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+description = "Pure, deterministic euchre rules engine (port of the TS engine in src/lib/euchre)."
+
+[dependencies]
+serde.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true
+sha2.workspace = true
+hex.workspace = true
+
+[lints]
+workspace = true

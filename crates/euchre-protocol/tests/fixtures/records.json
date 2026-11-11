@@ -1,0 +1,549 @@
+{
+	"matchRecord": {
+		"schema": 1,
+		"matchId": "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b",
+		"userId": "guest-0b5f2a64-5d1e-4c33-9a8e-2f7c1d0e9b11",
+		"seed": "9e3779b97f4a7c15",
+		"cfg": {
+			"deckVariant": "24",
+			"gameTo": 10,
+			"stickTheDealer": false,
+			"requireNaturalTrump": false,
+			"loner": "makerOnly",
+			"defendAlone": false,
+			"superEuchre": false,
+			"farmersHand": "off",
+			"railroading": false,
+			"dealerMustHoldTrump": false,
+			"misdealLimit": 3
+		},
+		"firstDealer": 3,
+		"startedAt": 1767995000000,
+		"endedAt": 1767996060000,
+		"status": "complete",
+		"outcome": "won",
+		"score": [
+			10,
+			5
+		],
+		"winnerTeam": 0,
+		"handsPlayed": 9,
+		"personas": [
+			{
+				"seat": 1,
+				"persona": {
+					"id": "west-rita",
+					"version": 1,
+					"name": "Rita",
+					"blurb": "Patient. Remembers every trump.",
+					"prompt": "You have played euchre for forty years. Count public cards carefully, favour a dependable point over a speculative loner, and preserve partner winners. Your humour is understated: a raised eyebrow in a few words. Never claim to know hidden cards.",
+					"housePrompt": "A friendly kitchen-table euchre game. Warm, dry humour; one short line when something actually happens. Never coach or signal to a partner.",
+					"difficulty": "expert",
+					"aggression": 0.3,
+					"risk": 0.25,
+					"chattiness": 0.35,
+					"temperature": 0.6,
+					"modelId": "claude-haiku-4-5",
+					"bidModelId": "claude-haiku-4-5"
+				},
+				"dossier": ""
+			},
+			{
+				"seat": 2,
+				"persona": {
+					"id": "north-ned",
+					"version": 1,
+					"name": "Ned",
+					"blurb": "Your steady, encouraging partner.",
+					"prompt": "You are a dependable experienced partner. Make sound calls, protect vulnerable partner winners, and save strength when their trick is secure. You celebrate good team play in a few warm words, never coach, scold, or give hints about your cards.",
+					"housePrompt": "A friendly kitchen-table euchre game. Warm, dry humour; one short line when something actually happens. Never coach or signal to a partner.",
+					"difficulty": "expert",
+					"aggression": 0.5,
+					"risk": 0.45,
+					"chattiness": 0.45,
+					"temperature": 0.6,
+					"modelId": "claude-haiku-4-5",
+					"bidModelId": "claude-haiku-4-5"
+				},
+				"dossier": ""
+			},
+			{
+				"seat": 3,
+				"persona": {
+					"id": "east-grandpa",
+					"version": 1,
+					"name": "Grandpa",
+					"blurb": "Takes a chance. Enjoys the story.",
+					"prompt": "You are a seasoned kitchen-table player with a mischievous streak. Take a plausible close call, value a well-supported loner and play for the march when it is still available. You take calculated chances, never deliberately misplay or spend a bower when a small trump does the same job. Your short, good-natured quips sound like an old friend; no caricatures, coaching or hidden-card hints.",
+					"housePrompt": "A friendly kitchen-table euchre game. Warm, dry humour; one short line when something actually happens. Never coach or signal to a partner.",
+					"difficulty": "expert",
+					"aggression": 0.8,
+					"risk": 0.8,
+					"chattiness": 0.65,
+					"temperature": 0.6,
+					"modelId": "claude-haiku-4-5",
+					"bidModelId": "claude-haiku-4-5"
+				},
+				"dossier": ""
+			}
+		],
+		"stats": {
+			"euchresFor": 1,
+			"euchresAgainst": 0,
+			"lonersAttempted": 2,
+			"lonersMade": 1,
+			"marches": 3,
+			"throwIns": 1,
+			"tricks": [
+				31,
+				29
+			]
+		},
+		"tokens": {
+			"tokensIn": 0,
+			"tokensOut": 0,
+			"cacheReadTokens": 0,
+			"calls": 0
+		}
+	},
+	"liveMatchRecord": {
+		"schema": 1,
+		"matchId": "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b",
+		"userId": "guest-0b5f2a64-5d1e-4c33-9a8e-2f7c1d0e9b11",
+		"seed": "9e3779b97f4a7c15",
+		"cfg": {
+			"deckVariant": "24",
+			"gameTo": 10,
+			"stickTheDealer": false,
+			"requireNaturalTrump": false,
+			"loner": "makerOnly",
+			"defendAlone": false,
+			"superEuchre": false,
+			"farmersHand": "off",
+			"railroading": false,
+			"dealerMustHoldTrump": false,
+			"misdealLimit": 3
+		},
+		"firstDealer": 3,
+		"startedAt": 1767995000000,
+		"endedAt": null,
+		"status": "active",
+		"outcome": "abandoned",
+		"score": [
+			0,
+			0
+		],
+		"winnerTeam": null,
+		"handsPlayed": 0,
+		"personas": [
+			{
+				"seat": 1,
+				"persona": {
+					"id": "west-rita",
+					"version": 1,
+					"name": "Rita",
+					"blurb": "Patient. Remembers every trump.",
+					"prompt": "You have played euchre for forty years. Count public cards carefully, favour a dependable point over a speculative loner, and preserve partner winners. Your humour is understated: a raised eyebrow in a few words. Never claim to know hidden cards.",
+					"housePrompt": "A friendly kitchen-table euchre game. Warm, dry humour; one short line when something actually happens. Never coach or signal to a partner.",
+					"difficulty": "expert",
+					"aggression": 0.3,
+					"risk": 0.25,
+					"chattiness": 0.35,
+					"temperature": 0.6,
+					"modelId": "claude-haiku-4-5",
+					"bidModelId": "claude-haiku-4-5"
+				},
+				"dossier": ""
+			},
+			{
+				"seat": 2,
+				"persona": {
+					"id": "north-ned",
+					"version": 1,
+					"name": "Ned",
+					"blurb": "Your steady, encouraging partner.",
+					"prompt": "You are a dependable experienced partner. Make sound calls, protect vulnerable partner winners, and save strength when their trick is secure. You celebrate good team play in a few warm words, never coach, scold, or give hints about your cards.",
+					"housePrompt": "A friendly kitchen-table euchre game. Warm, dry humour; one short line when something actually happens. Never coach or signal to a partner.",
+					"difficulty": "expert",
+					"aggression": 0.5,
+					"risk": 0.45,
+					"chattiness": 0.45,
+					"temperature": 0.6,
+					"modelId": "claude-haiku-4-5",
+					"bidModelId": "claude-haiku-4-5"
+				},
+				"dossier": ""
+			},
+			{
+				"seat": 3,
+				"persona": {
+					"id": "east-grandpa",
+					"version": 1,
+					"name": "Grandpa",
+					"blurb": "Takes a chance. Enjoys the story.",
+					"prompt": "You are a seasoned kitchen-table player with a mischievous streak. Take a plausible close call, value a well-supported loner and play for the march when it is still available. You take calculated chances, never deliberately misplay or spend a bower when a small trump does the same job. Your short, good-natured quips sound like an old friend; no caricatures, coaching or hidden-card hints.",
+					"housePrompt": "A friendly kitchen-table euchre game. Warm, dry humour; one short line when something actually happens. Never coach or signal to a partner.",
+					"difficulty": "expert",
+					"aggression": 0.8,
+					"risk": 0.8,
+					"chattiness": 0.65,
+					"temperature": 0.6,
+					"modelId": "claude-haiku-4-5",
+					"bidModelId": "claude-haiku-4-5"
+				},
+				"dossier": ""
+			}
+		],
+		"stats": {
+			"euchresFor": 1,
+			"euchresAgainst": 0,
+			"lonersAttempted": 2,
+			"lonersMade": 1,
+			"marches": 3,
+			"throwIns": 1,
+			"tricks": [
+				31,
+				29
+			]
+		},
+		"tokens": {
+			"tokensIn": 0,
+			"tokensOut": 0,
+			"cacheReadTokens": 0,
+			"calls": 0
+		}
+	},
+	"handJournalEntry": {
+		"matchId": "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b",
+		"handNo": 1,
+		"seed": "9e3779b97f4a7c15",
+		"dealerSeat": 0,
+		"deckOrder": [
+			"QD",
+			"KC",
+			"JS",
+			"AC",
+			"9H",
+			"9S",
+			"QH",
+			"9D",
+			"TS",
+			"TH",
+			"KS",
+			"KD",
+			"AH",
+			"AS",
+			"JC",
+			"QC",
+			"TC",
+			"AD",
+			"TD",
+			"QS",
+			"9C",
+			"KH",
+			"JD",
+			"JH"
+		],
+		"moves": [
+			{
+				"seat": 3,
+				"id": "cut:yes",
+				"move": {
+					"t": "cut",
+					"cut": true
+				},
+				"kind": "ai",
+				"source": "fallback"
+			},
+			{
+				"seat": 1,
+				"id": "orderUp",
+				"move": {
+					"t": "orderUp",
+					"alone": false
+				},
+				"kind": "ai",
+				"source": "fallback"
+			},
+			{
+				"seat": 0,
+				"id": "discard:9D",
+				"move": {
+					"t": "discard",
+					"card": "9D"
+				},
+				"kind": "human"
+			},
+			{
+				"seat": 1,
+				"id": "play:QD",
+				"move": {
+					"t": "play",
+					"card": "QD"
+				},
+				"kind": "ai",
+				"source": "fallback"
+			},
+			{
+				"seat": 2,
+				"id": "play:JS",
+				"move": {
+					"t": "play",
+					"card": "JS"
+				},
+				"kind": "ai",
+				"source": "fallback"
+			},
+			{
+				"seat": 3,
+				"id": "play:AD",
+				"move": {
+					"t": "play",
+					"card": "AD"
+				},
+				"kind": "ai",
+				"source": "fallback"
+			},
+			{
+				"seat": 0,
+				"id": "play:TD",
+				"move": {
+					"t": "play",
+					"card": "TD"
+				},
+				"kind": "human"
+			},
+			{
+				"seat": 2,
+				"id": "play:AC",
+				"move": {
+					"t": "play",
+					"card": "AC"
+				},
+				"kind": "ai",
+				"source": "fallback"
+			},
+			{
+				"seat": 3,
+				"id": "play:QC",
+				"move": {
+					"t": "play",
+					"card": "QC"
+				},
+				"kind": "ai",
+				"source": "fallback"
+			},
+			{
+				"seat": 0,
+				"id": "play:9C",
+				"move": {
+					"t": "play",
+					"card": "9C"
+				},
+				"kind": "human"
+			},
+			{
+				"seat": 1,
+				"id": "play:KC",
+				"move": {
+					"t": "play",
+					"card": "KC"
+				},
+				"kind": "ai",
+				"source": "fallback"
+			},
+			{
+				"seat": 2,
+				"id": "play:9H",
+				"move": {
+					"t": "play",
+					"card": "9H"
+				},
+				"kind": "ai",
+				"source": "fallback"
+			},
+			{
+				"seat": 3,
+				"id": "play:QH",
+				"move": {
+					"t": "play",
+					"card": "QH"
+				},
+				"kind": "ai",
+				"source": "fallback"
+			},
+			{
+				"seat": 0,
+				"id": "play:TH",
+				"move": {
+					"t": "play",
+					"card": "TH"
+				},
+				"kind": "human"
+			},
+			{
+				"seat": 1,
+				"id": "play:AH",
+				"move": {
+					"t": "play",
+					"card": "AH"
+				},
+				"kind": "ai",
+				"source": "fallback"
+			},
+			{
+				"seat": 1,
+				"id": "play:KS",
+				"move": {
+					"t": "play",
+					"card": "KS"
+				},
+				"kind": "ai",
+				"source": "fallback"
+			},
+			{
+				"seat": 2,
+				"id": "play:AS",
+				"move": {
+					"t": "play",
+					"card": "AS"
+				},
+				"kind": "ai",
+				"source": "fallback"
+			},
+			{
+				"seat": 3,
+				"id": "play:9S",
+				"move": {
+					"t": "play",
+					"card": "9S"
+				},
+				"kind": "ai",
+				"source": "fallback"
+			},
+			{
+				"seat": 0,
+				"id": "play:TS",
+				"move": {
+					"t": "play",
+					"card": "TS"
+				},
+				"kind": "human"
+			},
+			{
+				"seat": 2,
+				"id": "play:JC",
+				"move": {
+					"t": "play",
+					"card": "JC"
+				},
+				"kind": "ai",
+				"source": "fallback"
+			},
+			{
+				"seat": 3,
+				"id": "play:TC",
+				"move": {
+					"t": "play",
+					"card": "TC"
+				},
+				"kind": "ai",
+				"source": "fallback"
+			},
+			{
+				"seat": 0,
+				"id": "play:QS",
+				"move": {
+					"t": "play",
+					"card": "QS"
+				},
+				"kind": "human"
+			},
+			{
+				"seat": 1,
+				"id": "play:KD",
+				"move": {
+					"t": "play",
+					"card": "KD"
+				},
+				"kind": "ai",
+				"source": "fallback"
+			}
+		],
+		"trump": "C",
+		"makerSeat": 1,
+		"aloneSeat": null,
+		"tricksWon": [
+			4,
+			1
+		],
+		"result": "euchre",
+		"delta": [
+			2,
+			0
+		],
+		"endedAt": 1767996060000
+	},
+	"matchSummary": {
+		"matchId": "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b",
+		"playedAt": 1767996060000,
+		"status": "complete",
+		"outcome": "won",
+		"score": [
+			10,
+			5
+		],
+		"handsPlayed": 9,
+		"opponents": [
+			"Rita",
+			"Ned",
+			"Grandpa"
+		]
+	},
+	"matchListPage": {
+		"rows": [],
+		"cursor": null
+	},
+	"lifetimeStats": {
+		"matches": 4,
+		"won": 2,
+		"lost": 1,
+		"abandoned": 1,
+		"euchresFor": 3,
+		"euchresAgainst": 2,
+		"lonersMade": 1,
+		"handsPlayed": 41,
+		"updatedAt": 1767996060000
+	},
+	"playerProfileState": {
+		"schema": 1,
+		"activeGameId": null,
+		"dailyTokens": {
+			"tokensIn": 1200,
+			"tokensOut": 340,
+			"cacheReadTokens": 0,
+			"calls": 7
+		},
+		"lifetime": {
+			"matches": 0,
+			"won": 0,
+			"lost": 0,
+			"abandoned": 0,
+			"euchresFor": 0,
+			"euchresAgainst": 0,
+			"lonersMade": 0,
+			"handsPlayed": 0,
+			"updatedAt": 1767995000000
+		}
+	},
+	"episode": {
+		"role": "east-grandpa",
+		"matchId": "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b",
+		"handNo": 3,
+		"ts": 1767995500000,
+		"kind": "loner",
+		"summary": "Went alone on hearts and made it.",
+		"salience": 0.9,
+		"expiresAt": 1775771500000
+	}
+}

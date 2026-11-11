@@ -1,0 +1,97 @@
+{
+	"$schema": "https://turborepo.com/schema.json",
+	"ui": "stream",
+	"cacheDir": ".turbo/cache",
+	"globalDependencies": ["rust-toolchain.toml", "Cargo.toml", "Cargo.lock"],
+	"globalEnv": ["RUSTFLAGS"],
+	"globalPassThroughEnv": [
+		"CARGO_TARGET_DIR",
+		"CARGO_HOME",
+		"CARGO_BUILD_JOBS",
+		"RUSTUP_HOME",
+		"RUSTUP_TOOLCHAIN",
+		"RUST_BACKTRACE",
+		"RUST_LOG",
+		"RIVET_ENGINE_BINARY_PATH",
+		"HTTP_PROXY",
+		"HTTPS_PROXY",
+		"NO_PROXY",
+		"http_proxy",
+		"https_proxy",
+		"no_proxy",
+		"PLAYWRIGHT_BROWSERS_PATH"
+	],
+	"tasks": {
+		"build": {
+			"dependsOn": [],
+			"cache": false
+		},
+		"check": {
+			"dependsOn": ["^check"],
+			"inputs": [
+				"$TURBO_DEFAULT$",
+				"$TURBO_ROOT$/crates/*/Cargo.toml",
+				"$TURBO_ROOT$/crates/*/build.rs",
+				"$TURBO_ROOT$/crates/*/src/**",
+				"$TURBO_ROOT$/crates/*/tests/**",
+				"$TURBO_ROOT$/crates/*/examples/**",
+				"$TURBO_ROOT$/crates/*/benches/**",
+				"$TURBO_ROOT$/apps/server/Cargo.toml",
+				"$TURBO_ROOT$/apps/server/src/**",
+				"$TURBO_ROOT$/apps/server/tests/**",
+				"$TURBO_ROOT$/apps/web/static/art/**"
+			]
+		},
+		"test": {
+			"dependsOn": [],
+			"env": ["EUCHRE_E2E"],
+			"passThroughEnv": ["EUCHRE_TEST_ENGINE_PORT", "EUCHRE_TEST_STORAGE", "EUCHRE_WRITE_RUST_TOKENS"],
+			"inputs": [
+				"$TURBO_DEFAULT$",
+				"$TURBO_ROOT$/crates/*/Cargo.toml",
+				"$TURBO_ROOT$/crates/*/build.rs",
+				"$TURBO_ROOT$/crates/*/src/**",
+				"$TURBO_ROOT$/crates/*/tests/**",
+				"$TURBO_ROOT$/crates/*/examples/**",
+				"$TURBO_ROOT$/crates/*/benches/**",
+				"$TURBO_ROOT$/apps/server/Cargo.toml",
+				"$TURBO_ROOT$/apps/server/src/**",
+				"$TURBO_ROOT$/apps/server/tests/**",
+				"$TURBO_ROOT$/apps/web/static/art/**"
+			]
+		},
+		"lint": {},
+		"format": {
+			"cache": false
+		},
+		"dev": {
+			"cache": false,
+			"persistent": true,
+			"passThroughEnv": [
+				"NODE_ENV",
+				"PORT",
+				"APP_URL",
+				"PUBLIC_APP_URL",
+				"ALLOWED_ORIGINS",
+				"BUILD_NUMBER",
+				"RIVET_*",
+				"RIVETKIT_*",
+				"EUCHRE_*",
+				"OPENROUTER_*",
+				"ANTHROPIC_*"
+			]
+		},
+		"@euchre/web#build": {
+			"dependsOn": ["^build"],
+			"outputs": ["build/**", ".svelte-kit/**"]
+		},
+		"@euchre/web#check": {
+			"dependsOn": ["^check"]
+		},
+		"@euchre/web#test": {},
+		"@rivetkit/svelte#build": {
+			"outputs": ["dist/**"]
+		},
+		"@rivetkit/svelte#test": {}
+	}
+}

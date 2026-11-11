@@ -1,0 +1,36 @@
+[package]
+name = "euchre-table"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+description = "The euchreTable actor on rivetkit 3.1.0: one match, the single authority."
+
+[dependencies]
+euchre-engine.workspace = true
+euchre-protocol.workspace = true
+euchre-ai.workspace = true
+euchre-server-core.workspace = true
+# Pure (D29): the profile's text sanitizer and id/seed caps bound the create
+# input (src/create_input.rs).
+euchre-profile-model.workspace = true
+rivetkit.workspace = true
+anyhow.workspace = true
+async-trait.workspace = true
+parking_lot.workspace = true
+rand.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+tokio-util.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+# The seams test (tests/seams_e2e.rs) registers the real aiSeat and playerProfile.
+euchre-ai-seat = { workspace = true }
+euchre-profile = { workspace = true }
+tracing-subscriber.workspace = true
+uuid.workspace = true
+
+[lints]
+workspace = true

@@ -1,0 +1,13 @@
+{
+	"name": "@euchre/server-core",
+	"private": true,
+	"version": "0.1.0",
+	"scripts": {
+		"build": "cargo build -p euchre-server-core",
+		"check": "cargo clippy -p euchre-server-core --all-targets -- -D warnings",
+		"test": "cargo test -p euchre-server-core",
+		"lint": "cargo fmt -p euchre-server-core --check",
+		"format": "cargo fmt -p euchre-server-core",
+		"fixtures": "bun scripts/gen-auth-fixtures.ts"
+	}
+}

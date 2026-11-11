@@ -1,3 +1,8 @@
+> **TS-era design document.** It describes the original TypeScript build, which the Rust port
+> replaced (`apps/server`, `crates/`, the static SPA in `apps/web`). Where it disagrees with the
+> port, the port wins: read [`port/ARCHITECTURE.md`](./port/ARCHITECTURE.md) first. Kept as the
+> record of the original design and the rules the port had to match.
+
 # 02 — Game Rules & Engine
 
 The complete euchre rulebook as implemented by `packages/euchre-core` (`@euchre/core`), plus the pure reducer API, the phase state machine, and the test plan. This document is normative: if the code and this document disagree, the code is wrong.

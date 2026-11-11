@@ -1,16 +1,47 @@
-node_modules
-**/node_modules
+# Build context for the root Dockerfile: sources and lockfiles only.
+# Patterns without **/ match at the context root only.
+
+# VCS and agent tooling
 .git
-.env
-.env.*
 .claude
 .codex
 .agents
-.rivet
-.rivetkit
-.svelte-kit
+.mcp.json
+
+# Rust build output (the image builds its own)
+target
+**/target
+.cargo-targets
+
+# JS installs and build output (the image installs and builds its own)
+node_modules
+**/node_modules
+.turbo
+**/.turbo
+**/.svelte-kit
+**/build
+**/dist
 .vercel
-build
-assets
+coverage
+
+# Secrets and local runtime state
+.env
+.env.*
+**/.env
+**/.env.*
+.rivet
+**/.rivet
+.rivetkit
+**/.rivetkit
 *.db
+**/*.db
+
+# Docs, research and scratch: nothing in the build reads them
+docs
+assets
 *.blend1
+**/*.blend1
+*.log
+**/*.log
+.DS_Store
+**/.DS_Store

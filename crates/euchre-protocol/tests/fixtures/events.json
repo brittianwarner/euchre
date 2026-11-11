@@ -1,0 +1,47 @@
+{
+	"thinking": {
+		"seat": 1,
+		"on": true,
+		"extended": false
+	},
+	"chatCall": {
+		"msgId": "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b:58:0",
+		"seat": 1,
+		"kind": "call",
+		"text": "I assist.",
+		"final": true
+	},
+	"chatSystem": {
+		"msgId": "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b:12:1",
+		"seat": 0,
+		"kind": "system",
+		"text": "Throw it in. Nobody wanted it.",
+		"final": true
+	},
+	"chatBanter": {
+		"msgId": "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b:n7p0c3:2",
+		"seat": 2,
+		"kind": "banter",
+		"text": "Nice lead.",
+		"final": true
+	},
+	"chatDelta": {
+		"msgId": "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b:n7p0c3:2",
+		"seat": 2,
+		"delta": "Nice "
+	},
+	"presence": {
+		"seat": 0,
+		"online": true
+	},
+	"tableEventNames": [
+		"sync",
+		"thinking",
+		"chat",
+		"chatDelta",
+		"presence"
+	],
+	"perConnectionEvents": [
+		"sync"
+	]
+}

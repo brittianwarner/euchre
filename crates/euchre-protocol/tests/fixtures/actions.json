@@ -1,0 +1,238 @@
+{
+	"submitMove": {
+		"moveId": "play:JS",
+		"turnId": "i3koe7idka36",
+		"clientMoveId": "2d9a3c40-6f1b-4e8a-b0c2-7d5e3f9a1b64"
+	},
+	"ackOk": {
+		"ok": true,
+		"v": 17
+	},
+	"ackErr": {
+		"ok": false,
+		"code": "stale_turn",
+		"legal": [
+			{
+				"id": "pass",
+				"move": {
+					"t": "pass"
+				},
+				"label": "Pass"
+			},
+			{
+				"id": "orderUp",
+				"move": {
+					"t": "orderUp",
+					"alone": false
+				},
+				"label": "Order it up"
+			},
+			{
+				"id": "orderUp+alone",
+				"move": {
+					"t": "orderUp",
+					"alone": true
+				},
+				"label": "Order it up, alone"
+			}
+		]
+	},
+	"ackGameComplete": {
+		"ok": false,
+		"code": "game_complete",
+		"legal": []
+	},
+	"reviewSet": {
+		"action": "set",
+		"enabled": true
+	},
+	"reviewContinue": {
+		"action": "continue",
+		"turnId": "i3koe7idka36"
+	},
+	"reviewAck": {
+		"queued": true
+	},
+	"connectParams": {
+		"token": "eyJhbGciOiJIUzI1NiJ9.e30.sig",
+		"protocolVersion": 1
+	},
+	"connectParamsInternal": {
+		"internalToken": "1c6f0a52-8d3e-4b7a-9f21-6e5d4c3b2a10",
+		"token": ""
+	},
+	"connectParamsFull": {
+		"internalToken": "1c6f0a52-8d3e-4b7a-9f21-6e5d4c3b2a10",
+		"token": "eyJhbGciOiJIUzI1NiJ9.e30.sig",
+		"seat": 0,
+		"protocolVersion": 1
+	},
+	"connState": {
+		"userId": "guest-0b5f2a64-5d1e-4c33-9a8e-2f7c1d0e9b11",
+		"seat": 0,
+		"role": "player",
+		"since": 1767996000123
+	},
+	"connStateInternal": {
+		"userId": "internal",
+		"seat": 0,
+		"role": "internal",
+		"since": 1767996000456
+	},
+	"createInput": {
+		"ownerUserId": "guest-0b5f2a64-5d1e-4c33-9a8e-2f7c1d0e9b11",
+		"profileUserId": "guest-0b5f2a64-5d1e-4c33-9a8e-2f7c1d0e9b11",
+		"seed": "9e3779b97f4a7c15",
+		"cfg": {
+			"gameTo": 10,
+			"stickTheDealer": false,
+			"requireNaturalTrump": false
+		},
+		"firstDealer": 3,
+		"personas": [
+			{
+				"seat": 1,
+				"persona": {
+					"id": "west-rita",
+					"version": 1,
+					"name": "Rita",
+					"blurb": "Patient. Remembers every trump.",
+					"prompt": "You have played euchre for forty years. Count public cards carefully, favour a dependable point over a speculative loner, and preserve partner winners. Your humour is understated: a raised eyebrow in a few words. Never claim to know hidden cards.",
+					"housePrompt": "A friendly kitchen-table euchre game. Warm, dry humour; one short line when something actually happens. Never coach or signal to a partner.",
+					"difficulty": "expert",
+					"aggression": 0.3,
+					"risk": 0.25,
+					"chattiness": 0.35,
+					"temperature": 0.6,
+					"modelId": "claude-haiku-4-5",
+					"bidModelId": "claude-haiku-4-5"
+				},
+				"dossier": ""
+			},
+			{
+				"seat": 2,
+				"persona": {
+					"id": "north-ned",
+					"version": 1,
+					"name": "Ned",
+					"blurb": "Your steady, encouraging partner.",
+					"prompt": "You are a dependable experienced partner. Make sound calls, protect vulnerable partner winners, and save strength when their trick is secure. You celebrate good team play in a few warm words, never coach, scold, or give hints about your cards.",
+					"housePrompt": "A friendly kitchen-table euchre game. Warm, dry humour; one short line when something actually happens. Never coach or signal to a partner.",
+					"difficulty": "expert",
+					"aggression": 0.5,
+					"risk": 0.45,
+					"chattiness": 0.45,
+					"temperature": 0.6,
+					"modelId": "claude-haiku-4-5",
+					"bidModelId": "claude-haiku-4-5"
+				},
+				"dossier": ""
+			},
+			{
+				"seat": 3,
+				"persona": {
+					"id": "east-grandpa",
+					"version": 1,
+					"name": "Grandpa",
+					"blurb": "Takes a chance. Enjoys the story.",
+					"prompt": "You are a seasoned kitchen-table player with a mischievous streak. Take a plausible close call, value a well-supported loner and play for the march when it is still available. You take calculated chances, never deliberately misplay or spend a bower when a small trump does the same job. Your short, good-natured quips sound like an old friend; no caricatures, coaching or hidden-card hints.",
+					"housePrompt": "A friendly kitchen-table euchre game. Warm, dry humour; one short line when something actually happens. Never coach or signal to a partner.",
+					"difficulty": "expert",
+					"aggression": 0.8,
+					"risk": 0.8,
+					"chattiness": 0.65,
+					"temperature": 0.6,
+					"modelId": "claude-haiku-4-5",
+					"bidModelId": "claude-haiku-4-5"
+				},
+				"dossier": ""
+			}
+		]
+	},
+	"createInputEmpty": {},
+	"userError": {
+		"code": "illegal_move",
+		"message": "That move is not legal right now",
+		"metadata": {
+			"legal": [
+				{
+					"id": "play:JS",
+					"move": {
+						"t": "play",
+						"card": "JS"
+					},
+					"label": "Jack of spades"
+				},
+				{
+					"id": "play:TD",
+					"move": {
+						"t": "play",
+						"card": "TD"
+					},
+					"label": "Ten of diamonds"
+				},
+				{
+					"id": "play:JC",
+					"move": {
+						"t": "play",
+						"card": "JC"
+					},
+					"label": "Jack of clubs"
+				}
+			]
+		}
+	},
+	"protocolError": {
+		"code": "forbidden",
+		"message": "Not your game",
+		"retryable": false
+	},
+	"protocolErrorBare": {
+		"code": "stale_turn",
+		"message": "stale"
+	},
+	"tableSession": {
+		"actorId": "a1b2c3d4e5",
+		"token": "eyJhbGciOiJIUzI1NiJ9.e30.sig",
+		"gatewayToken": "gw.token",
+		"expiresAt": 1767996900000
+	},
+	"tableSessionNoGateway": {
+		"actorId": "a1b2c3d4e5",
+		"token": "eyJhbGciOiJIUzI1NiJ9.e30.sig",
+		"expiresAt": 1767996900000
+	},
+	"moveMsg": {
+		"seq": 4,
+		"turnId": "i3koe7idka36",
+		"moveId": "play:JS",
+		"clientMoveId": "2d9a3c40-6f1b-4e8a-b0c2-7d5e3f9a1b64",
+		"userId": "guest-0b5f2a64-5d1e-4c33-9a8e-2f7c1d0e9b11"
+	},
+	"reviewMsgSet": {
+		"internalToken": "1c6f0a52-8d3e-4b7a-9f21-6e5d4c3b2a10",
+		"gameId": "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b",
+		"action": "set",
+		"enabled": true,
+		"turnId": "i3koe7idka36"
+	},
+	"reviewMsgContinue": {
+		"internalToken": "1c6f0a52-8d3e-4b7a-9f21-6e5d4c3b2a10",
+		"gameId": "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b",
+		"action": "continue",
+		"turnId": "i3koe7idka36"
+	},
+	"tickMsg": {
+		"internalToken": "1c6f0a52-8d3e-4b7a-9f21-6e5d4c3b2a10",
+		"gameId": "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b",
+		"kind": "tempo",
+		"turnId": "i3koe7idka36"
+	},
+	"tickMsgTimeout": {
+		"internalToken": "1c6f0a52-8d3e-4b7a-9f21-6e5d4c3b2a10",
+		"gameId": "6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b",
+		"kind": "aiTimeout",
+		"turnId": "i3koe7idka36",
+		"seat": 2
+	}
+}

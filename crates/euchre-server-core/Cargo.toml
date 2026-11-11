@@ -1,0 +1,50 @@
+[package]
+name = "euchre-server-core"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+rivetkit.workspace = true
+anyhow.workspace = true
+tokio.workspace = true
+tokio-util.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+rivetkit-client.workspace = true
+async-trait.workspace = true
+futures.workspace = true
+parking_lot.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+sha2.workspace = true
+hmac.workspace = true
+subtle.workspace = true
+base64.workspace = true
+hex.workspace = true
+jsonwebtoken.workspace = true
+axum.workspace = true
+tower.workspace = true
+tower-http.workspace = true
+http.workspace = true
+bytes.workspace = true
+url.workspace = true
+cookie.workspace = true
+tokio-tungstenite.workspace = true
+reqwest.workspace = true
+ciborium.workspace = true
+regex.workspace = true
+unicode-normalization.workspace = true
+rand.workspace = true
+time.workspace = true
+rivet-error.workspace = true
+rivetkit-engine-process.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+wiremock.workspace = true
+
+[lints]
+workspace = true

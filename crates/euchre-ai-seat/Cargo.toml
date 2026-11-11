@@ -1,0 +1,28 @@
+[package]
+name = "euchre-ai-seat"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+description = "The aiSeat actor on rivetkit 3.1.0: one AI chair per match, over euchre_ai::ai_seat."
+
+[dependencies]
+euchre-protocol.workspace = true
+euchre-ai.workspace = true
+euchre-server-core.workspace = true
+rivetkit.workspace = true
+anyhow.workspace = true
+async-trait.workspace = true
+parking_lot.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+euchre-engine.workspace = true
+euchre-profile-model.workspace = true
+tracing-subscriber.workspace = true
+uuid.workspace = true
+
+[lints]
+workspace = true

@@ -1,0 +1,12 @@
+{
+	"name": "@euchre/engine",
+	"private": true,
+	"version": "0.1.0",
+	"scripts": {
+		"build": "cargo build -p euchre-engine",
+		"check": "cargo clippy -p euchre-engine --all-targets -- -D warnings",
+		"test": "cargo test -p euchre-engine",
+		"lint": "cargo fmt -p euchre-engine --check",
+		"format": "cargo fmt -p euchre-engine"
+	}
+}

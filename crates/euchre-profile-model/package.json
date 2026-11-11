@@ -1,0 +1,12 @@
+{
+	"name": "@euchre/profile-model",
+	"private": true,
+	"version": "0.1.0",
+	"scripts": {
+		"build": "cargo build -p euchre-profile-model",
+		"check": "cargo clippy -p euchre-profile-model --all-targets -- -D warnings",
+		"test": "cargo test -p euchre-profile-model",
+		"lint": "cargo fmt -p euchre-profile-model --check",
+		"format": "cargo fmt -p euchre-profile-model"
+	}
+}

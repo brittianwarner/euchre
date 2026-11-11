@@ -1,0 +1,28 @@
+
+════════════════════════════════════════════════════════════════
+FUZZ — 20 complete games, every invariant checked at every step
+════════════════════════════════════════════════════════════════
+games            20
+hands            184  (avg 9.2/game)
+engine steps     4974
+loner calls      89
+euchres          122
+phases exercised bid_round_1, bid_round_2, cutting, dealer_discard, game_over, hand_score, lobby, trick_play, trick_resolve
+distinct moves   55
+hand results     point=34  lone_point=23  euchre=122  march=5
+
+════════════════════════════════════════════════════════════════
+✓ ALL INVARIANTS HELD
+  · no secret card ever appeared in any seat's projected view
+  · all 24 cards conserved in every reachable state
+  · hand sizes correct for every seat at every trick
+  · follow-suit re-derived from replayed holdings, never violated
+  · trick winners recomputed independently, always agreed
+  · recorded ledSuit always the effective suit of the lead
+  · loner hands had exactly 3 plays/trick, sitting seat never played
+  · scores monotonic, only +1/+2/+4, never both teams in one hand
+  · illegal moves rejected without mutating state
+  · off-turn seats never had legal moves
+  · exactly one seat could act at any moment
+  · every game terminated with exactly one team at the target
+  · identical seed reproduced an identical game

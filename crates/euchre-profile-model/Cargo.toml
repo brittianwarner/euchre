@@ -1,0 +1,17 @@
+[package]
+name = "euchre-profile-model"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+description = "Pure playerProfile logic: settings, text hygiene, record validation, SQL rows, stats, cursors, replay redaction and episode ranking."
+
+[dependencies]
+euchre-engine.workspace = true
+euchre-protocol.workspace = true
+serde.workspace = true
+# `raw_value` lets opaque JSON print exactly as `JSON.stringify` would.
+serde_json = { workspace = true, features = ["raw_value"] }
+unicode-normalization.workspace = true
+
+[lints]
+workspace = true

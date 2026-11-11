@@ -1,0 +1,100 @@
+[package]
+name = "euchre-desktop"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[lib]
+name = "euchre_desktop"
+path = "src/lib.rs"
+# The cdylib is the browser build (wasm32, `src/web.rs`); the rlib is the window, the tests
+# and the binary.
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "euchre"
+path = "src/main.rs"
+
+[features]
+# The `?proof` probe (`src/web_probe.rs`): a wasm build for the sim proof only, never shipped.
+web-proof = []
+
+[dependencies]
+euchre-ai.workspace = true
+euchre-engine.workspace = true
+euchre-profile-model.workspace = true
+euchre-protocol.workspace = true
+rune.workspace = true
+rune-kit.workspace = true
+anyhow.workspace = true
+async-trait.workspace = true
+futures.workspace = true
+parking_lot.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+uuid.workspace = true
+
+# Native only: the embedded server, the remote backend, files, threads and audio. None of these
+# build for wasm32-unknown-unknown.
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+# The embedded server (lane N2) and the shared auth / rivet-error helpers (lane N1).
+euchre-server.workspace = true
+euchre-server-core.workspace = true
+rivetkit-client.workspace = true
+# Engine binary download on a first launch with nothing bundled or cached (lane N2).
+rivetkit-engine-process.workspace = true
+directories.workspace = true
+reqwest.workspace = true
+rodio.workspace = true
+tokio.workspace = true
+tracing-subscriber.workspace = true
+tokio-util.workspace = true
+url.workspace = true
+
+# The browser: tokio for its channels and `select!` only (no runtime; `net/rt.rs` runs tasks on
+# the page), randomness for uuid, and the browser glue. wasm-bindgen is exact: the CLI that
+# post-processes the wasm must be the same version.
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+tokio = { version = "1", default-features = false, features = ["sync", "macros"] }
+uuid = { workspace = true, features = ["js"] }
+wasm-bindgen = "=0.2.130"
+wasm-bindgen-futures = "0.4"
+js-sys = "0.3"
+web-sys = { version = "0.3", features = [
+    "console",
+    "Window",
+    "Location",
+    "History",
+    "Document",
+    "Element",
+    "Storage",
+    "Performance",
+    "Headers",
+    "Request",
+    "RequestInit",
+    "RequestCredentials",
+    "Response",
+    "AbortSignal",
+    "DomException",
+    "Crypto",
+    "AudioContext",
+    "AudioContextState",
+    "AudioBuffer",
+    "AudioBufferSourceNode",
+    "AudioDestinationNode",
+    "AudioNode",
+    "AudioParam",
+    "AudioScheduledSourceNode",
+    "BaseAudioContext",
+    "GainNode",
+] }
+
+[dev-dependencies]
+tempfile.workspace = true
+# HTTP status-mapping tests for the remote backend without an engine (lane N1).
+wiremock.workspace = true
+
+[lints]
+workspace = true

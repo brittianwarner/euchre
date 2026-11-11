@@ -1,0 +1,200 @@
+[
+	{
+		"value": "Marge",
+		"multiline": false,
+		"maxChars": 32,
+		"field": "f0",
+		"ok": "\"Marge\""
+	},
+	{
+		"value": "  padded\tname  ",
+		"multiline": false,
+		"maxChars": 32,
+		"field": "f1",
+		"ok": "\"padded name\""
+	},
+	{
+		"value": "éclair",
+		"multiline": false,
+		"maxChars": 32,
+		"field": "f2",
+		"ok": "\"éclair\""
+	},
+	{
+		"value": "line sep paranel",
+		"multiline": false,
+		"maxChars": 64,
+		"field": "f3",
+		"ok": "\"line sep para nel\""
+	},
+	{
+		"value": "line sep paranel",
+		"multiline": true,
+		"maxChars": 64,
+		"field": "f4",
+		"ok": "\"line\\nsep\\npara\\nnel\""
+	},
+	{
+		"value": "a\r\nb\rc\n\rd",
+		"multiline": true,
+		"maxChars": 64,
+		"field": "f5",
+		"ok": "\"a\\nb\\nc\\n\\nd\""
+	},
+	{
+		"value": "zero​width‮RLO⁦iso­shy﻿bom؜alm᠎mvs⁤",
+		"multiline": false,
+		"maxChars": 64,
+		"field": "f6",
+		"ok": "\"zerowidthRLOisoshybomalmmvs\""
+	},
+	{
+		"value": "ctl\u0000\u0007\u000b\f\u001bend",
+		"multiline": false,
+		"maxChars": 64,
+		"field": "f7",
+		"ok": "\"ctlend\""
+	},
+	{
+		"value": "tab\there\u000bvt",
+		"multiline": true,
+		"maxChars": 64,
+		"field": "f8",
+		"ok": "\"tab herevt\""
+	},
+	{
+		"value": "p1  \n\n\n\n  p2 \t \n p3",
+		"multiline": true,
+		"maxChars": 200,
+		"field": "f9",
+		"ok": "\"p1\\n\\np2\\np3\""
+	},
+	{
+		"value": "x \n \n \n y",
+		"multiline": true,
+		"maxChars": 200,
+		"field": "f10",
+		"ok": "\"x\\n\\ny\""
+	},
+	{
+		"value": " nbsp　ideo em ogham nnbsp mmsp ",
+		"multiline": false,
+		"maxChars": 64,
+		"field": "f11",
+		"ok": "\"nbsp ideo em ogham nnbsp mmsp\""
+	},
+	{
+		"value": " 　  \n   ",
+		"multiline": true,
+		"maxChars": 64,
+		"field": "f12",
+		"ok": "\"\""
+	},
+	{
+		"value": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+		"multiline": false,
+		"maxChars": 32,
+		"field": "f13",
+		"ok": "\"😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀\""
+	},
+	{
+		"value": "abc def ghi",
+		"multiline": false,
+		"maxChars": 4,
+		"field": "f14",
+		"ok": "\"abc\""
+	},
+	{
+		"value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"multiline": true,
+		"maxChars": 2000,
+		"field": "f15",
+		"ok": "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\""
+	},
+	{
+		"value": " lead\n\n\ntrail \n",
+		"multiline": true,
+		"maxChars": 2000,
+		"field": "f16",
+		"ok": "\"lead\\n\\ntrail\""
+	},
+	{
+		"value": "😀‍👨",
+		"multiline": false,
+		"maxChars": 2,
+		"field": "f17",
+		"ok": "\"😀👨\""
+	},
+	{
+		"value": "",
+		"multiline": false,
+		"maxChars": 32,
+		"field": "f18",
+		"ok": "\"\""
+	},
+	{
+		"value": 42,
+		"multiline": false,
+		"maxChars": 32,
+		"field": "f19",
+		"error": {
+			"code": "invalid_persona",
+			"message": "f19 must be a string"
+		}
+	},
+	{
+		"value": null,
+		"multiline": false,
+		"maxChars": 32,
+		"field": "f20",
+		"error": {
+			"code": "invalid_persona",
+			"message": "f20 must be a string"
+		}
+	},
+	{
+		"multiline": false,
+		"maxChars": 32,
+		"field": "f21",
+		"error": {
+			"code": "invalid_persona",
+			"message": "f21 must be a string"
+		}
+	},
+	{
+		"value": {
+			"name": "x"
+		},
+		"multiline": true,
+		"maxChars": 32,
+		"field": "f22",
+		"error": {
+			"code": "invalid_persona",
+			"message": "f22 must be a string"
+		}
+	},
+	{
+		"value": [
+			"x"
+		],
+		"multiline": false,
+		"maxChars": 32,
+		"code": "internal_error",
+		"field": "f23",
+		"error": {
+			"code": "internal_error",
+			"message": "f23 must be a string"
+		}
+	},
+	{
+		"value": true,
+		"multiline": false,
+		"maxChars": 32,
+		"code": "internal_error",
+		"field": "f24",
+		"error": {
+			"code": "internal_error",
+			"message": "f24 must be a string"
+		}
+	}
+]

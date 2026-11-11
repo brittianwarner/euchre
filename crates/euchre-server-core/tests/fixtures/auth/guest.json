@@ -1,0 +1,331 @@
+{
+	"generated_by": "crates/euchre-server-core/scripts/gen-auth-fixtures.ts",
+	"actor_secret": "fixture-actor-secret-0123456789abcdef-guest",
+	"internal_token": "fixture-internal-token-0123456789abcdef",
+	"identity_secret": "fixture-identity-secret-0123456789abcdef",
+	"now_secs": 1800000000,
+	"minted": [
+		{
+			"user_id": "guest-6f9619ff-8b86-4d01-b42d-00cf4fc964ff",
+			"aud": "euchre-session",
+			"iat": 1800000000,
+			"token": "eyJhbGciOiJIUzI1NiJ9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtc2Vzc2lvbiIsImlhdCI6MTgwMDAwMDAwMCwiZXhwIjoxODM0NTYwMDAwfQ.PkfH-rUT9VOVBwPmwdgdn5RIrEICMfTNEn_csehHtWI"
+		},
+		{
+			"user_id": "guest-6f9619ff-8b86-4d01-b42d-00cf4fc964ff",
+			"aud": "euchre-actors",
+			"iat": 1800000000,
+			"token": "eyJhbGciOiJIUzI1NiJ9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiaWF0IjoxODAwMDAwMDAwLCJleHAiOjE4MDAwMDcyMDB9.ODcorRrmJNacfPvHOIbxkETUgNWIlScmdaoExeOqGtQ"
+		}
+	],
+	"cases": [
+		{
+			"name": "guest_session_ok",
+			"token": "eyJhbGciOiJIUzI1NiJ9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtc2Vzc2lvbiIsImlhdCI6MTgwMDAwMDAwMCwiZXhwIjoxODM0NTYwMDAwfQ.PkfH-rUT9VOVBwPmwdgdn5RIrEICMfTNEn_csehHtWI",
+			"aud": "euchre-session",
+			"now": 1800000010,
+			"ts_ok": true,
+			"ts_sub": "guest-6f9619ff-8b86-4d01-b42d-00cf4fc964ff",
+			"rust_ok": true
+		},
+		{
+			"name": "guest_actors_ok_last_second",
+			"token": "eyJhbGciOiJIUzI1NiJ9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiaWF0IjoxODAwMDAwMDAwLCJleHAiOjE4MDAwMDcyMDB9.ODcorRrmJNacfPvHOIbxkETUgNWIlScmdaoExeOqGtQ",
+			"aud": "euchre-actors",
+			"now": 1800007199,
+			"ts_ok": true,
+			"ts_sub": "guest-6f9619ff-8b86-4d01-b42d-00cf4fc964ff",
+			"rust_ok": true
+		},
+		{
+			"name": "guest_actors_expired_at_exp",
+			"token": "eyJhbGciOiJIUzI1NiJ9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiaWF0IjoxODAwMDAwMDAwLCJleHAiOjE4MDAwMDcyMDB9.ODcorRrmJNacfPvHOIbxkETUgNWIlScmdaoExeOqGtQ",
+			"aud": "euchre-actors",
+			"now": 1800007200,
+			"ts_ok": false,
+			"ts_error": "\"exp\" claim timestamp check failed",
+			"rust_ok": false
+		},
+		{
+			"name": "guest_session_as_actors",
+			"token": "eyJhbGciOiJIUzI1NiJ9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtc2Vzc2lvbiIsImlhdCI6MTgwMDAwMDAwMCwiZXhwIjoxODM0NTYwMDAwfQ.PkfH-rUT9VOVBwPmwdgdn5RIrEICMfTNEn_csehHtWI",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": false,
+			"ts_error": "unexpected \"aud\" claim value",
+			"rust_ok": false
+		},
+		{
+			"name": "guest_actors_as_session",
+			"token": "eyJhbGciOiJIUzI1NiJ9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiaWF0IjoxODAwMDAwMDAwLCJleHAiOjE4MDAwMDcyMDB9.ODcorRrmJNacfPvHOIbxkETUgNWIlScmdaoExeOqGtQ",
+			"aud": "euchre-session",
+			"now": 1800000000,
+			"ts_ok": false,
+			"ts_error": "unexpected \"aud\" claim value",
+			"rust_ok": false
+		},
+		{
+			"name": "guest_tampered_payload",
+			"token": "eyJhbGciOiJIUzI1NiJ9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC1zb21lb25lLWVsc2UiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiaWF0IjoxODAwMDAwMDAwLCJleHAiOjE4MDAwMDcyMDB9.ODcorRrmJNacfPvHOIbxkETUgNWIlScmdaoExeOqGtQ",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": false,
+			"ts_error": "signature verification failed",
+			"rust_ok": false
+		},
+		{
+			"name": "guest_tampered_signature",
+			"token": "eyJhbGciOiJIUzI1NiJ9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiaWF0IjoxODAwMDAwMDAwLCJleHAiOjE4MDAwMDcyMDB9.ADcorRrmJNacfPvHOIbxkETUgNWIlScmdaoExeOqGtQ",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": false,
+			"ts_error": "signature verification failed",
+			"rust_ok": false
+		},
+		{
+			"name": "guest_sig_noncanonical_trailing_bits",
+			"token": "eyJhbGciOiJIUzI1NiJ9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiaWF0IjoxODAwMDAwMDAwLCJleHAiOjE4MDAwMDcyMDB9.ODcorRrmJNacfPvHOIbxkETUgNWIlScmdaoExeOqGtR",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": true,
+			"ts_sub": "guest-6f9619ff-8b86-4d01-b42d-00cf4fc964ff",
+			"rust_ok": false,
+			"deviation": "jsonwebtoken rejects non-canonical base64url; jose decodes loosely. Never produced by a signer."
+		},
+		{
+			"name": "guest_wrong_issuer",
+			"token": "eyJhbGciOiJIUzI1NiJ9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpc3MiOiJldWNocmUtb3RoZXIiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiaWF0IjoxODAwMDAwMDAwLCJleHAiOjE4MDAwMDcyMDB9.KfEgKlB60I7IQHdLq2kJMww6qv6RsD9mhVAoTs3eiVc",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": false,
+			"ts_error": "unexpected \"iss\" claim value",
+			"rust_ok": false
+		},
+		{
+			"name": "guest_alg_none",
+			"token": "eyJhbGciOiJub25lIn0.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiaWF0IjoxODAwMDAwMDAwLCJleHAiOjE4MDAwMDcyMDB9.",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": false,
+			"ts_error": "\"alg\" (Algorithm) Header Parameter value not allowed",
+			"rust_ok": false
+		},
+		{
+			"name": "guest_alg_hs512",
+			"token": "eyJhbGciOiJIUzUxMiJ9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiaWF0IjoxODAwMDAwMDAwLCJleHAiOjE4MDAwMDcyMDB9.ej9dteF-ewWkJA7rz8fVR2ndCLzIeyLm_8JdGyo9sn5C-FXpLS5Jx9RZTmUB-8_Sfi36kk_fPU5gzKSbTh96Ew",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": false,
+			"ts_error": "\"alg\" (Algorithm) Header Parameter value not allowed",
+			"rust_ok": false
+		},
+		{
+			"name": "guest_wrong_key",
+			"token": "eyJhbGciOiJIUzI1NiJ9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiaWF0IjoxODAwMDAwMDAwLCJleHAiOjE4MDAwMDcyMDB9.Xqe6WSPJSZKCc6gbSai8VSuTVAN4u-nQwrJreSe-hXU",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": false,
+			"ts_error": "signature verification failed",
+			"rust_ok": false
+		},
+		{
+			"name": "guest_kind_not_guest",
+			"token": "eyJhbGciOiJIUzI1NiJ9.eyJraW5kIjoidXNlciIsInN1YiI6Imd1ZXN0LTZmOTYxOWZmLThiODYtNGQwMS1iNDJkLTAwY2Y0ZmM5NjRmZiIsImlzcyI6ImV1Y2hyZS1ndWVzdCIsImF1ZCI6ImV1Y2hyZS1hY3RvcnMiLCJpYXQiOjE4MDAwMDAwMDAsImV4cCI6MTgwMDAwNzIwMH0.NyE58A1zpp6LrM0zmo8t1US0oTsTJysjbonMaCNQnfo",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": false,
+			"ts_error": "Invalid guest identity",
+			"rust_ok": false
+		},
+		{
+			"name": "guest_sub_without_prefix",
+			"token": "eyJhbGciOiJIUzI1NiJ9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJ1c2VyLTEiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiaWF0IjoxODAwMDAwMDAwLCJleHAiOjE4MDAwMDcyMDB9.OENz4sum0u6meZJm3RS-MVjnGHc7Lq7fEYWuavr8pw4",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": false,
+			"ts_error": "Invalid guest identity",
+			"rust_ok": false
+		},
+		{
+			"name": "guest_nbf_future",
+			"token": "eyJhbGciOiJIUzI1NiJ9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiaWF0IjoxODAwMDAwMDAwLCJleHAiOjE4MDAwMDcyMDAsIm5iZiI6MTgwMDAwMDEwMH0.hNcFzpWrIhAXAwx09co92S8xxw7pw1qEIHswhLa5EYA",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": false,
+			"ts_error": "\"nbf\" claim timestamp check failed",
+			"rust_ok": false
+		},
+		{
+			"name": "guest_nbf_now_ok",
+			"token": "eyJhbGciOiJIUzI1NiJ9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiaWF0IjoxODAwMDAwMDAwLCJleHAiOjE4MDAwMDcyMDAsIm5iZiI6MTgwMDAwMDAwMH0.iRdr6Enmxq9icXj9SiXtlPrr4hHBW-t9JpDTsFkoEFw",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": true,
+			"ts_sub": "guest-6f9619ff-8b86-4d01-b42d-00cf4fc964ff",
+			"rust_ok": true
+		},
+		{
+			"name": "guest_iat_not_number",
+			"token": "eyJhbGciOiJIUzI1NiJ9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiaWF0IjoieCIsImV4cCI6MTgwMDAwNzIwMH0.P8dnD79hWTIBJsD6EjCmAXU5NRPEcohxr4pRXanyzNs",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": false,
+			"ts_error": "\"iat\" claim must be a number",
+			"rust_ok": false
+		},
+		{
+			"name": "guest_exp_not_number",
+			"token": "eyJhbGciOiJIUzI1NiJ9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiaWF0IjoxODAwMDAwMDAwLCJleHAiOiJ4In0.H6GKApy1vKO0S_q3-ELlu9jV8oj6hYxf3bBF-baAhM0",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": false,
+			"ts_error": "\"exp\" claim must be a number",
+			"rust_ok": false
+		},
+		{
+			"name": "guest_missing_exp",
+			"token": "eyJhbGciOiJIUzI1NiJ9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiaWF0IjoxODAwMDAwMDAwfQ.WyeLdYdxaEBHVB6mVLjiTVYvN1fjnqGxEFg7Q1LsU70",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": true,
+			"ts_sub": "guest-6f9619ff-8b86-4d01-b42d-00cf4fc964ff",
+			"rust_ok": false,
+			"deviation": "Rust requires exp on guest tokens; jose treats it as optional. Every minted token has one."
+		},
+		{
+			"name": "guest_missing_iss",
+			"token": "eyJhbGciOiJIUzI1NiJ9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiaWF0IjoxODAwMDAwMDAwLCJleHAiOjE4MDAwMDcyMDB9.8g5oCcfMY-f82RZ3J5BXIv4qI2HLfCTPorVBTPExP20",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": false,
+			"ts_error": "missing required \"iss\" claim",
+			"rust_ok": false
+		},
+		{
+			"name": "guest_missing_aud",
+			"token": "eyJhbGciOiJIUzI1NiJ9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJpYXQiOjE4MDAwMDAwMDAsImV4cCI6MTgwMDAwNzIwMH0.5dkVNQraGfAWAGxLoYps7cwk8I9qEFTp9ndaWR89s9c",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": false,
+			"ts_error": "missing required \"aud\" claim",
+			"rust_ok": false
+		},
+		{
+			"name": "guest_missing_iss_and_aud",
+			"token": "eyJhbGciOiJIUzI1NiJ9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpYXQiOjE4MDAwMDAwMDAsImV4cCI6MTgwMDAwNzIwMH0.lATRAXpzn1DDov-WZNpBAKBb7n7oKdHIWbkUJS1CgXo",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": false,
+			"ts_error": "missing required \"iss\" claim",
+			"rust_ok": false
+		},
+		{
+			"name": "guest_crit_unknown",
+			"token": "eyJhbGciOiJIUzI1NiIsImNyaXQiOlsienp6Il0sInp6eiI6MX0.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiaWF0IjoxODAwMDAwMDAwLCJleHAiOjE4MDAwMDcyMDB9.Rz0rwL90YwPfWW_rRqMd3joPpq6yRnLqFeDIa5Xv4ng",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": false,
+			"ts_error": "Extension Header Parameter \"zzz\" is not recognized",
+			"rust_ok": false
+		},
+		{
+			"name": "guest_crit_empty",
+			"token": "eyJhbGciOiJIUzI1NiIsImNyaXQiOltdfQ.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiaWF0IjoxODAwMDAwMDAwLCJleHAiOjE4MDAwMDcyMDB9.LvMNp9F7av-eQXVVjmzAAzULRsyIZOSziemsxjtFOWQ",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": false,
+			"ts_error": "\"crit\" (Critical) Header Parameter MUST be an array of non-empty strings when present",
+			"rust_ok": false
+		},
+		{
+			"name": "guest_crit_not_array",
+			"token": "eyJhbGciOiJIUzI1NiIsImNyaXQiOiJiNjQiLCJiNjQiOnRydWV9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiaWF0IjoxODAwMDAwMDAwLCJleHAiOjE4MDAwMDcyMDB9.U7UPb3CelLAXKnsaQJYUB0C8R0CBCkZMcSzMwd8dSo8",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": false,
+			"ts_error": "\"crit\" (Critical) Header Parameter MUST be an array of non-empty strings when present",
+			"rust_ok": false
+		},
+		{
+			"name": "guest_crit_b64_true_ok",
+			"token": "eyJhbGciOiJIUzI1NiIsImNyaXQiOlsiYjY0Il0sImI2NCI6dHJ1ZX0.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiaWF0IjoxODAwMDAwMDAwLCJleHAiOjE4MDAwMDcyMDB9.U5BGZ32KizpHgzJYILHxuDXoNfVIt7peOsMws7TEerE",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": true,
+			"ts_sub": "guest-6f9619ff-8b86-4d01-b42d-00cf4fc964ff",
+			"rust_ok": true
+		},
+		{
+			"name": "guest_crit_b64_missing",
+			"token": "eyJhbGciOiJIUzI1NiIsImNyaXQiOlsiYjY0Il19.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiaWF0IjoxODAwMDAwMDAwLCJleHAiOjE4MDAwMDcyMDB9.LkULLfmwxKGxcDefBSeeaMBLA5kAj0nvoTej7Gmg6t8",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": false,
+			"ts_error": "Extension Header Parameter \"b64\" is missing",
+			"rust_ok": false
+		},
+		{
+			"name": "guest_crit_b64_not_bool",
+			"token": "eyJhbGciOiJIUzI1NiIsImNyaXQiOlsiYjY0Il0sImI2NCI6Im5vIn0.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiaWF0IjoxODAwMDAwMDAwLCJleHAiOjE4MDAwMDcyMDB9.ZLKuGFPWpqqoK4ao-JK_FMXEH6YECyEduLTXFEG5cNI",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": false,
+			"ts_error": "The \"b64\" (base64url-encode payload) Header Parameter must be a boolean",
+			"rust_ok": false
+		},
+		{
+			"name": "guest_crit_b64_false",
+			"token": "eyJhbGciOiJIUzI1NiIsImNyaXQiOlsiYjY0Il0sImI2NCI6ZmFsc2V9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiaWF0IjoxODAwMDAwMDAwLCJleHAiOjE4MDAwMDcyMDB9.X8MasBon-CojlnHf5mpWOBuUkMx1cAxuSKgPesY3S0U",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": false,
+			"ts_error": "JWTs MUST NOT use unencoded payload",
+			"rust_ok": false
+		},
+		{
+			"name": "guest_aud_array_ok",
+			"token": "eyJhbGciOiJIUzI1NiJ9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOlsieCIsImV1Y2hyZS1hY3RvcnMiXSwiaWF0IjoxODAwMDAwMDAwLCJleHAiOjE4MDAwMDcyMDB9.OSlnRxXtbj5S9G61bMePGOveWTUYLlyjXDYGO59vSUc",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": true,
+			"ts_sub": "guest-6f9619ff-8b86-4d01-b42d-00cf4fc964ff",
+			"rust_ok": true
+		},
+		{
+			"name": "guest_typ_jwt_header_ok",
+			"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiaWF0IjoxODAwMDAwMDAwLCJleHAiOjE4MDAwMDcyMDB9.3l0Nz8wBbVPvEDjhv3x9rvhtkoEjCU86iE-xqVOSuDQ",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": true,
+			"ts_sub": "guest-6f9619ff-8b86-4d01-b42d-00cf4fc964ff",
+			"rust_ok": true
+		},
+		{
+			"name": "guest_payload_array",
+			"token": "eyJhbGciOiJIUzI1NiJ9.WzFd.IFyx8lNL9Xi-Z5eT3d60ObXKnYS7uHbS-2Rgxh7WBJo",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": false,
+			"ts_error": "JWT Claims Set must be a top-level JSON object",
+			"rust_ok": false
+		},
+		{
+			"name": "guest_two_parts",
+			"token": "eyJhbGciOiJIUzI1NiJ9.eyJraW5kIjoiZ3Vlc3QiLCJzdWIiOiJndWVzdC02Zjk2MTlmZi04Yjg2LTRkMDEtYjQyZC0wMGNmNGZjOTY0ZmYiLCJpc3MiOiJldWNocmUtZ3Vlc3QiLCJhdWQiOiJldWNocmUtYWN0b3JzIiwiaWF0IjoxODAwMDAwMDAwLCJleHAiOjE4MDAwMDcyMDB9",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": false,
+			"ts_error": "Invalid Compact JWS",
+			"rust_ok": false
+		},
+		{
+			"name": "guest_empty",
+			"token": "",
+			"aud": "euchre-actors",
+			"now": 1800000000,
+			"ts_ok": false,
+			"ts_error": "Invalid Compact JWS",
+			"rust_ok": false
+		}
+	]
+}

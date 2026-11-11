@@ -1,3 +1,8 @@
+> **TS-era design document.** It describes the original TypeScript build, which the Rust port
+> replaced (`apps/server`, `crates/`, the static SPA in `apps/web`). Where it disagrees with the
+> port, the port wins: read [`port/ARCHITECTURE.md`](./port/ARCHITECTURE.md) first. Kept as the
+> record of the original design and the rules the port had to match.
+
 # 04 — Frontend & UX
 
 **Scope.** Everything that runs in a browser: `apps/web` (SvelteKit 2.70.1 · Svelte 5.56.8 · Vite 7.3.6 · adapter-node 5.5.7) and the 3D layer (`@threlte/core@8.5.16` · `@threlte/extras@9.21.0` · `three@0.185.1`). Rules live in `packages/euchre-core` (`02-GAME-RULES-ENGINE.md`); the authority lives in the `euchreTable` actor (`01-ARCHITECTURE.md`); the opponents live in `aiSeat` actors (`03-AI-AGENTS.md`). Build order is `05-IMPLEMENTATION-PLAN.md`; the frontend spans M2 (DOM-only playable), M6 (Threlte), M7 (tempo/sound), M8 (history), M9 (a11y/mobile).

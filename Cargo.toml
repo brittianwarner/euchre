@@ -1,0 +1,105 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/euchre-engine",
+    "crates/euchre-protocol",
+    "crates/euchre-ai",
+    "crates/euchre-server-core",
+    "crates/euchre-profile-model",
+    "crates/euchre-profile",
+    "crates/euchre-table",
+    "crates/euchre-ai-seat",
+    "crates/euchre-http",
+    "apps/server",
+    "apps/desktop",
+]
+
+[workspace.package]
+edition = "2024"
+version = "0.1.0"
+publish = false
+rust-version = "1.99"
+
+[workspace.dependencies]
+# Internal crates
+euchre-engine = { path = "crates/euchre-engine" }
+euchre-protocol = { path = "crates/euchre-protocol" }
+euchre-ai = { path = "crates/euchre-ai" }
+euchre-server-core = { path = "crates/euchre-server-core" }
+euchre-profile-model = { path = "crates/euchre-profile-model" }
+euchre-profile = { path = "crates/euchre-profile" }
+euchre-table = { path = "crates/euchre-table" }
+euchre-ai-seat = { path = "crates/euchre-ai-seat" }
+euchre-http = { path = "crates/euchre-http" }
+euchre-server = { path = "apps/server" }
+
+# Rivet (latest stable across the board)
+rivetkit = "3.1.0"
+rivetkit-client = "3.1.0"
+# Not re-exported by rivetkit; keep in lockstep with it (exact pin).
+rivet-error = "=3.1.0"
+rivetkit-engine-process = "=3.1.0"
+
+# Rune: pre-release, pin a rev of `dev` (never rewritten upstream)
+rune = { git = "https://github.com/anomalyco/rune", rev = "85cd8c6b797f68d600f9f3c1cd3ce074e4415ddb" }
+rune-kit = { git = "https://github.com/anomalyco/rune", rev = "85cd8c6b797f68d600f9f3c1cd3ce074e4415ddb" }
+
+# Common
+anyhow = "1"
+thiserror = "2"
+async-trait = "0.1"
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+serde_repr = "0.1"
+ciborium = "0.2"
+indexmap = { version = "2", features = ["serde"] }
+regex = "1"
+fancy-regex = "0.20"
+unicode-normalization = "0.1"
+tokio = { version = "1", features = ["full"] }
+tokio-util = "0.7"
+futures = "0.3"
+parking_lot = "0.12"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+rand = "0.9"
+rand_chacha = "0.9"
+uuid = { version = "1", features = ["v4", "v7", "serde"] }
+sha2 = "0.10"
+hmac = "0.12"
+subtle = "2"
+base64 = "0.22"
+hex = "0.4"
+jsonwebtoken = "9"
+axum = { version = "0.8", features = ["ws", "macros"] }
+tower = "0.5"
+tower-http = { version = "0.6", features = ["cors", "trace", "fs", "set-header"] }
+http = "1"
+bytes = "1"
+url = "2"
+cookie = "0.18"
+tokio-tungstenite = "0.26"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "stream"] }
+rodio = { version = "0.23", default-features = false, features = ["playback"] }
+directories = "6"
+time = { version = "0.3", features = ["serde", "formatting", "parsing"] }
+
+# Dev / test
+tempfile = "3"
+wiremock = "0.6"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+dbg_macro = "warn"
+todo = "warn"
+
+[profile.dev]
+# Full debug info made rune test builds use 18-23 GB of RAM (07 §1.4).
+debug = "line-tables-only"
+
+[profile.dev.package."*"]
+# Rune's renderer and text stack are slow unoptimized; keep deps fast in dev.
+opt-level = 2
+debug = false

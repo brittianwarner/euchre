@@ -1,0 +1,20 @@
+{
+	"name": "@euchre/desktop",
+	"private": true,
+	"version": "0.1.0",
+	"scripts": {
+		"build": "cargo build -p euchre-desktop --release",
+		"bridge": "bun build web/rivet-bridge.ts --target browser --format esm --minify --outfile js/rivet-bridge.js",
+		"dev": "cargo run -p euchre-desktop",
+		"check": "cargo clippy -p euchre-desktop --all-targets -- -D warnings",
+		"test": "cargo test -p euchre-desktop",
+		"lint": "cargo fmt -p euchre-desktop --check",
+		"format": "cargo fmt -p euchre-desktop"
+	},
+	"dependencies": {
+		"@euchre/engine": "workspace:*",
+		"@euchre/protocol": "workspace:*",
+		"@euchre/server": "workspace:*",
+		"rivetkit": "3.1.0"
+	}
+}
